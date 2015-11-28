@@ -43,13 +43,25 @@ public class DecodeApp {
     
     private void parseArgs(String[] args) {
         for(int i = 0; i < args.length; i++) {
-            if (args[i].equals("-i")) {
+            String arg = args[i];
+            if (arg.equals("-i")) {
                 filename = args[++i];
+            } else {
+                throw new RuntimeException("Unrecognised arg '" + arg + "'");
             }
         }
         
         if (filename == null) {
-            filename = "test1.avi";
+            File testInputFile = new File("src/test/data/live-coding.cap");
+            if (testInputFile.exists()) {
+                LOG.warn("missing arg '-i <<inputFile>>  ... using found test file '" + testInputFile + "'");
+            } else {
+                throw new RuntimeException("missing arg '-i <<inputFile>>'");
+            }
+        }
+        File inputFile = new File(filename);
+        if (! inputFile.exists()) {
+            throw new RuntimeException("File not found: '" + inputFile.getAbsolutePath() + "'");
         }
     }
 
@@ -67,7 +79,6 @@ public class DecodeApp {
         VideoInputStream videoInput;
         if (filename.endsWith(".cap")) {
             videoInput = new CapVideoInputStream(new File(filename));
-            
         } else {
             HumbleioVideoInputStream rawVideoInput = new HumbleioVideoInputStream(filename);
             
