@@ -18,4 +18,8 @@ public class ImageDataAssert {
             }
         }
     }
+
+    public static void assertEquals(ImageData expected, ImageData actual) {
+        assertEquals(expected.getData(), actual);
+    }
 }

@@ -2,7 +2,9 @@ package fr.an.screencast.compressor.imgtool.integral;
 
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
+import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Rect;
 
 /**
  * helper class for storing an integral image data (dim, int[]), 
@@ -24,6 +26,10 @@ public class HorizontalIntegralImageData extends ImageData {
 
     // ------------------------------------------------------------------------
 
+    public void setComputeFrom(ImageData src) {
+        setComputeFrom(RasterImageFunctions.of(src));
+    }
+
     public void setComputeFrom(RasterImageFunction src) {
         final int width = dim.width, height = dim.height;
         final int[] data = this.data;
@@ -36,14 +42,32 @@ public class HorizontalIntegralImageData extends ImageData {
             }
         }
     }
+
+    public void updateComputeClearRect(Rect rect) {
+        final int width = dim.width;
+        final int[] data = this.data;
+        for(int y = rect.fromY,idx_xy = index(0,rect.fromY); y <= rect.toY; y++) {
+            int diffRowSum = - integralHorizontalLine(rect.fromX, y, rect.toX);
+            if (diffRowSum != 0) {
+                idx_xy = index(rect.fromX, y);
+                int intFromX = rect.fromX > 0? data[idx_xy-1] : 0;
+                for(int x = rect.fromX; x <= rect.toX; x++,idx_xy++) {
+                    data[idx_xy] = intFromX;
+                }
+                for(int x = rect.toX+1; x < width; x++,idx_xy++) {
+                    data[idx_xy] += diffRowSum;
+                }
+            }
+        }
+    }
     
     /**
      * @return integral on area [fromX,toX] x {y}
      */
-    public int integralHorizontalLine(int fromX, int fromY, int toX) {
+    public int integralHorizontalLine(int fromX, int y, int toX) {
         int fromXex = fromX-1;
-        int intRight = safeGetAt(toX,       fromY);
-        int intLeft  = safeGetAt(fromXex,   fromY);
+        int intRight = safeGetAt(toX,       y);
+        int intLeft  = safeGetAt(fromXex,   y);
         return intRight - intLeft;
     }
     
@@ -77,6 +101,9 @@ public class HorizontalIntegralImageData extends ImageData {
                             return toX;
                         }
                     } else {
+                        if (integral < 0) {
+                            throw new IllegalStateException();
+                        }
                         toX -= integral-1;
                         integral = integralHorizontalLine(fromX, y, toX);
                     }

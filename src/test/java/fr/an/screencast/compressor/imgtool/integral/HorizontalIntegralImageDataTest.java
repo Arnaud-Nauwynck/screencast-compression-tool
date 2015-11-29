@@ -3,9 +3,12 @@ package fr.an.screencast.compressor.imgtool.integral;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageDataAssert;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Pt;
+import fr.an.screencast.compressor.utils.Rect;
 
 public class HorizontalIntegralImageDataTest {
 
@@ -77,7 +80,35 @@ public class HorizontalIntegralImageDataTest {
         Assert.assertEquals(7, sut.findFirstLinePt(3, true));
         Assert.assertEquals(1, sut.findFirstLinePt(4, true));
         // Post-check
-
     }
     
+    @Test
+    public void testUpdateComputeClearRect() {
+        // Prepare
+        Dim dim2 = new Dim(8, 5);
+        int[] src2BinData = new int[] {
+            0, 0, 0, 0, 0, 0, 0, 0, //
+            0, 0, 0, 1, 0, 1, 1, 0, //
+            1, 0, 1, 0, 0, 1, 0, 0, //
+            0, 0, 0, 0, 0, 0, 0, 1, //
+            0, 1, 1, 1, 1, 1, 1, 1
+        };
+        HorizontalIntegralImageData sut = new HorizontalIntegralImageData(dim2);
+        for(int toX = 4; toX < dim2.width; toX++) {
+            Rect clearRect = new Rect(new Pt(3, 1), new Pt(toX, 2));
+            doTestUpdateComputeClearRect(dim2, src2BinData, sut, clearRect);
+        }
+    }
+
+    private void doTestUpdateComputeClearRect(Dim dim2, int[] src2BinData, HorizontalIntegralImageData sut, Rect clearRect) {
+        ImageData srcImg = new ImageData(dim2, src2BinData); 
+        sut.setComputeFrom(srcImg);
+        // Perform
+        sut.updateComputeClearRect(clearRect);
+        // Post-check
+        srcImg.setFillRect(clearRect, 0);
+        HorizontalIntegralImageData checkSut = new HorizontalIntegralImageData(dim2);
+        checkSut.setComputeFrom(srcImg);
+        ImageDataAssert.assertEquals(checkSut.getData(), sut);
+    }
 }

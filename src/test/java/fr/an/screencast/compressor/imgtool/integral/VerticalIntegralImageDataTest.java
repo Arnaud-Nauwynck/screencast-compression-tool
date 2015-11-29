@@ -3,9 +3,12 @@ package fr.an.screencast.compressor.imgtool.integral;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageDataAssert;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Pt;
+import fr.an.screencast.compressor.utils.Rect;
 
 public class VerticalIntegralImageDataTest {
 
@@ -47,5 +50,28 @@ public class VerticalIntegralImageDataTest {
         Assert.assertEquals(4, sut.integralVerticalLine(1, 1, 1));
     }
 
-    
+
+    @Test
+    public void testUpdateComputeClearRect() {
+        // Prepare
+        Dim dim2 = new Dim(8, 5);
+        int[] src2BinData = new int[] {
+            0, 0, 0, 0, 0, 0, 0, 0, //
+            0, 0, 0, 1, 0, 1, 1, 0, //
+            1, 0, 1, 0, 0, 1, 0, 0, //
+            0, 0, 0, 0, 0, 0, 0, 1, //
+            0, 1, 1, 1, 1, 1, 1, 1
+        };
+        VerticalIntegralImageData sut = new VerticalIntegralImageData(dim2);
+        ImageData srcImg = new ImageData(dim2, src2BinData); 
+        sut.setComputeFrom(srcImg);
+        Rect clearRect = new Rect(new Pt(3, 1), new Pt(5, 2));
+        // Perform
+        sut.updateComputeClearRect(clearRect);
+        // Post-check
+        srcImg.setFillRect(clearRect, 0);
+        VerticalIntegralImageData checkSut = new VerticalIntegralImageData(dim2);
+        checkSut.setComputeFrom(srcImg);
+        ImageDataAssert.assertEquals(checkSut.getData(), sut);
+    }
 }

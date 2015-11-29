@@ -2,7 +2,9 @@ package fr.an.screencast.compressor.imgtool.integral;
 
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
+import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Rect;
 
 /**
  * helper class for storing an integral image data (dim, int[]), 
@@ -24,6 +26,10 @@ public class VerticalIntegralImageData extends ImageData {
 
     // ------------------------------------------------------------------------
 
+    public void setComputeFrom(ImageData src) {
+        setComputeFrom(RasterImageFunctions.of(src));
+    }
+    
     public void setComputeFrom(RasterImageFunction src) {
         final int width = dim.width, height = dim.height;
         final int[] data = this.data;
@@ -36,8 +42,25 @@ public class VerticalIntegralImageData extends ImageData {
             }
         }
     }
-    
 
+    public void updateComputeClearRect(Rect rect) {
+        final int width = dim.width, height = dim.height;
+        final int[] data = this.data;
+        for(int x = rect.fromX, idx_xy = rect.fromX; x <= rect.toX; x++) {
+            int diffColSum = - integralVerticalLine(x, rect.fromY, rect.toY);
+            if (diffColSum != 0) {
+                idx_xy = index(x,rect.fromY);
+                int intFromY = rect.fromY > 0? data[idx_xy-width] : 0;
+                for(int y = rect.fromY; y <= rect.toY; y++,idx_xy+=width) {
+                    data[idx_xy] = intFromY;
+                }
+                for(int y = rect.toY+1; y < height; y++,idx_xy+=width) {
+                    data[idx_xy] += diffColSum;
+                }
+            }
+        }
+    }
+    
     /**
      * @return integral on area {x} x [fromY,toY]
      */
@@ -47,5 +70,6 @@ public class VerticalIntegralImageData extends ImageData {
         int intUp   = safeGetAt(x, fromYex);
         return intDown - intUp;
     }
+
     
 }

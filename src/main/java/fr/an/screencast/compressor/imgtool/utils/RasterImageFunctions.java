@@ -30,6 +30,11 @@ public final class RasterImageFunctions {
             }
         };
     }
+
+    public static RasterImageFunction of(final ImageData data) {
+        return of(data.getDim(), data.getData());
+    }
+    
     
     public static RasterImageFunction binaryDiff(Dim dim, final int[] compareData1, final int[] compareData2) {
         return new RasterImageFunction() {
