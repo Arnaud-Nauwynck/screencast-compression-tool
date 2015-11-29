@@ -7,6 +7,7 @@ import java.awt.image.DataBufferInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.screencast.compressor.utils.Dim;
 import io.humble.video.Decoder;
 import io.humble.video.Demuxer;
 import io.humble.video.DemuxerStream;
@@ -26,8 +27,7 @@ public class HumbleioVideoInputStream implements VideoInputStream {
     private Decoder videoDecoder;
     private int videoStreamId;
     
-    private int width;
-    private int height;
+    private Dim dim;
     private MediaPicture picture;
     private MediaPictureConverter converter;
     
@@ -75,8 +75,9 @@ public class HumbleioVideoInputStream implements VideoInputStream {
             
             videoDecoder.open(null, null);
         
-            width = videoDecoder.getWidth();
-            height = videoDecoder.getHeight();
+            int width = videoDecoder.getWidth();
+            int height = videoDecoder.getHeight();
+            this.dim = new Dim(width, height);
             picture = MediaPicture.make(width, height, videoDecoder.getPixelFormat());
         
             // converter to BGR_24 for java swing 
@@ -189,12 +190,8 @@ public class HumbleioVideoInputStream implements VideoInputStream {
         return videoStreamId;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
+    public Dim getDim() {
+        return dim;
     }
 
     public MediaPicture getPicture() {

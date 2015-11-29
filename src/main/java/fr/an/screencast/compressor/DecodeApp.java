@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.cap.CapVideoInputStream;
 import fr.an.screencast.compressor.ui.DeltaImageAnalysisPanel;
+import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.RGBUtils;
 
@@ -89,13 +91,11 @@ public class DecodeApp {
         
         videoInput.init();
         
-        final int width = videoInput.getWidth();
-        final int height = videoInput.getHeight();
-
+        final Dim dim = videoInput.getDim();
         
-        SlidingImageArray slidingImages = new SlidingImageArray(prevSlidingLen, width, height, BufferedImage.TYPE_INT_RGB);
+        SlidingImageArray slidingImages = new SlidingImageArray(prevSlidingLen, dim, BufferedImage.TYPE_INT_RGB);
         
-        DeltaImageAnalysisResult deltaImages = new DeltaImageAnalysisResult(width, height, BufferedImage.TYPE_INT_RGB); 
+        DeltaImageAnalysisResult deltaImages = new DeltaImageAnalysisResult(dim, BufferedImage.TYPE_INT_RGB); 
         BufferedImage diffImageRGB = deltaImages.getDiffImage();
         BufferedImage deltaImageRGB = deltaImages.getDeltaImage();
 
@@ -107,7 +107,7 @@ public class DecodeApp {
         int frameIndex = 0;
         
         
-        DeltaImageAnalysis delta = new DeltaImageAnalysis(width, height, null, null);
+        DeltaImageAnalysis delta = new DeltaImageAnalysis(dim, null, null);
 
         JFrame appFrame = new JFrame();
         DeltaImageAnalysisPanel deltaAnalysisPanel = new DeltaImageAnalysisPanel();
@@ -129,10 +129,10 @@ public class DecodeApp {
                     
             Graphics2D diffGc = diffImageRGB.createGraphics();
             diffGc.setColor(Color.WHITE); // BLACK
-            diffGc.fillRect(0, 0, width, height);
+            diffGc.fillRect(0, 0, dim.width, dim.height);
             
-            for(int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
+            for(int y = 0; y < dim.height; y++) {
+                for (int x = 0; x < dim.width; x++) {
                     int prevRgb = prevImageRGB .getRGB(x, y);
                     int rgb = imageRGB.getRGB(x, y);
                     int dr = Math.abs(cm.getRed(prevRgb) - cm.getRed(rgb));
@@ -148,7 +148,7 @@ public class DecodeApp {
             
             Graphics2D deltaGc = deltaImageRGB.createGraphics();
             deltaGc.setColor(Color.WHITE);
-            deltaGc.fillRect(0,  0, width, height);
+            deltaGc.fillRect(0,  0, dim.width, dim.height);
             
             // TODO ...
             System.out.println("[" + frameIndex + "]");
@@ -158,17 +158,30 @@ public class DecodeApp {
             // *** compute diffs ***
             delta.computeDiff();
             
-            int countDiffLine = delta.getCountDiffLine();
-            if (countDiffLine != 0) {
-                Rectangle diffRect = delta.getDiffRect();
-                System.out.println("  diff rect: " + diffRect);
-                
-                deltaGc.setColor(Color.GRAY);
-                // deltaGc.fillRect(diffRect.x, diffRect.y, diffRect.width, diffRect.height);
-                deltaGc.drawRect(diffRect.x-1, diffRect.y-1, diffRect.width+1, diffRect.height+1);
+            // show integral diff
+            boolean showDiffCountIntegralImage = true; 
+            if (showDiffCountIntegralImage) {
+                int[] integral = delta.getDiffCountIntegral();
+                for(int y = 0, idx_xy=0; y < dim.height; y++) {
+                    for (int x = 0; x < dim.width; x++,idx_xy++) {
+                        int count = integral[idx_xy];
+                        int countClam = (count != 0)? 50+count : 0; 
+                        deltaImageRGB.setRGB(x, y, RGBUtils.rgb2Int256(countClam, countClam, countClam, 0));
+                    }                            
+                }
+            }
+            
+            List<Rectangle> diffRects = delta.getDiffRects();
+            if (! diffRects.isEmpty()) {
+//                Rectangle diffRect = delta.getDiffRect();
+//                System.out.println("  diff rect: " + diffRect);
+//                
+//                deltaGc.setColor(Color.GRAY);
+//                // deltaGc.fillRect(diffRect.x, diffRect.y, diffRect.width, diffRect.height);
+//                deltaGc.drawRect(diffRect.x-1, diffRect.y-1, diffRect.width+1, diffRect.height+1);
                 
                 deltaGc.setColor(Color.BLACK);
-                for(Rectangle r : delta.getDiffRects()) {
+                for(Rectangle r : diffRects) {
                     deltaGc.drawRect(r.x-1, r.y-1, r.width+1, r.height+1);
                 }
             }

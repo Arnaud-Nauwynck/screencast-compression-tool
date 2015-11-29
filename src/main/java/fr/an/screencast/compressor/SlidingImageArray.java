@@ -4,23 +4,24 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 
+import fr.an.screencast.compressor.utils.Dim;
+
 public class SlidingImageArray {
 
     private final int slidingLen;
-    private final int width, height;
+    private final Dim dim;
     
     private BufferedImage[] prevImage;
 
     // ------------------------------------------------------------------------
     
-    public SlidingImageArray(int slidingLen, int width, int height, int intImageType) { 
+    public SlidingImageArray(int slidingLen, Dim dim, int intImageType) { 
         this.slidingLen = slidingLen;
-        this.width = width;
-        this.height = height;
+        this.dim = dim;
 
         prevImage = new BufferedImage[slidingLen];
         for (int i = 0; i < slidingLen; i++) {
-            prevImage[i] = new BufferedImage(width, height, intImageType);
+            prevImage[i] = new BufferedImage(dim.width, dim.height, intImageType);
         }
     }
 
@@ -44,13 +45,9 @@ public class SlidingImageArray {
     public int getSlidingLen() {
         return slidingLen;
     }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
+    
+    public Dim getDim() {
+        return dim;
     }
 
     public BufferedImage[] getPrevImage() {

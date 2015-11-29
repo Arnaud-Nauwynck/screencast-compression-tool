@@ -6,6 +6,7 @@ import java.awt.image.ColorModel;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 
+import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.RGBUtils;
 
 public class SubSamplingVideoInputStream implements VideoInputStream {
@@ -30,11 +31,10 @@ public class SubSamplingVideoInputStream implements VideoInputStream {
     public void init() {
         target.init();
         
-        final int width = target.getWidth();
-        final int height = target.getHeight();
-        this.inputImages = new SlidingImageArray(samplingRate, width, height, BufferedImage.TYPE_INT_RGB);
+        final Dim dim = target.getDim();
+        this.inputImages = new SlidingImageArray(samplingRate, dim, BufferedImage.TYPE_INT_RGB);
         
-        this.resImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB); 
+        this.resImage = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB); 
     }
     
     
@@ -47,13 +47,8 @@ public class SubSamplingVideoInputStream implements VideoInputStream {
     }
 
     @Override
-    public int getWidth() {
-        return target.getWidth();
-    }
-
-    @Override
-    public int getHeight() {
-        return target.getHeight();
+    public Dim getDim() {
+        return target.getDim();
     }
 
     @Override

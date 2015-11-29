@@ -9,13 +9,14 @@ import java.io.InputStream;
 
 import fr.an.screencast.compressor.VideoInputStream;
 import fr.an.screencast.compressor.cap.CapFrameDecompressor.CapFramePacket;
+import fr.an.screencast.compressor.utils.Dim;
 
 public class CapVideoInputStream implements VideoInputStream {
 
     private File inputFile;
 
     private InputStream inputStream;
-    private int width, height;
+    private Dim dim;
     private CapFrameDecompressor decompressor;
     
     private CapFramePacket framePacket;
@@ -36,8 +37,9 @@ public class CapVideoInputStream implements VideoInputStream {
         try {
             this.inputStream = new BufferedInputStream(new FileInputStream(inputFile));
                 
-            this.width = (inputStream.read() << 8) + inputStream.read();
-            this.height = (inputStream.read() << 8) + inputStream.read();
+            int width = (inputStream.read() << 8) + inputStream.read();
+            int height = (inputStream.read() << 8) + inputStream.read();
+            this.dim = new Dim(width, height);
             this.bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             
             this.decompressor = new CapFrameDecompressor(inputStream, width * height);
@@ -75,7 +77,7 @@ public class CapVideoInputStream implements VideoInputStream {
     @Override
     public BufferedImage getImage() {
         if (dirtyImage) {
-            bufferedImage.setRGB(0, 0, width, height, framePacket.getData(), 0, width);
+            bufferedImage.setRGB(0, 0, dim.width, dim.height, framePacket.getData(), 0, dim.width);
             dirtyImage = false;
         }
         return bufferedImage;
@@ -87,15 +89,9 @@ public class CapVideoInputStream implements VideoInputStream {
         return 0;
     }
 
-
     @Override
-    public int getWidth() {
-        return width;
-    }
-
-    @Override
-    public int getHeight() {
-        return height;
+    public Dim getDim() {
+        return dim;
     }
 
     public long getFrameTime() {

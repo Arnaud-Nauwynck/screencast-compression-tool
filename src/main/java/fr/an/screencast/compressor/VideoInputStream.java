@@ -3,13 +3,14 @@ package fr.an.screencast.compressor;
 import java.awt.image.BufferedImage;
 import java.io.Closeable;
 
+import fr.an.screencast.compressor.utils.Dim;
+
 public interface VideoInputStream extends Closeable {
 
     public void init();
     public void close();
     
-    public int getWidth();
-    public int getHeight();
+    public Dim getDim();
     
     public boolean readNextImage();
     

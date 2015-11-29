@@ -1,24 +1,20 @@
 package fr.an.screencast.compressor;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
+
+import fr.an.screencast.compressor.utils.Dim;
 
 public class DeltaImageAnalysisResult {
 
     BufferedImage diffImage;
-    int[] diffImageDataInts;
 
     BufferedImage deltaImage;
-    int[] deltaImageDataInts;
 
     // ------------------------------------------------------------------------
 
-    public DeltaImageAnalysisResult(int width, int height, int intImageType) {
-        diffImage = new BufferedImage(width, height, intImageType);
-        diffImageDataInts = ((DataBufferInt) diffImage.getRaster().getDataBuffer()).getData();
-        
-        deltaImage = new BufferedImage(width, height, intImageType);
-        deltaImageDataInts = ((DataBufferInt) deltaImage.getRaster().getDataBuffer()).getData();
+    public DeltaImageAnalysisResult(Dim dim, int intImageType) {
+        this.diffImage = new BufferedImage(dim.width, dim.height, intImageType);
+        this.deltaImage = new BufferedImage(dim.width, dim.height, intImageType);
     }
 
     // ------------------------------------------------------------------------
@@ -28,17 +24,8 @@ public class DeltaImageAnalysisResult {
         return diffImage;
     }
 
-    public int[] getDiffImageDataInts() {
-        return diffImageDataInts;
-    }
-
     public BufferedImage getDeltaImage() {
         return deltaImage;
     }
 
-    public int[] getDeltaImageDataInts() {
-        return deltaImageDataInts;
-    }
-
-    
 }

@@ -7,6 +7,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.screencast.compressor.utils.Dim;
+
 public class CapReadMain {
     
     private static final Logger LOG = LoggerFactory.getLogger(CapReadMain.class);
@@ -54,11 +56,10 @@ public class CapReadMain {
         try(CapVideoInputStream capVideoInputStream = new CapVideoInputStream(inputFile)) {
             capVideoInputStream.init();
             
-            int width = capVideoInputStream.getWidth();
-            int height = capVideoInputStream.getHeight();
+            Dim dim = capVideoInputStream.getDim();
             int frameRate = 5;
             int displayProgressEvery = 10 * frameRate; // 10s
-            LOG.info("decoding video : " + width + "x" + height + " - display progress every " + displayProgressEvery + " frames = " + (displayProgressEvery/frameRate) + " s");
+            LOG.info("decoding video : " + dim + " - display progress every " + displayProgressEvery + " frames = " + (displayProgressEvery/frameRate) + " s");
             int displayFrameCountEvery = 1000;
             
             int frameCount = 0;
