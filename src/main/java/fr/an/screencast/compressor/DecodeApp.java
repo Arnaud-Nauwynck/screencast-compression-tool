@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -37,6 +38,8 @@ public class DecodeApp {
     private int subSamplingRate = 3;
     private int prevSlidingLen = 3; 
 
+    private int skipFrameCount = 7;
+    
     // ------------------------------------------------------------------------
 
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -122,9 +125,20 @@ public class DecodeApp {
         appFrame.pack();
         appFrame.setVisible(true);
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        if (skipFrameCount > 0) {
+            LOG.info("SKIP " + skipFrameCount + " Frames");
+            while(skipFrameCount > 0 && videoInput.readNextImage()) {
+                skipFrameCount--;
+                BufferedImage imageRGB = videoInput.getImage(); // read 3 images ... sub-sampling using median
+                frameIndex++;
+                slidingImages.slide(imageRGB);
+            }
+        }
         
         while(videoInput.readNextImage()) {
             BufferedImage imageRGB = videoInput.getImage(); // read 3 images ... sub-sampling using median
+            frameIndex++;
             
             slidingImages.slide(imageRGB);
             
@@ -137,7 +151,11 @@ public class DecodeApp {
             Graphics2D diffGc = diffImageRGB.createGraphics();
             diffGc.setColor(Color.WHITE); // BLACK
             diffGc.fillRect(0, 0, dim.width, dim.height);
-            
+
+            Graphics2D deltaGc = deltaImageRGB.createGraphics();
+            deltaGc.setColor(Color.BLACK);
+            deltaGc.fillRect(0,  0, dim.width, dim.height);
+
             for(int y = 0; y < dim.height; y++) {
                 for (int x = 0; x < dim.width; x++) {
                     int prevRgb = prevImageRGB .getRGB(x, y);
@@ -153,9 +171,6 @@ public class DecodeApp {
             }
             diffGc.dispose();
             
-            Graphics2D deltaGc = deltaImageRGB.createGraphics();
-            deltaGc.setColor(Color.WHITE);
-            deltaGc.fillRect(0,  0, dim.width, dim.height);
             
             // TODO ...
             System.out.println("[" + frameIndex + "]");
@@ -165,45 +180,71 @@ public class DecodeApp {
             // *** compute diffs ***
             delta.computeDiff();
             
-            // show integral diff
-            boolean showDiffCountIntegralImage = true; 
-            if (showDiffCountIntegralImage) {
-                ImageData diffCountIntegralImageData = 
-                        // delta.getDiffCountIntegralImageData();
-                        // delta.getDiffCountHorizontalIntegralImageData();
-                        delta.getDiffCountVerticalIntegralImageData();
-                int[] integral = diffCountIntegralImageData.getData();
-                int[] horIntegral = delta.getDiffCountHorizontalIntegralImageData().getData();
-                int[] vertIntegral = delta.getDiffCountVerticalIntegralImageData().getData();
-                for(int y = 0, idx_xy=0; y < dim.height; y++) {
-                    for (int x = 0; x < dim.width; x++,idx_xy++) {
-                        int count = // integral[idx_xy];
-                            horIntegral[idx_xy] + vertIntegral[idx_xy];
-                        int countClam = (count != 0)? 50+count : 0; 
-                        deltaImageRGB.setRGB(x, y, RGBUtils.rgb2Int256(countClam, countClam, countClam, 0));
-                    }                            
+            int firstDiffPtx = delta.getFirstDiffPtx(); 
+                    // delta.getRawFirstDiffPtx();
+            int firstDiffPty = delta.getFirstDiffPty();
+            if (firstDiffPtx != -1) {
+
+                
+                // show integral diff
+                boolean showDiffCountIntegralImage = true; 
+                if (showDiffCountIntegralImage) {
+                    ImageData diffCountIntegralImageData = 
+                            // delta.getDiffCountIntegralImageData();
+                            // delta.getDiffCountHorizontalIntegralImageData();
+                            delta.getDiffCountVerticalIntegralImageData();
+                    int[] integral = diffCountIntegralImageData.getData();
+                    int[] horIntegral = delta.getDiffCountHorizontalIntegralImageData().getData();
+                    int[] vertIntegral = delta.getDiffCountVerticalIntegralImageData().getData();
+                    for(int y = 0, idx_xy=0; y < dim.height; y++) {
+                        for (int x = 0; x < dim.width; x++,idx_xy++) {
+                            int count = // integral[idx_xy];
+                                horIntegral[idx_xy] + vertIntegral[idx_xy];
+                            int countClam = (count != 0)? 50+count : 0; 
+                            deltaImageRGB.setRGB(x, y, RGBUtils.rgb2Int256(countClam, countClam, countClam, 0));
+                        }                            
+                    }
+                }
+                
+                
+                List<Rectangle> diffRects = delta.getDiffRects();
+                if (! diffRects.isEmpty()) {
+    //                Rectangle diffRect = delta.getDiffRect();
+    //                System.out.println("  diff rect: " + diffRect);
+    //                
+    //                deltaGc.setColor(Color.GRAY);
+    //                // deltaGc.fillRect(diffRect.x, diffRect.y, diffRect.width, diffRect.height);
+    //                deltaGc.drawRect(diffRect.x-1, diffRect.y-1, diffRect.width+1, diffRect.height+1);
+                    
+                    deltaGc.setColor(Color.RED);
+                    for(Rectangle r : diffRects) {
+                        deltaGc.drawRect(r.x-1, r.y-1, r.width+1, r.height+1);
+                    }
+                }
+                
+
+                deltaGc.setColor(Color.RED);
+                int markerLineLen = 100;
+//                deltaGc.drawLine(firstDiffPtx-1, firstDiffPty-1-markerLineLen, firstDiffPtx-1, firstDiffPty-1);
+//                deltaGc.drawLine(firstDiffPtx-1-markerLineLen, firstDiffPty-1, firstDiffPtx-1, firstDiffPty-1);
+                deltaGc.setStroke(new BasicStroke(2));
+                deltaGc.drawLine(firstDiffPtx-markerLineLen, firstDiffPty-markerLineLen, firstDiffPtx, firstDiffPty);
+                if (firstDiffPtx < 10 || firstDiffPty < 10) {
+                    int markerLen = 20;
+                    deltaGc.fillRect(firstDiffPtx-markerLen, firstDiffPty-markerLen, 2*markerLen, 2*markerLen);
                 }
             }
             
-            List<Rectangle> diffRects = delta.getDiffRects();
-            if (! diffRects.isEmpty()) {
-//                Rectangle diffRect = delta.getDiffRect();
-//                System.out.println("  diff rect: " + diffRect);
-//                
-//                deltaGc.setColor(Color.GRAY);
-//                // deltaGc.fillRect(diffRect.x, diffRect.y, diffRect.width, diffRect.height);
-//                deltaGc.drawRect(diffRect.x-1, diffRect.y-1, diffRect.width+1, diffRect.height+1);
-                
-                deltaGc.setColor(Color.BLACK);
-                for(Rectangle r : diffRects) {
-                    deltaGc.drawRect(r.x-1, r.y-1, r.width+1, r.height+1);
-                }
-            }
-
+            
             deltaGc.dispose();
             
             deltaAnalysisPanel.asyncSetImages(prevImageRGB, imageRGB, diffImageRGB, deltaImageRGB);
 
+            boolean debugRedo = false;
+            if (debugRedo) {
+                delta.computeDiff();
+            }
+            
             
             Thread.sleep(sleepFrameMillis);
         }

@@ -27,6 +27,10 @@ public class DeltaImageAnalysis {
     private Rectangle diffRect = new Rectangle();
     private List<Rectangle> diffRects = new ArrayList<Rectangle>();
     
+    private int rawFirstDiffPtx, firstDiffPty;
+    private int firstDiffPtx;
+    private int filterSize = 5;
+    
     // ------------------------------------------------------------------------
     
     public DeltaImageAnalysis(Dim dim, int[] prevData, int[] data) {
@@ -49,12 +53,43 @@ public class DeltaImageAnalysis {
     public void computeDiff() {
         final int[] prevData = this.prevData;
         final int[] data = this.data;
+        final int height = dim.height;
         
         RasterImageFunction binaryDiff = RasterImageFunctions.binaryDiff(dim, data, prevData);
         diffCountIntegralImageData.setComputeFrom(binaryDiff);
         diffCountHorizontalIntegralImageData.setComputeFrom(binaryDiff);
         diffCountVerticalIntegralImageData.setComputeFrom(binaryDiff);
         
+        firstDiffPtx = -1;
+        firstDiffPty = -1;
+        rawFirstDiffPtx = -1;
+        label_findFirstPt: for (int y = 0; y < height; y++) {
+            int tmpx= diffCountHorizontalIntegralImageData.findFirstLinePt(y, true);
+            if (tmpx != -1) {
+                if (tmpx == 1919) {
+                    diffCountHorizontalIntegralImageData.findFirstLinePt(y, true);
+                    continue; // BUG ??  
+                }
+                rawFirstDiffPtx = tmpx;
+                firstDiffPty = y;
+                break label_findFirstPt;
+            }
+        }
+        if (rawFirstDiffPtx != -1) {
+            firstDiffPtx = rawFirstDiffPtx;
+            int maxFilterY = Math.min(firstDiffPty+1+filterSize, height); 
+            for (int y = firstDiffPty+1; y < maxFilterY; y++) {
+                int tmpx = diffCountHorizontalIntegralImageData.findFirstLinePt(y, true);
+                if (tmpx != -1) {
+                    firstDiffPtx = Math.min(firstDiffPtx, tmpx);
+                }
+            }
+        }
+        
+        
+        if (firstDiffPtx == -1) {
+            System.out.println("NO Diff");
+        }
         // TODO ... 
     }
     
@@ -73,5 +108,18 @@ public class DeltaImageAnalysis {
     public List<Rectangle> getDiffRects() {
         return diffRects;
     }
-        
+
+    public int getRawFirstDiffPtx() {
+        return rawFirstDiffPtx;
+    }
+    public int getFirstDiffPtx() {
+        return firstDiffPtx;
+    }
+    public int getFirstDiffPty() {
+        return firstDiffPty;
+    }
+
+
+    
+    
 }
