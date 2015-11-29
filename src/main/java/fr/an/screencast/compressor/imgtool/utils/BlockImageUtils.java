@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor;
+package fr.an.screencast.compressor.imgtool.utils;
 
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;

@@ -24,7 +24,7 @@
  * 
  */
 
-package fr.an.screencast.compressor.cap;
+package fr.an.screencast.compressor.imgstream.codecs.cap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;

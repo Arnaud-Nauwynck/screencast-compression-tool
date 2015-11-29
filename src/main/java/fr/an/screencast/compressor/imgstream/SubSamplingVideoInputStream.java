@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor;
+package fr.an.screencast.compressor.imgstream;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -6,8 +6,8 @@ import java.awt.image.ColorModel;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 
+import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Dim;
-import fr.an.screencast.compressor.utils.RGBUtils;
 
 public class SubSamplingVideoInputStream implements VideoInputStream {
     

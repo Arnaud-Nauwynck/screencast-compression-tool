@@ -1,9 +1,9 @@
-package fr.an.screencast.compressor;
+package fr.an.screencast.compressor.imgtool.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.an.screencast.compressor.BlockImageUtils;
+import fr.an.screencast.compressor.imgtool.utils.BlockImageUtils;
 
 public class BlockImageUtilsTest {
 

@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor;
+package fr.an.screencast.compressor.imgstream;
 
 import java.awt.image.BufferedImage;
 import java.io.Closeable;

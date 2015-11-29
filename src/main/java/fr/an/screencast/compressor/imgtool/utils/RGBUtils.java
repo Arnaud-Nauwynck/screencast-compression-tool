@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.utils;
+package fr.an.screencast.compressor.imgtool.utils;
 
 public final class RGBUtils {
 

@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor;
+package fr.an.screencast.compressor.imgstream.codecs.humbleio;
 
 import io.humble.video.Rational;
 

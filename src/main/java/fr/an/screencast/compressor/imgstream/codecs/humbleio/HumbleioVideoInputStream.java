@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor;
+package fr.an.screencast.compressor.imgstream.codecs.humbleio;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -7,6 +7,7 @@ import java.awt.image.DataBufferInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.screencast.compressor.imgstream.VideoInputStream;
 import fr.an.screencast.compressor.utils.Dim;
 import io.humble.video.Decoder;
 import io.humble.video.Demuxer;

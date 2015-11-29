@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.cap;
+package fr.an.screencast.compressor.imgstream.codecs.cap;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -7,8 +7,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import fr.an.screencast.compressor.VideoInputStream;
-import fr.an.screencast.compressor.cap.CapFrameDecompressor.CapFramePacket;
+import fr.an.screencast.compressor.imgstream.VideoInputStream;
+import fr.an.screencast.compressor.imgstream.codecs.cap.CapFrameDecompressor.CapFramePacket;
 import fr.an.screencast.compressor.utils.Dim;
 
 public class CapVideoInputStream implements VideoInputStream {

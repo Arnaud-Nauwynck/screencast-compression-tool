@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.cap;
+package fr.an.screencast.compressor.imgstream.codecs.cap;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

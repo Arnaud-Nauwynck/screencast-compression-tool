@@ -14,11 +14,18 @@ import javax.swing.JFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.an.screencast.compressor.cap.CapVideoInputStream;
+import fr.an.screencast.compressor.imgstream.SlidingImageArray;
+import fr.an.screencast.compressor.imgstream.SubSamplingVideoInputStream;
+import fr.an.screencast.compressor.imgstream.VideoInputStream;
+import fr.an.screencast.compressor.imgstream.codecs.cap.CapVideoInputStream;
+import fr.an.screencast.compressor.imgstream.codecs.humbleio.HumbleioVideoInputStream;
+import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysis;
+import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
+import fr.an.screencast.compressor.imgtool.utils.ImageData;
+import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
+import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.ui.DeltaImageAnalysisPanel;
 import fr.an.screencast.compressor.utils.Dim;
-import fr.an.screencast.compressor.utils.ImageRasterUtils;
-import fr.an.screencast.compressor.utils.RGBUtils;
 
 public class DecodeApp {
 
@@ -161,10 +168,17 @@ public class DecodeApp {
             // show integral diff
             boolean showDiffCountIntegralImage = true; 
             if (showDiffCountIntegralImage) {
-                int[] integral = delta.getDiffCountIntegral();
+                ImageData diffCountIntegralImageData = 
+                        // delta.getDiffCountIntegralImageData();
+                        // delta.getDiffCountHorizontalIntegralImageData();
+                        delta.getDiffCountVerticalIntegralImageData();
+                int[] integral = diffCountIntegralImageData.getData();
+                int[] horIntegral = delta.getDiffCountHorizontalIntegralImageData().getData();
+                int[] vertIntegral = delta.getDiffCountVerticalIntegralImageData().getData();
                 for(int y = 0, idx_xy=0; y < dim.height; y++) {
                     for (int x = 0; x < dim.width; x++,idx_xy++) {
-                        int count = integral[idx_xy];
+                        int count = // integral[idx_xy];
+                            horIntegral[idx_xy] + vertIntegral[idx_xy];
                         int countClam = (count != 0)? 50+count : 0; 
                         deltaImageRGB.setRGB(x, y, RGBUtils.rgb2Int256(countClam, countClam, countClam, 0));
                     }                            
