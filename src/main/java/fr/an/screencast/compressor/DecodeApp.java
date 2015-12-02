@@ -3,7 +3,6 @@ package fr.an.screencast.compressor;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.File;
@@ -20,6 +19,7 @@ import fr.an.screencast.compressor.imgstream.SubSamplingVideoInputStream;
 import fr.an.screencast.compressor.imgstream.VideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.cap.CapVideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.humbleio.HumbleioVideoInputStream;
+import fr.an.screencast.compressor.imgtool.color.ColorMapAnalysis;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysis;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
@@ -34,14 +34,27 @@ public class DecodeApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(DecodeApp.class);
     
-
+    private static boolean DEBUG = false;
+    private static boolean DEBUG_PAINT_DETAILED = false;
+    
     private String filename;
     
     private int subSamplingRate = 3;
     private int prevSlidingLen = 3; 
-
-    private int skipFrameCount = 7;
     
+    /**
+     * example: compute on file live-coding.cap  
+     *   using LRU=4 => max LRU Change:28
+     *   using LRU=10 => max LRU Change:16
+     *   using LRU=15 => max LRU Change:
+     */
+    private int colorLRUSize = 10;
+    
+    
+    private int processFrameFreq = 10;
+    private int skipFrameCount = 7;
+    private int skipAfterFrameIndex = 500;
+
     private boolean debugDrawFirstDiffPtMarker = false;
     
     // ------------------------------------------------------------------------
@@ -89,9 +102,7 @@ public class DecodeApp {
         }
     }
     
-    private void processVideo() throws Exception {
-        long sleepFrameMillis = 200;
-        
+    private VideoInputStream initVideo() {
         VideoInputStream videoInput;
         if (filename.endsWith(".cap")) {
             videoInput = new CapVideoInputStream(new File(filename));
@@ -100,10 +111,20 @@ public class DecodeApp {
             
             videoInput = new SubSamplingVideoInputStream(rawVideoInput, subSamplingRate, 
                 SubSamplingVideoInputStream.DEFAULT_SAMPLER_RGB_MEDIAN);
-            sleepFrameMillis *= subSamplingRate;
         }
         
         videoInput.init();
+        return videoInput;
+    }
+    
+    private void processVideo() throws Exception {
+        long sleepFrameMillis = 200;
+        
+        VideoInputStream videoInput = initVideo();
+
+        if (! filename.endsWith(".cap")) {
+            sleepFrameMillis *= subSamplingRate;
+        }
         
         final Dim dim = videoInput.getDim();
         
@@ -114,14 +135,23 @@ public class DecodeApp {
         BufferedImage deltaImageRGB = deltaImages.getDeltaImage();
 
         BufferedImage prevImageRGB = slidingImages.getPrevImage()[1]; // ref will change..
-        int[] prevImageRGBDataInts;
-        ColorModel cm = slidingImages.getPrevImage()[0].getColorModel();
+
+        BufferedImage prev0ImageRGB = slidingImages.getPrevImage()[0];
+        ColorModel cm = prev0ImageRGB.getColorModel();
         
+        BufferedImage[] bufferImgs = new BufferedImage[8];
+        for (int i = 0; i < bufferImgs.length; i++) { 
+            bufferImgs[i] = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
+        }
+        
+        
+        int frameRate = 5;
+        int displayProgressEvery = 10 * frameRate; // 10s
+        LOG.info("decoding video : " + dim + " - display progress every " + displayProgressEvery + " frames = " + (displayProgressEvery/frameRate) + " s");
+        int displayFrameCountEvery = 1000;
         
         int frameIndex = 0;
         
-        
-        DeltaImageAnalysis delta = new DeltaImageAnalysis(dim, null, null);
 
         JFrame appFrame = new JFrame();
         DeltaImageAnalysisPanel deltaAnalysisPanel = new DeltaImageAnalysisPanel();
@@ -139,7 +169,87 @@ public class DecodeApp {
                 slidingImages.slide(imageRGB);
             }
         }
+
+        LOG.info("SCAN 1/2 ... ColorMapAnalysis");
+        ColorMapAnalysis colorAnalysis = new ColorMapAnalysis(dim, colorLRUSize); 
+        while(videoInput.readNextImage()) {
+            BufferedImage imageRGB = videoInput.getImage(); // read 3 images ... sub-sampling using median
+            frameIndex++;
+            if (frameIndex % processFrameFreq != 0) {
+                continue; // heuristic optim: SKIP frames...
+            }
+            
+            colorAnalysis.processImage(imageRGB);
+            
+            if (DEBUG) {
+                System.out.println("[" + frameIndex + "]");
+            }
+            if (frameIndex % displayProgressEvery == 0) {
+                System.out.print(".");
+            }
+            if (frameIndex % displayFrameCountEvery == 0) {
+                System.out.print("\n[" + frameIndex + "] ");
+            }
+            
+            if (frameIndex >= skipAfterFrameIndex) {
+                // TODO slow ... heuristic optim: skip remaining 
+                break;
+            }
+        }
+        videoInput.close();
+        // REDO...
         
+        colorAnalysis.dump();
+
+        {
+            LOG.info("display min-max images");
+            
+            BufferedImage minImg = bufferImgs[0];
+            BufferedImage maxImg = bufferImgs[1];
+            BufferedImage minR = bufferImgs[2];
+            BufferedImage maxR = bufferImgs[3];
+            BufferedImage minG = bufferImgs[4];
+            BufferedImage maxG = bufferImgs[5];
+            BufferedImage minB = bufferImgs[6];
+            BufferedImage maxB = bufferImgs[7];
+            
+            colorAnalysis.debugDraw(minImg, maxImg, minR, maxR, minG, maxG, minB, maxB);
+            
+            deltaAnalysisPanel.asyncSetImages(minImg, maxImg, minR, maxR);
+            Thread.sleep(1000);
+            
+            if (DEBUG_PAINT_DETAILED) {
+                LOG.info("display min (total,R,G,B) images");
+                deltaAnalysisPanel.asyncSetImages(minImg, minR, minG, maxB);
+                Thread.sleep(1000);
+                
+                LOG.info("display max (total,R,G,B) images");
+                deltaAnalysisPanel.asyncSetImages(maxImg, maxR, maxG, maxB);
+                Thread.sleep(1000);
+            }
+        }
+        
+        {
+            LOG.info("display ColorMap Size per Pixel (using " + colorLRUSize + " LRU Color while scan)");
+            BufferedImage countLRUColorImg = bufferImgs[0];
+            BufferedImage countLRUColorLowImg = bufferImgs[1];
+            BufferedImage countLRUColorMidImg = bufferImgs[2];
+            BufferedImage countLRUColorHighImg = bufferImgs[3];
+            
+            colorAnalysis.debugDrawLRUColorCounts(countLRUColorImg, countLRUColorLowImg, countLRUColorMidImg, countLRUColorHighImg);
+            
+            deltaAnalysisPanel.asyncSetImages(countLRUColorImg, countLRUColorLowImg, countLRUColorMidImg, countLRUColorHighImg);
+            
+            // TODO TOADD draw frequency of color swaps per pixel 
+            
+            Thread.sleep(1000);
+        }
+        
+        LOG.info("SCAN 2/2 ... DeltaAnalysis");
+        
+        DeltaImageAnalysis delta = new DeltaImageAnalysis(dim, null, null);
+        
+        frameIndex = 0;
         while(videoInput.readNextImage()) {
             BufferedImage imageRGB = videoInput.getImage(); // read 3 images ... sub-sampling using median
             frameIndex++;
@@ -255,6 +365,16 @@ public class DecodeApp {
             
             
             Thread.sleep(sleepFrameMillis);
+            
+            if (DEBUG) {
+                System.out.println("[" + frameIndex + "]");
+            }
+            if (frameIndex % displayProgressEvery == 0) {
+                System.out.print(".");
+            }
+            if (frameIndex % displayFrameCountEvery == 0) {
+                System.out.print("\n[" + frameIndex + "] ");
+            }
         }
 
         videoInput.close();

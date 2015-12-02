@@ -10,6 +10,10 @@ public final class RGBUtils {
                 ((b & 0xFF) << 0);
     }
     
+    public static int greyRgb2Int(int grey) {
+        return rgb2Int(grey,  grey,  grey, 0);
+    }
+    
     public static int rgb2Int256(int r, int g, int b, int a) {
         return rgb2Int(toByte256(r), toByte256(g), toByte256(b), toByte256(a));
     }
