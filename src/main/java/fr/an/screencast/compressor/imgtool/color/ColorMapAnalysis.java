@@ -127,7 +127,7 @@ public class ColorMapAnalysis {
         
         
         // locationToColorLRUChangeStats
-        out.println("locationToColorLRUChangeStats:");
+        out.println("locationToColorMRUChangeStats:");
         int displayMaxCount = 500;
         int[] histoSmallChangeCounts = new int[displayMaxCount+1];
         int totalCountChanges = 0;
@@ -178,10 +178,11 @@ public class ColorMapAnalysis {
         out.println("found " + countSpecial + " / " + (height/20*width/20) + " special pts (sub-sampling x20) with special min-max color channel restriction");
     }
 
-    public void debugDraw(BufferedImage minRGBImg, BufferedImage maxRGBImg, 
+    public void debugDrawMinMax(BufferedImage minRGBImg, BufferedImage maxRGBImg, 
             BufferedImage minRImg, BufferedImage maxRImg,
             BufferedImage minGImg, BufferedImage maxGImg,
-            BufferedImage minBImg, BufferedImage maxBImg
+            BufferedImage minBImg, BufferedImage maxBImg,
+            BufferedImage rangeImg, BufferedImage rangeRImg, BufferedImage rangeGImg, BufferedImage rangeBImg
             ) {
         final int width = dim.width, height = dim.height;
         int[] minRGBInts = ImageRasterUtils.toInts(minRGBImg);
@@ -194,6 +195,25 @@ public class ColorMapAnalysis {
         int[] minBInts = ImageRasterUtils.toInts(minBImg);
         int[] maxBInts = ImageRasterUtils.toInts(maxBImg);
         
+        int[] rangeInts = ImageRasterUtils.toInts(rangeImg);
+        int[] rangeRInts = ImageRasterUtils.toInts(rangeRImg);
+        int[] rangeGInts = ImageRasterUtils.toInts(rangeGImg);
+        int[] rangeBInts = ImageRasterUtils.toInts(rangeBImg);
+        
+        for(int y=0, idx=0; y < height; y++) {
+            for (int x = 0; x < width; x++,idx++) {
+                minRGBInts[idx] = RGBUtils.CMAX_255; 
+                maxRGBInts[idx] = 0;
+                
+                minRInts[idx] = RGBUtils.CMAX_255;
+                maxRInts[idx] = 0;
+                minGInts[idx] = RGBUtils.CMAX_255;
+                maxGInts[idx] = 0;
+                minBInts[idx] = RGBUtils.CMAX_255;
+                maxBInts[idx] = 0;
+            }
+        }
+        
         for(int y=0, idx=0; y < height; y++) {
             for (int x = 0; x < width; x++,idx++) {
                 ColorChannelStats ptColorStats = locationToColorStats[idx];
@@ -203,16 +223,22 @@ public class ColorMapAnalysis {
                 
                 // assemble minRGB = min(r),min(g),min(b)
                 // assemble maxRGB = min(r),min(g),min(b)
-                minRGBInts[idx] = RGBUtils.rgb2Int(r.getMin(), g.getMin(), b.getMin(), 0); 
-                maxRGBInts[idx] = RGBUtils.rgb2Int(r.getMax(), g.getMax(), b.getMax(), 0);
+                int rMin = r.getMin(), gMin = g.getMin(), bMin = b.getMin();
+                int rMax = r.getMax(), gMax = g.getMax(), bMax = b.getMax();
+                minRGBInts[idx] = RGBUtils.rgb2Int(rMin, gMin, bMin, 0);                 
+                maxRGBInts[idx] = RGBUtils.rgb2Int(rMax, gMax, bMax, 0);
                 
-                minRInts[idx] = RGBUtils.rgb2Int(r.getMin(), 0, 0, 0);
-                maxRInts[idx] = RGBUtils.rgb2Int(r.getMax(), 0, 0, 0);
-                minGInts[idx] = RGBUtils.rgb2Int(0, g.getMin(), 0, 0);
-                maxGInts[idx] = RGBUtils.rgb2Int(0, g.getMax(), 0, 0);
-                minBInts[idx] = RGBUtils.rgb2Int(0, 0, 0, b.getMin());
-                maxBInts[idx] = RGBUtils.rgb2Int(0, 0, 0, b.getMax());
+                minRInts[idx] = RGBUtils.rgb2Int(rMin, 0, 0, 0);
+                maxRInts[idx] = RGBUtils.rgb2Int(rMax, 0, 0, 0);
+                minGInts[idx] = RGBUtils.rgb2Int(0, gMin, 0, 0);
+                maxGInts[idx] = RGBUtils.rgb2Int(0, gMax, 0, 0);
+                minBInts[idx] = RGBUtils.rgb2Int(0, 0, bMin, 0);
+                maxBInts[idx] = RGBUtils.rgb2Int(0, 0, bMax, 0);
 
+                rangeInts[idx] = RGBUtils.greyRgb2Int(((rMax - rMin) + (gMax - gMin) + (bMax - bMin)) / 3);
+                rangeRInts[idx] = RGBUtils.rgb2Int(rMax - rMin, 0, 0, 0);
+                rangeGInts[idx] = RGBUtils.rgb2Int(0, gMax - gMin, 0, 0);
+                rangeBInts[idx] = RGBUtils.rgb2Int(0, 0, bMax - bMin, 0);
             }
         }
     }

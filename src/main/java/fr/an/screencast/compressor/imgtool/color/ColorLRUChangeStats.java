@@ -1,7 +1,7 @@
 package fr.an.screencast.compressor.imgtool.color;
 
 /**
- * store the last N different color, and increment counter for each change 
+ * store the last N Most-Recently-Used colors, and increment counter for each changes 
  *
  */
 public class ColorLRUChangeStats {

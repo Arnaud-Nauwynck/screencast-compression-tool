@@ -2,6 +2,8 @@ package fr.an.screencast.compressor.imgtool.utils;
 
 public final class RGBUtils {
 
+    public static final int CMAX_255 = 255; 
+    
     // cf new Color()
     public static int rgb2Int(int r, int g, int b, int a) {
         return ((a & 0xFF) << 24) |

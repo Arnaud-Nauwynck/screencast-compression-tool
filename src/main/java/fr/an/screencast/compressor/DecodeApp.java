@@ -35,7 +35,7 @@ public class DecodeApp {
     private static final Logger LOG = LoggerFactory.getLogger(DecodeApp.class);
     
     private static boolean DEBUG = false;
-    private static boolean DEBUG_PAINT_DETAILED = false;
+    private static boolean DEBUG_PAINT_DETAILED = true;
     
     private String filename;
     
@@ -139,7 +139,7 @@ public class DecodeApp {
         BufferedImage prev0ImageRGB = slidingImages.getPrevImage()[0];
         ColorModel cm = prev0ImageRGB.getColorModel();
         
-        BufferedImage[] bufferImgs = new BufferedImage[8];
+        BufferedImage[] bufferImgs = new BufferedImage[14];
         for (int i = 0; i < bufferImgs.length; i++) { 
             bufferImgs[i] = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
         }
@@ -212,8 +212,14 @@ public class DecodeApp {
             BufferedImage maxG = bufferImgs[5];
             BufferedImage minB = bufferImgs[6];
             BufferedImage maxB = bufferImgs[7];
+            BufferedImage rangeImg = bufferImgs[8];
+            BufferedImage rangeR = bufferImgs[9];
+            BufferedImage rangeG = bufferImgs[10];
+            BufferedImage rangeB = bufferImgs[11];
             
-            colorAnalysis.debugDraw(minImg, maxImg, minR, maxR, minG, maxG, minB, maxB);
+            colorAnalysis.debugDrawMinMax(minImg, maxImg, 
+                    minR, maxR, minG, maxG, minB, maxB,
+                    rangeImg, rangeR, rangeG, rangeB);
             
             deltaAnalysisPanel.asyncSetImages(minImg, maxImg, minR, maxR);
             Thread.sleep(1000);
@@ -226,6 +232,11 @@ public class DecodeApp {
                 LOG.info("display max (total,R,G,B) images");
                 deltaAnalysisPanel.asyncSetImages(maxImg, maxR, maxG, maxB);
                 Thread.sleep(1000);
+
+                LOG.info("display range (total,R,G,B) images");
+                deltaAnalysisPanel.asyncSetImages(rangeImg, rangeR, rangeG, rangeB);
+                Thread.sleep(1000);
+
             }
         }
         
