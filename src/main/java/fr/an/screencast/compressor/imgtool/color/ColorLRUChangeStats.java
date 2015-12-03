@@ -1,10 +1,17 @@
 package fr.an.screencast.compressor.imgtool.color;
 
+import java.io.Serializable;
+
 /**
- * store the last N Most-Recently-Used colors, and increment counter for each changes 
+ * store the last N Last-Recently-Used colors, and increment counter for each changes
+ * 
+ * see other implementation for MRU:Most-Recently-Used (!= Last) 
  *
  */
-public class ColorLRUChangeStats {
+public class ColorLRUChangeStats implements Serializable {
+
+    /** */
+    private static final long serialVersionUID = 1L;
 
     private int countChange;
     

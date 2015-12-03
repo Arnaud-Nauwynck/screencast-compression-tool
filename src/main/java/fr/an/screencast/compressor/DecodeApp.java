@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgstream.SlidingImageArray;
-import fr.an.screencast.compressor.imgstream.SubSamplingVideoInputStream;
 import fr.an.screencast.compressor.imgstream.VideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.cap.CapVideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.humbleio.HumbleioVideoInputStream;
@@ -60,12 +59,14 @@ public class DecodeApp {
     private ProgessPrinter progressPrinter = new ProgessPrinter(System.out, 50, 1000); // print '.' every 50 frames,  "[frameIndex]" every 1000
 
     private int processFrameFreq = 1;  // 10;
-    private int skipFrameCount = 2;
+    private int skipFrameCount = 0;
     private int skipAfterFrameIndex = Integer.MAX_VALUE; // 500;
 
     private boolean debugDrawFirstDiffPtMarker = false;
     
     private ColorBarLookupTable colorBarLookupTable = ColorBarLookupTable.getDefault();
+    
+    private Dim dim; // read from videoInput
     
     // ------------------------------------------------------------------------
 
@@ -132,21 +133,23 @@ public class DecodeApp {
     private void processVideo() throws Exception {
         long sleepFrameMillis = 200;
         
-        VideoInputStream videoInput = initVideo();
-
+        {
+            VideoInputStream videoInput = initVideo();
+            this.dim = videoInput.getDim();
+            
+            videoInput.close();
+        }
+        
         if (! filename.endsWith(".cap")) {
             sleepFrameMillis *= subSamplingRate;
         }
         
-        final Dim dim = videoInput.getDim();
         
         SlidingImageArray slidingImages = new SlidingImageArray(prevSlidingLen, dim, BufferedImage.TYPE_INT_RGB);
         
         DeltaImageAnalysisResult deltaImages = new DeltaImageAnalysisResult(dim, BufferedImage.TYPE_INT_RGB); 
         BufferedImage diffImageRGB = deltaImages.getDiffImage();
         BufferedImage deltaImageRGB = deltaImages.getDeltaImage();
-
-        BufferedImage prevImageRGB = slidingImages.getPrevImage()[1]; // ref will change..
         
         BufferedImage[] bufferImgs = new BufferedImage[14];
         for (int i = 0; i < bufferImgs.length; i++) { 
@@ -158,9 +161,6 @@ public class DecodeApp {
 
         LOG.info("decoding video : " + dim + " - display progress every " 
                 + progressPrinter.getDisplayProgressFrequency() + " frames " + " = " + (progressPrinter.getDisplayProgressFrequency()/frameRate) + " s");
-        
-        int frameIndex = 0;
-        
 
         JFrame appFrame = new JFrame();
         DeltaImageAnalysisPanel deltaAnalysisPanel = new DeltaImageAnalysisPanel();
@@ -169,71 +169,42 @@ public class DecodeApp {
         appFrame.setVisible(true);
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        if (skipFrameCount > 0) {
-            LOG.info("SKIP " + skipFrameCount + " Frames");
-            while(skipFrameCount > 0 && videoInput.readNextImage()) {
-                skipFrameCount--;
-                BufferedImage imageRGB = videoInput.getImage();
-                frameIndex++;
-                slidingImages.slide(imageRGB);
-            }
-        }
 
         LOG.info("SCAN 1/2 ... ColorMapAnalysis");
-        progressPrinter.reset();
-        ColorMapAnalysis colorAnalysis = null;
-        File cacheColorAnalysisFile = new File(cacheDir, filename + "-colormap.ser");
-        if (useCache && cacheColorAnalysisFile.exists() && cacheColorAnalysisFile.canRead()) {
-            LOG.info("reading color analysis from cache file: " + cacheColorAnalysisFile);
-            colorAnalysis = FileSerialisationUtils.readFromFile(cacheColorAnalysisFile);
-        } 
-        if (colorAnalysis == null) {
-            colorAnalysis = new ColorMapAnalysis(dim, colorLRUSize);
-            while(videoInput.readNextImage()) {
-                BufferedImage imageRGB = videoInput.getImage();
-                frameIndex++;
-                if (frameIndex % processFrameFreq != 0) {
-                    continue; // heuristic optim: SKIP frames...
-                }
-                
-                colorAnalysis.processImage(imageRGB);
-                
-                progressPrinter.next();
-                
-                if (frameIndex >= skipAfterFrameIndex) {
-                    // TODO slow ... heuristic optim: skip remaining 
-                    break;
-                }
-            }
-            videoInput.close();
-            videoInput = initVideo();
-            
-            if (useCache) {
-                LOG.info("writing color analysis to cache file: " + cacheColorAnalysisFile);
-                FileSerialisationUtils.writeToFile(colorAnalysis, cacheColorAnalysisFile);
-            }
-            
-            colorAnalysis.dump();
-    
-            debugDrawColorAnalysis(deltaAnalysisPanel, colorAnalysis, bufferImgs);
-        }
-        
+        doColorAnalysis(bufferImgs, deltaAnalysisPanel);
         
         LOG.info("SCAN 2/2 ... DeltaAnalysis");
+        doDeltaAnalysis(sleepFrameMillis, slidingImages, diffImageRGB, deltaImageRGB, deltaAnalysisPanel);
+
+    }
+
+    private void doDeltaAnalysis(long sleepFrameMillis, SlidingImageArray slidingImages, BufferedImage diffImageRGB, BufferedImage deltaImageRGB,
+            DeltaImageAnalysisPanel deltaAnalysisPanel) throws InterruptedException {
+        BufferedImage prevImageRGB;
         progressPrinter.reset();
         DeltaImageAnalysis delta = null;
-        File cacheDeltaAnalysisFile = new File(cacheDir, filename + "-delta.ser");
+        File cacheDeltaAnalysisFile = new File(cacheDir, new File(filename).getName() + "-delta.ser");
         if (useCache && cacheDeltaAnalysisFile.exists() && cacheDeltaAnalysisFile.canRead()) {
             LOG.info("reading color analysis from cache file: " + cacheDeltaAnalysisFile);
             delta = FileSerialisationUtils.readFromFile(cacheDeltaAnalysisFile);
         } 
         if (delta == null) {
             delta = new DeltaImageAnalysis(dim, null, null);
-            
-            frameIndex = 0;
+
+            VideoInputStream videoInput = initVideo();
+            int frameIndex = 0;
+            if (skipFrameCount > 0) {
+                LOG.info("SKIP " + skipFrameCount + " Frames");
+                while(frameIndex < skipFrameCount && videoInput.readNextImage()) {
+                    BufferedImage imageRGB = videoInput.getImage();
+                    frameIndex++;
+                    slidingImages.slide(imageRGB);
+                }
+            }
             while(videoInput.readNextImage()) {
                 BufferedImage imageRGB = videoInput.getImage(); // read 3 images ... sub-sampling using median
                 frameIndex++;
+                progressPrinter.next();
                 
                 slidingImages.slide(imageRGB);
                 
@@ -243,15 +214,12 @@ public class DecodeApp {
                 prevImageRGB = slidingImages.getPrevImage()[1];
                 // prevImageRGBDataInts = slidingImages.getPrevImageDataInts()[1];
                 
-                // TODO ...
-                System.out.println("[" + frameIndex + "]");
-            
                 delta.setData(ImageRasterUtils.toInts(prevImageRGB), ImageRasterUtils.toInts(imageRGB));
                 
                 // *** compute diffs ***
                 delta.computeDiff();
                 
-                debugDrawDeltaAnalysis(deltaAnalysisPanel, delta, dim, diffImageRGB, deltaImageRGB, prevImageRGB, imageRGB);
+                debugDrawDeltaAnalysis(deltaAnalysisPanel, delta, diffImageRGB, deltaImageRGB, prevImageRGB, imageRGB);
     
                 boolean debugRedo = false;
                 if (debugRedo) {
@@ -261,7 +229,6 @@ public class DecodeApp {
                 
                 Thread.sleep(sleepFrameMillis);
                 
-                progressPrinter.next();
             }
             videoInput.close();
             videoInput = initVideo();
@@ -271,13 +238,62 @@ public class DecodeApp {
                 FileSerialisationUtils.writeToFile(delta, cacheDeltaAnalysisFile);
             }
         }
+    }
 
-        
-        videoInput.close();
+    private void doColorAnalysis(BufferedImage[] bufferImgs, 
+            DeltaImageAnalysisPanel deltaAnalysisPanel) throws InterruptedException {
+        progressPrinter.reset();
+        ColorMapAnalysis colorAnalysis = null;
+        File cacheColorAnalysisFile = new File(cacheDir, new File(filename).getName() + "-colormap.ser");
+        if (useCache && cacheColorAnalysisFile.exists() && cacheColorAnalysisFile.canRead()) {
+            LOG.info("reading color analysis from cache file: " + cacheColorAnalysisFile);
+            colorAnalysis = FileSerialisationUtils.readFromFile(cacheColorAnalysisFile);
+        } 
+        if (colorAnalysis == null) {
+            colorAnalysis = new ColorMapAnalysis(dim, colorLRUSize);
+            
+            VideoInputStream videoInput = initVideo();
+            int frameIndex = 0;
+            if (skipFrameCount > 0) {
+                LOG.info("SKIP " + skipFrameCount + " Frames");
+                while(frameIndex < skipFrameCount && videoInput.readNextImage()) {
+                    // BufferedImage imageRGB = videoInput.getImage();
+                    frameIndex++;
+                }
+            }
+            while(videoInput.readNextImage()) {
+                BufferedImage imageRGB = videoInput.getImage();
+                frameIndex++;
+                if (frameIndex % processFrameFreq != 0) {
+                    continue; // heuristic optim: SKIP frames...
+                }
+                progressPrinter.next();
+
+                colorAnalysis.processImage(imageRGB);
+                                
+                if (frameIndex >= skipAfterFrameIndex) {
+                    // TODO slow ... heuristic optim: skip remaining 
+                    break;
+                }
+            }
+            videoInput.close();
+            
+            if (useCache) {
+                LOG.info("writing color analysis to cache file: " + cacheColorAnalysisFile);
+                try {
+                    FileSerialisationUtils.writeToFile(colorAnalysis, cacheColorAnalysisFile);
+                } catch(Exception ex) {
+                    LOG.error("Failed to write to cache file: " + cacheColorAnalysisFile, ex);
+                }
+            }
+            
+            colorAnalysis.dump();
+    
+        }
+        debugDrawColorAnalysis(deltaAnalysisPanel, colorAnalysis, bufferImgs);
     }
 
     private void debugDrawDeltaAnalysis(DeltaImageAnalysisPanel deltaAnalysisPanel, DeltaImageAnalysis delta, 
-            final Dim dim,
             BufferedImage diffImageRGB, BufferedImage deltaImageRGB, BufferedImage prevImageRGB, BufferedImage imageRGB) {
 
         { 
@@ -372,7 +388,8 @@ public class DecodeApp {
         deltaAnalysisPanel.asyncSetImages(prevImageRGB, imageRGB, diffImageRGB, deltaImageRGB);
     }
 
-    private void debugDrawColorAnalysis(DeltaImageAnalysisPanel deltaAnalysisPanel, ColorMapAnalysis colorAnalysis, BufferedImage[] bufferImgs)
+    private void debugDrawColorAnalysis(DeltaImageAnalysisPanel deltaAnalysisPanel, ColorMapAnalysis colorAnalysis, 
+            BufferedImage[] bufferImgs)
             throws InterruptedException {
         {
             LOG.info("display min-max images");
@@ -415,7 +432,7 @@ public class DecodeApp {
         }
             
         {
-            LOG.info("display ColorMap Size per Pixel (using " + colorLRUSize + " LRU Color while scan)");
+            LOG.info("display ColorMap Size per Pixel (using " + colorLRUSize + " LRU Colors while scanning)");
             BufferedImage countLRUColorImg = bufferImgs[0];
             BufferedImage countLRUColorLowImg = bufferImgs[1];
             BufferedImage countLRUColorMidImg = bufferImgs[2];
