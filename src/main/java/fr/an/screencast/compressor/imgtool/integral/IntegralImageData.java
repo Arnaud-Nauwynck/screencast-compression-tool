@@ -6,6 +6,9 @@ import fr.an.screencast.compressor.utils.Dim;
 
 public class IntegralImageData extends ImageData {
 
+    /** */
+    private static final long serialVersionUID = 1L;
+
     // ------------------------------------------------------------------------
     
     public IntegralImageData(Dim dim, int[] data) {

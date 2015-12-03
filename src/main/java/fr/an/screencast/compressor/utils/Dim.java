@@ -1,9 +1,13 @@
 package fr.an.screencast.compressor.utils;
 
 import java.awt.Point;
+import java.io.Serializable;
 
-public final class Dim {
+public final class Dim implements Serializable {
 
+    /** */
+    private static final long serialVersionUID = 1L;
+    
     public final int width;
     public final int height;
     

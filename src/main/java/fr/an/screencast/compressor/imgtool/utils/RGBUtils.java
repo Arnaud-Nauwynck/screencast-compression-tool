@@ -11,9 +11,12 @@ public final class RGBUtils {
                 ((g & 0xFF) << 8)  |
                 ((b & 0xFF) << 0);
     }
-    
+
+    public static int rgb2Int(int r, int g, int b) {
+        return rgb2Int(r, g, b, 255);
+    }
     public static int greyRgb2Int(int grey) {
-        return rgb2Int(grey,  grey,  grey, 0);
+        return rgb2Int(grey,  grey,  grey, 255);
     }
     
     public static int rgb2Int256(int r, int g, int b, int a) {
@@ -26,4 +29,25 @@ public final class RGBUtils {
         else return 255;
     }
 
+    
+    public static int redOf(int value) {
+        return (value >>> 16) & 0xFF;
+    }
+    
+    public static int greenOf(int value) {
+        return (value >>> 8) & 0xFF;
+    }
+    
+    public static int blueOf(int value) {
+        return value & 0xFF;
+    }
+
+    public static int alphaOf(int value) {
+        return (value >>> 24) & 0xFF;
+    }
+
+    public static String toString(int rgb) {
+        return redOf(rgb) + ";" + greenOf(rgb) + ";" + blueOf(rgb)
+            + ((alphaOf(rgb) != 255)? ";" + alphaOf(rgb) : "");  
+    }
 }

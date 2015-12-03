@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,19 +15,26 @@ import fr.an.screencast.compressor.imgtool.utils.HSVColor;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.BasicStats;
+import fr.an.screencast.compressor.utils.ColorBarLookupTable;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.LocationStats;
 
-public class ColorMapAnalysis {
+public class ColorMapAnalysis implements Serializable {
     
+    /** */
+    private static final long serialVersionUID = 1L;
+
+
     private static final Logger LOG = LoggerFactory.getLogger(ColorMapAnalysis.class);
     
-    private final Dim dim;
     
     static final int C_LOW = 13;
     static final int C_HIGH = 242;
     
     private static final boolean USE_GLOBAL_COLOR_STATS = false;
+
+    private final Dim dim;
+    
     private ColorChannelStats globalColorChannelStats = new ColorChannelStats();
     
 //    // color are restricted to a region?
@@ -38,7 +46,7 @@ public class ColorMapAnalysis {
     ColorLRUChangeStats[] locationToColorLRUChangeStats;
     
     private int frameIndex;
-    private HSVColor hsvColor = new HSVColor();
+    private transient HSVColor hsvColor = new HSVColor();
     
     // ------------------------------------------------------------------------
     
@@ -115,13 +123,13 @@ public class ColorMapAnalysis {
         out.println("colorChannelStats: ");
         if (USE_GLOBAL_COLOR_STATS) {
             out.print("RED: ");
-            globalColorChannelStats.redStats.dump(out);
+            globalColorChannelStats.getRedStats().dump(out);
             out.println();
             out.print("GREEN: ");
-            globalColorChannelStats.greenStats.dump(out);
+            globalColorChannelStats.getGreenStats().dump(out);
             out.println();
             out.print("BLUE: ");
-            globalColorChannelStats.blueStats.dump(out);
+            globalColorChannelStats.getBlueStats().dump(out);
             out.println();
         }
         
@@ -178,7 +186,8 @@ public class ColorMapAnalysis {
         out.println("found " + countSpecial + " / " + (height/20*width/20) + " special pts (sub-sampling x20) with special min-max color channel restriction");
     }
 
-    public void debugDrawMinMax(BufferedImage minRGBImg, BufferedImage maxRGBImg, 
+    public void debugDrawMinMax(ColorBarLookupTable colorBarLookupTable,
+            BufferedImage minRGBImg, BufferedImage maxRGBImg, 
             BufferedImage minRImg, BufferedImage maxRImg,
             BufferedImage minGImg, BufferedImage maxGImg,
             BufferedImage minBImg, BufferedImage maxBImg,
@@ -217,9 +226,9 @@ public class ColorMapAnalysis {
         for(int y=0, idx=0; y < height; y++) {
             for (int x = 0; x < width; x++,idx++) {
                 ColorChannelStats ptColorStats = locationToColorStats[idx];
-                BasicStats r = ptColorStats.redStats;
-                BasicStats g = ptColorStats.greenStats;
-                BasicStats b = ptColorStats.blueStats;
+                BasicStats r = ptColorStats.getRedStats();
+                BasicStats g = ptColorStats.getGreenStats();
+                BasicStats b = ptColorStats.getBlueStats();
                 
                 // assemble minRGB = min(r),min(g),min(b)
                 // assemble maxRGB = min(r),min(g),min(b)
@@ -235,15 +244,16 @@ public class ColorMapAnalysis {
                 minBInts[idx] = RGBUtils.rgb2Int(0, 0, bMin, 0);
                 maxBInts[idx] = RGBUtils.rgb2Int(0, 0, bMax, 0);
 
-                rangeInts[idx] = RGBUtils.greyRgb2Int(((rMax - rMin) + (gMax - gMin) + (bMax - bMin)) / 3);
-                rangeRInts[idx] = RGBUtils.rgb2Int(rMax - rMin, 0, 0, 0);
-                rangeGInts[idx] = RGBUtils.rgb2Int(0, gMax - gMin, 0, 0);
-                rangeBInts[idx] = RGBUtils.rgb2Int(0, 0, bMax - bMin, 0);
+                rangeInts[idx] = colorBarLookupTable.interpolateRGB(((rMax - rMin) + (gMax - gMin) + (bMax - bMin)) / 3, 0, RGBUtils.CMAX_255);
+                rangeRInts[idx] = colorBarLookupTable.interpolateRGB(rMax - rMin, 0, RGBUtils.CMAX_255);
+                rangeGInts[idx] = colorBarLookupTable.interpolateRGB(gMax - gMin, 0, RGBUtils.CMAX_255);
+                rangeBInts[idx] = colorBarLookupTable.interpolateRGB(bMax - bMin, 0, RGBUtils.CMAX_255);
             }
         }
     }
 
-    public void debugDrawLRUColorCounts(BufferedImage countChangeImg, 
+    public void debugDrawLRUColorCounts(ColorBarLookupTable colorBarLookupTable, 
+            BufferedImage countChangeImg, 
             BufferedImage countChangeLowImg,
             BufferedImage countChangeMidImg,
             BufferedImage countChangeHighImg 
@@ -262,36 +272,34 @@ public class ColorMapAnalysis {
             }
         }
         LOG.info("max LRU Change:" + maxChange);
-        int thresholdLow = maxChange/10; // <10%
-        int thresholdHigh = maxChange - maxChange/10; // >90%
-        LOG.info("thresholds for LRU Change: low 10%:" + thresholdLow + " - high 90%: " + thresholdHigh);
+        int tail = 10;
+        int thresholdLow = maxChange*tail/100;
+        int thresholdHigh = maxChange*2*tail/100; // maxChange - maxChange*tail/100;
+        LOG.info("thresholds for LRU Change: low " + tail + "%:" + thresholdLow 
+            + " - high " + (100-tail) + "%: " + thresholdHigh);
         
         for(int y=0, idx=0; y < height; y++) {
             for (int x = 0; x < width; x++,idx++) {
                 ColorLRUChangeStats lruChange = locationToColorLRUChangeStats[idx];
                 int change = lruChange.getCountChange();
-                int change255 = (int) ((long)maxChange * 255 / maxChange);
-                countChangeInts[idx] = RGBUtils.greyRgb2Int(change255);
+
+                countChangeInts[idx] = colorBarLookupTable.interpolateRGB(change, 0, maxChange);
                 
                 int changeLowRGB = 0;
                 if (change < thresholdLow) {
-                    int grey = RGBUtils.toByte256(55 + 200 * change / thresholdLow); 
-                    changeLowRGB = RGBUtils.greyRgb2Int(grey);
+                    changeLowRGB = colorBarLookupTable.interpolateRGB(change, 0, thresholdLow);
                 }
                 countChangeLowInts[idx] = changeLowRGB;
 
                 int changeMidRGB = 0;
                 if (thresholdLow <= change && change <= thresholdHigh) {
-                    // toByte256();
-                    int grey = 255 * (change - thresholdLow) / (thresholdHigh - thresholdLow); 
-                    changeMidRGB = RGBUtils.greyRgb2Int(grey);
+                    changeMidRGB = colorBarLookupTable.interpolateRGB(change, thresholdLow, thresholdHigh);
                 }
                 countChangeMidInts[idx] = changeMidRGB;
 
                 int changeHighRGB = 0;
                 if (change > thresholdHigh) {
-                    int grey =  RGBUtils.toByte256(55 + 200 * (change - thresholdHigh) / thresholdHigh);
-                    changeHighRGB = RGBUtils.greyRgb2Int(grey);
+                    changeHighRGB = colorBarLookupTable.interpolateRGB(change, thresholdHigh, maxChange);
                 }
                 countChangeHighInts[idx] = changeHighRGB;
             }

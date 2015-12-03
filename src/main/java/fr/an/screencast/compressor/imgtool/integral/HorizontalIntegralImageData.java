@@ -14,6 +14,9 @@ import fr.an.screencast.compressor.utils.Rect;
  */
 public class HorizontalIntegralImageData extends ImageData {
 
+    /** */
+    private static final long serialVersionUID = 1L;
+
     // ------------------------------------------------------------------------
     
     public HorizontalIntegralImageData(Dim dim, int[] data) {

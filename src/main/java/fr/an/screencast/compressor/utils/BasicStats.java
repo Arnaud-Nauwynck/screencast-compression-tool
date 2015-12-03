@@ -1,8 +1,13 @@
 package fr.an.screencast.compressor.utils;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 
-public final class BasicStats {
+public final class BasicStats implements Serializable {
+    
+    /** */
+    private static final long serialVersionUID = 1L;
+    
     private int min;
     private int max;
     

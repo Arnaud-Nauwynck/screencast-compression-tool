@@ -1,6 +1,11 @@
 package fr.an.screencast.compressor.utils;
 
-public final class Pt {
+import java.io.Serializable;
+
+public final class Pt implements Serializable {
+
+    /** */
+    private static final long serialVersionUID = 1L;
 
     public int x;
     public int y;

@@ -1,12 +1,12 @@
 package fr.an.screencast.compressor.imgtool.delta;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.integral.HorizontalIntegralImageData;
 import fr.an.screencast.compressor.imgtool.integral.VerticalIntegralImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
-import fr.an.screencast.compressor.imgtool.utils.ImageDataAssert;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.utils.Dim;
@@ -14,8 +14,13 @@ import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.QuadDirection;
 import fr.an.screencast.compressor.utils.Rect;
 
-public class DeltaImageAnalysis {
+public class DeltaImageAnalysis implements Serializable {
 
+    /** */
+    private static final long serialVersionUID = 1L;
+
+    private static final boolean DEBUG_CHECK = false;
+    
     private int filterSize = 5;
     private int dilateRect2X = 5;
     private int dilateRectY = 10;
@@ -30,7 +35,6 @@ public class DeltaImageAnalysis {
     private HorizontalIntegralImageData diffHorizontalIntegralImageData;
     private VerticalIntegralImageData diffVerticalIntegralImageData;
 
-    private static final boolean DEBUG_CHECK = false;
     private HorizontalIntegralImageData checkDiffHorizontalIntegralImageData;
     private VerticalIntegralImageData checkDiffVerticalIntegralImageData;
     private HorizontalIntegralImageData checkBeforeDiffHorizontalIntegralImageData;

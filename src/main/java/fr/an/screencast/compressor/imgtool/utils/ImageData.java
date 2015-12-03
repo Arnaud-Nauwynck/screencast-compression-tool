@@ -1,12 +1,15 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
-import org.junit.Assert;
+import java.io.Serializable;
 
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
 
-public class ImageData {
+public class ImageData implements Serializable {
 
+    /** */
+    private static final long serialVersionUID = 1L;
+    
     protected final Dim dim;
     protected int[] data;
     
