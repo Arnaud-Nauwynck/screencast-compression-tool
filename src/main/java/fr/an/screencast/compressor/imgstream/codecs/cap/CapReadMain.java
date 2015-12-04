@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.ProgessPrinter;
 
 public class CapReadMain {
     
@@ -58,24 +59,14 @@ public class CapReadMain {
             
             Dim dim = capVideoInputStream.getDim();
             int frameRate = 5;
-            int displayProgressEvery = 10 * frameRate; // 10s
-            LOG.info("decoding video : " + dim + " - display progress every " + displayProgressEvery + " frames = " + (displayProgressEvery/frameRate) + " s");
-            int displayFrameCountEvery = 1000;
+            ProgessPrinter progress = new ProgessPrinter(System.out, frameRate, 50, 1000);
+            LOG.info("decoding video : " + dim + " - " + progress.toStringFrequencyInfo());
             
-            int frameCount = 0;
             while(capVideoInputStream.readNextImage()) {
                 BufferedImage frameImage = capVideoInputStream.getImage();
-                frameCount++;
+                if (frameImage == null) continue;
                 
-                if (DEBUG) {
-                    System.out.println("[" + frameCount + "]");
-                }
-                if (frameCount % displayProgressEvery == 0) {
-                    System.out.print(".");
-                }
-                if (frameCount % displayFrameCountEvery == 0) {
-                    System.out.print("\n[" + frameCount + "] ");
-                }
+                progress.next();
             }
         }
     }

@@ -14,22 +14,23 @@ import javax.swing.JFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.screencast.compressor.dtos.delta.DeltaImageAnalysisResult;
+import fr.an.screencast.compressor.dtos.delta.FrameDelta;
+import fr.an.screencast.compressor.dtos.delta.FrameRectDelta;
 import fr.an.screencast.compressor.imgstream.SlidingImageArray;
 import fr.an.screencast.compressor.imgstream.VideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.cap.CapVideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.humbleio.HumbleioVideoInputStream;
 import fr.an.screencast.compressor.imgtool.color.ColorMapAnalysis;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysis;
-import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
-import fr.an.screencast.compressor.imgtool.utils.ImageData;
-import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
+import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
+import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.ui.DeltaImageAnalysisPanel;
 import fr.an.screencast.compressor.utils.ColorBarLookupTable;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.FileSerialisationUtils;
 import fr.an.screencast.compressor.utils.ProgessPrinter;
-import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 
 public class DecodeApp {
@@ -55,8 +56,8 @@ public class DecodeApp {
      */
     private int colorLRUSize = 10;
     
-
-    private ProgessPrinter progressPrinter = new ProgessPrinter(System.out, 50, 1000); // print '.' every 50 frames,  "[frameIndex]" every 1000
+    private int frameRate = 5;
+    private ProgessPrinter progressPrinter = new ProgessPrinter(System.out, frameRate, 50, 1000); // print '.' every 50 frames,  "[frameIndex]" every 1000
 
     private int processFrameFreq = 1;  // 10;
     private int skipFrameCount = 0;
@@ -68,6 +69,8 @@ public class DecodeApp {
     
     private Dim dim; // read from videoInput
     
+    private long sleepFrameMillis = 0; // 200;
+
     // ------------------------------------------------------------------------
 
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -131,7 +134,6 @@ public class DecodeApp {
     }
     
     private void processVideo() throws Exception {
-        long sleepFrameMillis = 200;
         
         {
             VideoInputStream videoInput = initVideo();
@@ -141,26 +143,21 @@ public class DecodeApp {
         }
         
         if (! filename.endsWith(".cap")) {
-            sleepFrameMillis *= subSamplingRate;
+            // sleepFrameMillis *= subSamplingRate;
         }
         
         
         SlidingImageArray slidingImages = new SlidingImageArray(prevSlidingLen, dim, BufferedImage.TYPE_INT_RGB);
-        
-        DeltaImageAnalysisResult deltaImages = new DeltaImageAnalysisResult(dim, BufferedImage.TYPE_INT_RGB); 
-        BufferedImage diffImageRGB = deltaImages.getDiffImage();
-        BufferedImage deltaImageRGB = deltaImages.getDeltaImage();
-        
+                
         BufferedImage[] bufferImgs = new BufferedImage[14];
         for (int i = 0; i < bufferImgs.length; i++) { 
             bufferImgs[i] = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
         }
-        
-        
-        int frameRate = 5;
+        BufferedImage diffImageRGB = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage deltaImageRGB = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
 
-        LOG.info("decoding video : " + dim + " - display progress every " 
-                + progressPrinter.getDisplayProgressFrequency() + " frames " + " = " + (progressPrinter.getDisplayProgressFrequency()/frameRate) + " s");
+        
+        LOG.info("decoding video : " + dim + " - " + progressPrinter.toStringFrequencyInfo());
 
         JFrame appFrame = new JFrame();
         DeltaImageAnalysisPanel deltaAnalysisPanel = new DeltaImageAnalysisPanel();
@@ -170,26 +167,27 @@ public class DecodeApp {
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
-        LOG.info("SCAN 1/2 ... ColorMapAnalysis");
-        doColorAnalysis(bufferImgs, deltaAnalysisPanel);
+//        LOG.info("SCAN ... ColorMapAnalysis");
+//        doColorAnalysis(bufferImgs, deltaAnalysisPanel);
         
-        LOG.info("SCAN 2/2 ... DeltaAnalysis");
-        doDeltaAnalysis(sleepFrameMillis, slidingImages, diffImageRGB, deltaImageRGB, deltaAnalysisPanel);
+        LOG.info("SCAN ... DeltaAnalysis");
+        doDeltaAnalysis(slidingImages, diffImageRGB, deltaImageRGB, deltaAnalysisPanel);
 
     }
 
-    private void doDeltaAnalysis(long sleepFrameMillis, SlidingImageArray slidingImages, BufferedImage diffImageRGB, BufferedImage deltaImageRGB,
+    private void doDeltaAnalysis(SlidingImageArray slidingImages, BufferedImage diffImageRGB, BufferedImage deltaImageRGB,
             DeltaImageAnalysisPanel deltaAnalysisPanel) throws InterruptedException {
         BufferedImage prevImageRGB;
         progressPrinter.reset();
-        DeltaImageAnalysis delta = null;
+        DeltaImageAnalysisResult deltaResult = null;
         File cacheDeltaAnalysisFile = new File(cacheDir, new File(filename).getName() + "-delta.ser");
         if (useCache && cacheDeltaAnalysisFile.exists() && cacheDeltaAnalysisFile.canRead()) {
             LOG.info("reading color analysis from cache file: " + cacheDeltaAnalysisFile);
-            delta = FileSerialisationUtils.readFromFile(cacheDeltaAnalysisFile);
+            deltaResult = FileSerialisationUtils.readFromFile(cacheDeltaAnalysisFile);
         } 
-        if (delta == null) {
-            delta = new DeltaImageAnalysis(dim, null, null);
+        if (deltaResult == null) {
+            deltaResult = new DeltaImageAnalysisResult();
+            DeltaImageAnalysis delta = new DeltaImageAnalysis(dim, deltaResult);
 
             VideoInputStream videoInput = initVideo();
             int frameIndex = 0;
@@ -214,18 +212,12 @@ public class DecodeApp {
                 prevImageRGB = slidingImages.getPrevImage()[1];
                 // prevImageRGBDataInts = slidingImages.getPrevImageDataInts()[1];
                 
-                delta.setData(ImageRasterUtils.toInts(prevImageRGB), ImageRasterUtils.toInts(imageRGB));
+                RasterImageFunction binaryDiff = RasterImageFunctions.binaryDiff(dim, imageRGB, prevImageRGB);
                 
                 // *** compute diffs ***
-                delta.computeDiff();
+                FrameDelta deltaFrame = delta.computeDiff(frameIndex, binaryDiff);
                 
-                debugDrawDeltaAnalysis(deltaAnalysisPanel, delta, diffImageRGB, deltaImageRGB, prevImageRGB, imageRGB);
-    
-                boolean debugRedo = false;
-                if (debugRedo) {
-                    delta.computeDiff();
-                }
-                
+                debugDrawDeltaAnalysis(deltaAnalysisPanel, deltaFrame, diffImageRGB, deltaImageRGB, prevImageRGB, imageRGB);
                 
                 Thread.sleep(sleepFrameMillis);
                 
@@ -235,7 +227,7 @@ public class DecodeApp {
             
             if (useCache) {
                 LOG.info("writing delta analysis to cache file: " + cacheDeltaAnalysisFile);
-                FileSerialisationUtils.writeToFile(delta, cacheDeltaAnalysisFile);
+                // FileSerialisationUtils.writeToFile(deltaResult, cacheDeltaAnalysisFile);
             }
         }
     }
@@ -263,11 +255,11 @@ public class DecodeApp {
             }
             while(videoInput.readNextImage()) {
                 BufferedImage imageRGB = videoInput.getImage();
+                progressPrinter.next();
                 frameIndex++;
                 if (frameIndex % processFrameFreq != 0) {
-                    continue; // heuristic optim: SKIP frames...
+                    continue; // skip frame
                 }
-                progressPrinter.next();
 
                 colorAnalysis.processImage(imageRGB);
                                 
@@ -293,7 +285,8 @@ public class DecodeApp {
         debugDrawColorAnalysis(deltaAnalysisPanel, colorAnalysis, bufferImgs);
     }
 
-    private void debugDrawDeltaAnalysis(DeltaImageAnalysisPanel deltaAnalysisPanel, DeltaImageAnalysis delta, 
+    private void debugDrawDeltaAnalysis(DeltaImageAnalysisPanel deltaAnalysisPanel, 
+            FrameDelta deltaFrame, 
             BufferedImage diffImageRGB, BufferedImage deltaImageRGB, BufferedImage prevImageRGB, BufferedImage imageRGB) {
 
         { 
@@ -323,62 +316,20 @@ public class DecodeApp {
         deltaGc.fillRect(0,  0, dim.width, dim.height);
 
         
-        
-        Pt firstDiffPt = delta.getFirstDiffPt(); 
-                // delta.getRawFirstDiffPtx();
-        if (firstDiffPt.x != -1) {
+        if (deltaFrame != null) {
+            List<FrameRectDelta> frameRectDeltas = deltaFrame.getDeltas();
+            // LOG.info("found diff rects:" + frameRectDeltas.size());
             
-            // show integral diff
-            boolean showDiffCountIntegralImage = true; 
-            if (showDiffCountIntegralImage) {
-                ImageData diffCountIntegralImageData = 
-                        // delta.getDiffCountIntegralImageData();
-                        // delta.getDiffCountHorizontalIntegralImageData();
-                        delta.getDiffVerticalIntegralImageData();
-                int[] integral = diffCountIntegralImageData.getData();
-                int[] horIntegral = delta.getDiffHorizontalIntegralImageData().getData();
-                int[] vertIntegral = delta.getDiffVerticalIntegralImageData().getData();
-                for(int y = 0, idx_xy=0; y < dim.height; y++) {
-                    for (int x = 0; x < dim.width; x++,idx_xy++) {
-                        int count = // integral[idx_xy];
-                            horIntegral[idx_xy] + vertIntegral[idx_xy];
-                        int countClam = (count != 0)? 50+count : 0; 
-                        deltaImageRGB.setRGB(x, y, RGBUtils.rgb2Int256(countClam, countClam, countClam, 0));
-                    }                            
-                }
-            }
+            deltaGc.setColor(Color.RED);
+            int thick = 2;
+            deltaGc.setStroke(new BasicStroke(thick));
             
-            
-            List<Rect> diffRects = delta.getDiffRects();
-            if (! diffRects.isEmpty()) {
-   //                Rectangle diffRect = delta.getDiffRect();
-   //                System.out.println("  diff rect: " + diffRect);
-   //                
-   //                deltaGc.setColor(Color.GRAY);
-   //                // deltaGc.fillRect(diffRect.x, diffRect.y, diffRect.width, diffRect.height);
-   //                deltaGc.drawRect(diffRect.x-1, diffRect.y-1, diffRect.width+1, diffRect.height+1);
+            for(FrameRectDelta rectDelta : frameRectDeltas) {
+                // draw enlarge thick pixel
+                Rect r = rectDelta.getRect();
+                deltaGc.drawRect(r.fromX-thick, r.fromY-thick, r.getWidth()+2*thick, r.getHeight()+2*thick);
                 
-                deltaGc.setColor(Color.RED);
-                int thick = 2;
-                deltaGc.setStroke(new BasicStroke(thick));
-                for(Rect r : diffRects) {
-                    // draw enlarge thick pixel
-                    deltaGc.drawRect(r.fromX-thick, r.fromY-thick, r.getWidth()+2*thick, r.getHeight()+2*thick);
-                }
-            }
-            
-
-            if (debugDrawFirstDiffPtMarker) {
-                deltaGc.setColor(Color.ORANGE);
-                int markerLineLen = 100;
-   //                deltaGc.drawLine(firstDiffPtx-1, firstDiffPty-1-markerLineLen, firstDiffPtx-1, firstDiffPty-1);
-   //                deltaGc.drawLine(firstDiffPtx-1-markerLineLen, firstDiffPty-1, firstDiffPtx-1, firstDiffPty-1);
-                deltaGc.setStroke(new BasicStroke(3));
-                deltaGc.drawLine(firstDiffPt.x-markerLineLen, firstDiffPt.y-markerLineLen, firstDiffPt.x, firstDiffPt.y);
-                if (firstDiffPt.x < 10 || firstDiffPt.y < 10) {
-                    int markerLen = 20;
-                    deltaGc.fillRect(firstDiffPt.x-markerLen, firstDiffPt.y-markerLen, 2*markerLen, 2*markerLen);
-                }
+                // TODO paint within rect
             }
         }
         

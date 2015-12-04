@@ -49,8 +49,8 @@ public class VerticalIntegralImageData extends ImageData {
     public void updateComputeClearRect(Rect rect) {
         final int width = dim.width, height = dim.height;
         final int[] data = this.data;
-        for(int x = rect.fromX, idx_xy = rect.fromX; x <= rect.toX; x++) {
-            int diffColSum = - integralVerticalLine(x, rect.fromY, rect.toY);
+        for(int x = rect.fromX, idx_xy = rect.fromX; x < rect.toX; x++) {
+            int diffColSum = - integralVerticalLine(x, rect.fromY, rect.toY-1);
             if (diffColSum != 0) {
                 idx_xy = index(x,rect.fromY);
                 int intFromY = rect.fromY > 0? data[idx_xy-width] : 0;

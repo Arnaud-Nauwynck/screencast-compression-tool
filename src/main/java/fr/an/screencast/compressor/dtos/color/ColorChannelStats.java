@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.imgtool.color;
+package fr.an.screencast.compressor.dtos.color;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -11,6 +11,9 @@ public class ColorChannelStats implements Serializable {
     /** */
     private static final long serialVersionUID = 1L;
     
+    private static final int thresholdWhiteColor = 13;
+    private static final int thresholdBlackColor = 242;
+
     private final BasicStats redStats = new BasicStats();
     private final BasicStats greenStats = new BasicStats();
     private final BasicStats blueStats = new BasicStats();
@@ -24,7 +27,7 @@ public class ColorChannelStats implements Serializable {
 
     // ------------------------------------------------------------------------
 
-    public ColorChannelStats() {
+    public ColorChannelStats() { // int thresholdWhiteColor, int thresholdBlackColor
     }
 
     // ------------------------------------------------------------------------
@@ -32,9 +35,9 @@ public class ColorChannelStats implements Serializable {
     public void add(int r, int g, int b, int a, HSVColor rgb2hsvHelper) {
         int white = (r + g + b) / 3;
 
-        if (white > ColorMapAnalysis.C_HIGH) {
+        if (white > thresholdWhiteColor) {
             whiteCount++;
-        } else if (white < ColorMapAnalysis.C_LOW) {
+        } else if (white < thresholdBlackColor) {
             blackCount++;
         } else {
             // redNoWBStats.add(r);
@@ -59,9 +62,9 @@ public class ColorChannelStats implements Serializable {
         // if (blackCount > 0) {
         // out.print(" b# " + blackCount);
         // }
-        redStats.optDumpSpecial(out, " R", ColorMapAnalysis.C_LOW + 1, ColorMapAnalysis.C_HIGH - 1);
-        greenStats.optDumpSpecial(out, " G", ColorMapAnalysis.C_LOW + 1, ColorMapAnalysis.C_HIGH - 1);
-        blueStats.optDumpSpecial(out, " B", ColorMapAnalysis.C_LOW + 1, ColorMapAnalysis.C_HIGH - 1);
+        redStats.optDumpSpecial(out, " R", thresholdWhiteColor + 1, thresholdBlackColor - 1);
+        greenStats.optDumpSpecial(out, " G", thresholdWhiteColor + 1, thresholdBlackColor - 1);
+        blueStats.optDumpSpecial(out, " B", thresholdWhiteColor + 1, thresholdBlackColor - 1);
     }
 
     public boolean isSpecial() {
@@ -71,9 +74,9 @@ public class ColorChannelStats implements Serializable {
         // if (blackCount > 0) {
         // return true;
         // }
-        if (redStats.isSpecial(ColorMapAnalysis.C_LOW, ColorMapAnalysis.C_HIGH)
-            || greenStats.isSpecial(ColorMapAnalysis.C_LOW, ColorMapAnalysis.C_HIGH)
-            || blueStats.isSpecial(ColorMapAnalysis.C_LOW, ColorMapAnalysis.C_HIGH)) {
+        if (redStats.isSpecial(thresholdWhiteColor, thresholdBlackColor)
+            || greenStats.isSpecial(thresholdWhiteColor, thresholdBlackColor)
+            || blueStats.isSpecial(thresholdWhiteColor, thresholdBlackColor)) {
             return true;
         }
         return false;

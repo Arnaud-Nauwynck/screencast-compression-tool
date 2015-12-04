@@ -1,7 +1,6 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
-import fr.an.screencast.compressor.utils.Dim;
-
+// .. not an interface! @FunctionalInterface
 public abstract class RasterImageFunction {
 
     // private final Dim dim;

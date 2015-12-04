@@ -1,5 +1,7 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
+import java.awt.image.BufferedImage;
+
 import fr.an.screencast.compressor.utils.Dim;
 
 /**
@@ -44,4 +46,13 @@ public final class RasterImageFunctions {
             }
         };
     }
+
+    public static RasterImageFunction binaryDiff(Dim dim, ImageData  compareData1, ImageData compareData2) {
+        return binaryDiff(dim, compareData1.getData(), compareData2.getData());
+    }
+    
+    public static RasterImageFunction binaryDiff(Dim dim, BufferedImage compareData1, BufferedImage compareData2) {
+        return binaryDiff(dim, ImageRasterUtils.toInts(compareData1), ImageRasterUtils.toInts(compareData2));
+    }
+    
 }

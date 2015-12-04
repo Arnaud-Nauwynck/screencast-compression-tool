@@ -1,7 +1,9 @@
-package fr.an.screencast.compressor.imgtool.color;
+package fr.an.screencast.compressor.dtos.color;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import fr.an.screencast.compressor.dtos.color.ColorLRUChangeStats;
 
 public class ColorLRUChangeStatsTest {
 

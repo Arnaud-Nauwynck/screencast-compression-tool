@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.imgtool.color;
+package fr.an.screencast.compressor.dtos.color;
 
 import java.io.Serializable;
 

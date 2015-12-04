@@ -14,7 +14,7 @@ public class ImageDataTest {
         Dim dim = new Dim(4, 3);
         ImageData sut = new ImageData(dim);
         // Perform
-        sut.setFillRect(new Rect(new Pt(0, 0), new Pt(dim.width-1, dim.height-1)),  1);
+        sut.setFillRect(Rect.newPtDim(new Pt(0, 0), dim),  1);
         // Post-check
         ImageDataAssert.assertEquals(new int[] {
             1, 1, 1, 1, //
@@ -22,7 +22,7 @@ public class ImageDataTest {
             1, 1, 1, 1
         }, sut);
         // Perform
-        sut.setFillRect(new Rect(new Pt(1, 1), new Pt(2, 2)),  2);
+        sut.setFillRect(Rect.newPtToPt(new Pt(1, 1), new Pt(3, 3)),  2);
         ImageDataAssert.assertEquals(new int[] {
             1, 1, 1, 1, //
             1, 2, 2, 1, //

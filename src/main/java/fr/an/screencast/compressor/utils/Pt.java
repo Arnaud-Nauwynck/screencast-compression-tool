@@ -38,6 +38,28 @@ public final class Pt implements Serializable {
         this.y = y;
     }
 
+    public void set(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public void set(Pt pt) {
+        this.x = pt.x;
+        this.y = pt.y;
+    }
+
+    public boolean setNextHorizontalScan(Dim dim) {
+        x++;
+        if (x >= dim.width) {
+            x = 0;
+            y++;
+            if (y >= dim.height) {
+                return false; // finished .. reached end of image
+            }
+        }
+        return true;
+    }
+
     // ------------------------------------------------------------------------
 
     @Override

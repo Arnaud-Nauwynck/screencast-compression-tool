@@ -5,19 +5,19 @@ import java.awt.image.ColorModel;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.screencast.compressor.dtos.color.ColorChannelStats;
+import fr.an.screencast.compressor.dtos.color.ColorLRUChangeStats;
+import fr.an.screencast.compressor.dtos.color.ColorMapAnalysisResult;
 import fr.an.screencast.compressor.imgtool.utils.HSVColor;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.BasicStats;
 import fr.an.screencast.compressor.utils.ColorBarLookupTable;
 import fr.an.screencast.compressor.utils.Dim;
-import fr.an.screencast.compressor.utils.LocationStats;
 
 public class ColorMapAnalysis implements Serializable {
     
@@ -27,23 +27,12 @@ public class ColorMapAnalysis implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ColorMapAnalysis.class);
     
-    
-    static final int C_LOW = 13;
-    static final int C_HIGH = 242;
-    
+       
     private static final boolean USE_GLOBAL_COLOR_STATS = false;
 
     private final Dim dim;
     
-    private ColorChannelStats globalColorChannelStats = new ColorChannelStats();
-    
-//    // color are restricted to a region?
-//    private Map<Integer,LocationStats> colorToLocationStats = new HashMap<>(10000001);
-
-    private ColorChannelStats[] locationToColorStats; 
-
-    // color map restriction per pixel/area? (using LRU of colors)
-    ColorLRUChangeStats[] locationToColorLRUChangeStats;
+    private ColorMapAnalysisResult result;
     
     private int frameIndex;
     private transient HSVColor hsvColor = new HSVColor();
@@ -53,16 +42,7 @@ public class ColorMapAnalysis implements Serializable {
     public ColorMapAnalysis(Dim dim, int colorLRUSize) {
         this.dim = dim;
         
-        int len = dim.width * dim.height;//TODO reduce x,y precision
-        locationToColorStats = new ColorChannelStats[len];
-        for (int i = 0; i < len; i++) {
-            locationToColorStats[i] = new ColorChannelStats();
-        }
-        locationToColorLRUChangeStats = new ColorLRUChangeStats[len];
-        for (int i = 0; i < len; i++) {
-            locationToColorLRUChangeStats[i] = new ColorLRUChangeStats(colorLRUSize);
-        }
-        
+        this.result = new ColorMapAnalysisResult(dim, USE_GLOBAL_COLOR_STATS, colorLRUSize);
     }
 
     // ------------------------------------------------------------------------
@@ -70,6 +50,10 @@ public class ColorMapAnalysis implements Serializable {
     public void processImage(BufferedImage imageRGB) {
         final int width = dim.width, height = dim.height;
         final int[] data = ImageRasterUtils.toInts(imageRGB);
+        
+        final ColorChannelStats globalColorChannelStats = result.getGlobalColorChannelStats();
+        final ColorChannelStats[] locationToColorStats = result.getLocationToColorStats();
+        final ColorLRUChangeStats[] locationToColorLRUChangeStats = result.getLocationToColorLRUChangeStats();
         
         final ColorModel cm = imageRGB.getColorModel();
         for(int y=0, idx=0; y < height; y++) {
@@ -112,79 +96,12 @@ public class ColorMapAnalysis implements Serializable {
     public void dump() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(1000); 
         PrintStream out = new PrintStream(buffer);
-        dump(out);
+        result.dump(out);
         out.close();
         
         LOG.info(buffer.toString());
     }
     
-    public void dump(PrintStream out) {
-        final int width = dim.width, height = dim.height;
-        out.println("colorChannelStats: ");
-        if (USE_GLOBAL_COLOR_STATS) {
-            out.print("RED: ");
-            globalColorChannelStats.getRedStats().dump(out);
-            out.println();
-            out.print("GREEN: ");
-            globalColorChannelStats.getGreenStats().dump(out);
-            out.println();
-            out.print("BLUE: ");
-            globalColorChannelStats.getBlueStats().dump(out);
-            out.println();
-        }
-        
-        
-        // locationToColorLRUChangeStats
-        out.println("locationToColorMRUChangeStats:");
-        int displayMaxCount = 500;
-        int[] histoSmallChangeCounts = new int[displayMaxCount+1];
-        int totalCountChanges = 0;
-        for(int y=0, idx=0; y < height; y++) {
-            for (int x = 0; x < width; x++,idx++) {
-                int countChange = locationToColorLRUChangeStats[idx].getCountChange();
-                totalCountChanges += countChange; 
-                if (countChange < displayMaxCount) {
-                    histoSmallChangeCounts[countChange]++;
-                } else {
-                    histoSmallChangeCounts[displayMaxCount]++;
-                }
-            }
-        }
-        out.println("display histogram for locationToColorLRUChangeStats, totalCountChanges:" + totalCountChanges);
-        for(int i = 0; i < displayMaxCount; i++) {
-            out.print(String.format("%4d", histoSmallChangeCounts[i]));
-            out.print(" ");
-        }
-        out.print(" ..remain: " + histoSmallChangeCounts[displayMaxCount]);
-        
-        
-        // dump special pt in locationToColorStats
-        int countSpecial = 0;
-        for(int y=0, idx=0; y < height; y+=20) {
-            int countRowSpecial = 0;
-            for (int x = 0; x < width; x+=20,idx+=20) {
-                ColorChannelStats ptColorStats = locationToColorStats[idx];
-                if (ptColorStats.isSpecial()) {
-                    out.print("[" + x + "," + y + "]:");
-                    ptColorStats.dumpSpecial(out);
-                    countRowSpecial++;
-                    
-                    if (countRowSpecial % 100 == 0) {
-                        out.println();
-                        out.print("       ");
-                    } else {
-                        out.print(" ");
-                    }
-                }
-            }
-            if (countRowSpecial != 0) {
-                out.println();
-                countSpecial += countRowSpecial;
-            }
-        }
-        out.println();
-        out.println("found " + countSpecial + " / " + (height/20*width/20) + " special pts (sub-sampling x20) with special min-max color channel restriction");
-    }
 
     public void debugDrawMinMax(ColorBarLookupTable colorBarLookupTable,
             BufferedImage minRGBImg, BufferedImage maxRGBImg, 
@@ -222,7 +139,8 @@ public class ColorMapAnalysis implements Serializable {
                 maxBInts[idx] = 0;
             }
         }
-        
+
+        final ColorChannelStats[] locationToColorStats = result.getLocationToColorStats();
         for(int y=0, idx=0; y < height; y++) {
             for (int x = 0; x < width; x++,idx++) {
                 ColorChannelStats ptColorStats = locationToColorStats[idx];
@@ -259,6 +177,8 @@ public class ColorMapAnalysis implements Serializable {
             BufferedImage countChangeHighImg 
             ) {
         final int width = dim.width, height = dim.height;
+        final ColorLRUChangeStats[] locationToColorLRUChangeStats = result.getLocationToColorLRUChangeStats();
+
         int[] countChangeInts = ImageRasterUtils.toInts(countChangeImg);
         int[] countChangeLowInts = ImageRasterUtils.toInts(countChangeLowImg);
         int[] countChangeMidInts = ImageRasterUtils.toInts(countChangeMidImg);

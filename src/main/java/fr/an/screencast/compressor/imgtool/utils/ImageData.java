@@ -59,9 +59,9 @@ public class ImageData implements Serializable {
     public void setFillRect(Rect rect, int value) {
         final int width = dim.width;
         final int[] data = this.data;
-        for(int y = rect.fromY,idx=index(rect.fromX,rect.fromY); y <= rect.toY; y++) {
+        for(int y = rect.fromY,idx=index(rect.fromX,rect.fromY); y < rect.toY; y++) {
             int idx_fromX = idx;
-            for (int x = rect.fromX; x <= rect.toX; x++,idx++) {
+            for (int x = rect.fromX; x < rect.toX; x++,idx++) {
                 data[idx] = value;
             }
             idx = idx_fromX + width;

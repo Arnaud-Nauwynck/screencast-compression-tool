@@ -8,9 +8,9 @@ public class Rect implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public int fromX;
-    public int toX; // inclusive
+    public int toX; // exclusive
     public int fromY; 
-    public int toY; // inclusive
+    public int toY; // exclusive
     
     // ------------------------------------------------------------------------
 
@@ -28,8 +28,20 @@ public class Rect implements Serializable {
         this.toY = toY;
     }
 
-    public Rect(Pt from, Pt to) {
-        this(from.x, from.y, to.x, to.y);
+    public static Rect newPtToPt(Pt from, Pt to) {
+        return new Rect(from.x, from.y, to.x, to.y);
+    }
+
+    public static Rect newXYToXY(int fromX, int fromY, int toX, int toY) {
+        return new Rect(fromX, fromY, toX, toY);
+    }
+
+    public static Rect newPtDim(Pt from, Dim dim) {
+        return new Rect(from.x, from.y, from.x + dim.width, from.y + dim.height);
+    }
+
+    public static Rect newPtDim(Pt from, int width, int height) {
+        return new Rect(from.x, from.y, from.x + width, from.y + height);
     }
 
     // ------------------------------------------------------------------------
@@ -48,11 +60,11 @@ public class Rect implements Serializable {
     }
 
     public int getWidth() {
-        return toX - fromX + 1;
+        return toX - fromX;
     }
 
     public int getHeight() {
-        return toY - fromY + 1;
+        return toY - fromY;
     }
 
     // ------------------------------------------------------------------------
@@ -91,5 +103,42 @@ public class Rect implements Serializable {
 
     // ------------------------------------------------------------------------
 
+    @Override
+    public String toString() {
+        return "Rect [(" + fromX + "," + toX + ") (" + fromY + "," + toY + ")]";
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + fromX;
+        result = prime * result + fromY;
+        result = prime * result + toX;
+        result = prime * result + toY;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Rect other = (Rect) obj;
+        if (fromX != other.fromX)
+            return false;
+        if (fromY != other.fromY)
+            return false;
+        if (toX != other.toX)
+            return false;
+        if (toY != other.toY)
+            return false;
+        return true;
+    }
+
+    
     
 }

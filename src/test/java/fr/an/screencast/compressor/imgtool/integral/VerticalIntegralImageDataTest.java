@@ -65,7 +65,7 @@ public class VerticalIntegralImageDataTest {
         VerticalIntegralImageData sut = new VerticalIntegralImageData(dim2);
         ImageData srcImg = new ImageData(dim2, src2BinData); 
         sut.setComputeFrom(srcImg);
-        Rect clearRect = new Rect(new Pt(3, 1), new Pt(5, 2));
+        Rect clearRect = Rect.newPtToPt(new Pt(3, 1), new Pt(6, 3));
         // Perform
         sut.updateComputeClearRect(clearRect);
         // Post-check

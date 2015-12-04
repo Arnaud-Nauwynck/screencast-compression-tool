@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.imgtool.delta;
+package fr.an.screencast.compressor.dtos.delta;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;

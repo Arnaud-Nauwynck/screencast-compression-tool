@@ -5,6 +5,7 @@ import java.io.PrintStream;
 public class ProgessPrinter {
 
     private PrintStream out;
+    private int frameRate;
     private int displayProgressFrequency;
     private int displayIndexNumberFrequency;
 
@@ -16,8 +17,9 @@ public class ProgessPrinter {
 
     // ------------------------------------------------------------------------
 
-    public ProgessPrinter(PrintStream out, int displayProgressFrequency, int displayIndexNumberFrequency) {
+    public ProgessPrinter(PrintStream out, int frameRate, int displayProgressFrequency, int displayIndexNumberFrequency) {
         this.out = out;
+        this.frameRate = frameRate;
         this.displayProgressFrequency = displayProgressFrequency;
         this.displayIndexNumberFrequency = displayIndexNumberFrequency;
     }
@@ -54,6 +56,10 @@ public class ProgessPrinter {
         return displayIndexNumberFrequency;
     }
 
+    public String toStringFrequencyInfo() {
+        return "display progress every " + displayProgressFrequency + " frames = " + (displayProgressFrequency/frameRate) + " s";
+    }
+    
     @Override
     public String toString() {
         return "ProgessPrinter [" + iterIndex + "]";

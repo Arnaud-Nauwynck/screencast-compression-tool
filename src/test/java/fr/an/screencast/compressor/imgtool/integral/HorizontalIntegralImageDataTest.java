@@ -95,7 +95,7 @@ public class HorizontalIntegralImageDataTest {
         };
         HorizontalIntegralImageData sut = new HorizontalIntegralImageData(dim2);
         for(int toX = 4; toX < dim2.width; toX++) {
-            Rect clearRect = new Rect(new Pt(3, 1), new Pt(toX, 2));
+            Rect clearRect = Rect.newPtToPt(new Pt(3, 1), new Pt(toX, 3));
             doTestUpdateComputeClearRect(dim2, src2BinData, sut, clearRect);
         }
     }
