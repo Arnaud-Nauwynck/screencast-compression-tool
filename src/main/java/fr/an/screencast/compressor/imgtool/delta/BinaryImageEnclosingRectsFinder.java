@@ -13,9 +13,11 @@ import fr.an.screencast.compressor.utils.Rect;
 
 public class BinaryImageEnclosingRectsFinder {
 
+    private static final boolean CHECK_IDX = true;
+    
     private int initialDilateRect = 10;
 
-    private int dilateRect = 5;
+    private int dilateRect = 10;
     
     private final Dim dim;
     
@@ -126,15 +128,20 @@ public class BinaryImageEnclosingRectsFinder {
             switch(dir) {
             case RIGHT:
                 if (rect.toX + 1 < width) {
+                    x = rect.toX + 1;
+                    y = rect.fromY;
+                    idx = y*width+x;
                     int minX = rect.toX + 1;
                     int maxX = Math.min(width, minX + 1 + dilateRect);
-                    for(y = rect.fromY, idx=y*width+minX; y < rect.toY; y++,idx=y*width+x) { // TODO optim idx+=?
+                    for(; y < rect.toY; y++,idx=y*width+x) { // TODO optim idx+=?
+                        idx += rect.toX + 1 - x;
                         x = rect.toX + 1;
-                        idx=y*width+x;
-                        ImageRasterUtils.checkIdx(idx, x, y, width);
+                        // idx=y*width+x; // TODO
+                        if (CHECK_IDX) ImageRasterUtils.checkIdx(idx, x, y, width);
                         for(x = rect.toX + 1; x < maxX; x++,idx++) {
                             if (remainDiffInts[idx] != 0) {
                                 x++;
+                                idx++;
                                 rect.toX = x;
                                 // optim: continue search right for same x,y
                                 if (rect.toX + 1 < width) {
@@ -158,15 +165,18 @@ public class BinaryImageEnclosingRectsFinder {
                 if (rect.fromX - 1 >= 0) {
                     int minX = Math.max(0, rect.fromX - 1 - dilateRect);
                     int maxX = rect.fromX;
-                    for(y = rect.fromY, idx=y*width+minX; y < rect.toY; y++,idx=y*width+x) { // TODO optim idx+=?
-                        x = minX;
-                        idx=y*width+x; // TODO
-                        ImageRasterUtils.checkIdx(idx, x, y, width);
-                        for(x = maxX; x >= minX; x--,idx--) {
+                    x = minX;
+                    y = rect.fromY;
+                    idx=y*width+x;
+                    for(; y < rect.toY; y++,idx+=width) {
+                        idx += maxX - x;
+                        x = maxX;
+                        // idx=y*width+x; // TODO
+                        if (CHECK_IDX) ImageRasterUtils.checkIdx(idx, x, y, width);
+                        for(; x >= minX; x--,idx--) {
                             if (remainDiffInts[idx] != 0) {
                                 // optim: continue search left for same x,y
-                                x--;
-                                rect.fromX = x; 
+                                rect.fromX = x-1; 
                                 if (rect.fromX - 1 >= 0) {
                                     minX = Math.max(0, rect.fromX - 1 - dilateRect);
                                     maxX = rect.fromX;
@@ -186,24 +196,23 @@ public class BinaryImageEnclosingRectsFinder {
                 break;
             case DOWN:
                 if (rect.toY + 1 < height) {
+                    x = rect.fromX;
                     y = rect.toY + 1;
                     int maxY = Math.min(height,  y + 1 + dilateRect);
-                    idx = y*width+rect.fromX;
-                    final int incIndexY = width - rect.toX + rect.fromX;
-                    loop_y: for(; y < maxY; y++,idx+=incIndexY) {
+                    idx = y*width+x;
+                    loop_y: for(; y < maxY; y++,idx+=width) {
+                        idx += rect.fromX - x;
                         x = rect.fromX;
-                        idx = y*width+x;
-                        // ImageRasterUtils.checkIdx(idx, x, y, width);
+                        if (CHECK_IDX) ImageRasterUtils.checkIdx(idx, x, y, width);
                         for(x = rect.fromX; x < rect.toX; x++,idx++) {
                             if (remainDiffInts[idx] != 0) {
-                                y++;
-                                idx += width;
-                                rect.toY = y;
+                                rect.toY = y + 1;
                                 // optim: continue search left for same x,y
                                 if (rect.toY + 1 < height) {
                                     maxY = Math.min(height,  y + 1 + dilateRect);
                                     lastDiffDown = 1;
-                                    idx = y*width+rect.fromX; //TODO optim?
+                                    y++;
+                                    idx += width;
                                     continue loop_y;
                                 } else {
                                     lastDiffDown = 1;
