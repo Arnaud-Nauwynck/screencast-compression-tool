@@ -22,7 +22,7 @@ import fr.an.screencast.compressor.imgstream.VideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.cap.CapVideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.humbleio.HumbleioVideoInputStream;
 import fr.an.screencast.compressor.imgtool.color.ColorMapAnalysis;
-import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysis;
+import fr.an.screencast.compressor.imgtool.delta.BinaryImageEnclosingRectsFinder;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
@@ -187,7 +187,7 @@ public class DecodeApp {
         } 
         if (deltaResult == null) {
             deltaResult = new DeltaImageAnalysisResult();
-            DeltaImageAnalysis delta = new DeltaImageAnalysis(dim, deltaResult);
+            BinaryImageEnclosingRectsFinder binaryImageRectsFinder = new BinaryImageEnclosingRectsFinder(dim);
 
             VideoInputStream videoInput = initVideo();
             int frameIndex = 0;
@@ -206,28 +206,30 @@ public class DecodeApp {
                 
                 slidingImages.slide(imageRGB);
                 
-    //            if (videoInput.getFrameIndex() < prevSlidingLen) {
-    //                continue;
-    //            }
                 prevImageRGB = slidingImages.getPrevImage()[1];
-                // prevImageRGBDataInts = slidingImages.getPrevImageDataInts()[1];
                 
                 RasterImageFunction binaryDiff = RasterImageFunctions.binaryDiff(dim, imageRGB, prevImageRGB);
                 
-                // *** compute diffs ***
-                FrameDelta deltaFrame = delta.computeDiff(frameIndex, binaryDiff);
+                // compute enclosing rectangles containing differences between image and previous image
+                List<Rect> rects = binaryImageRectsFinder.findEnclosingRects(binaryDiff);
+
+                if (! rects.isEmpty()) {
+                    FrameDelta frameDelta = new FrameDelta(frameIndex);
+                    frameDelta.addFrameRectDeltas(rects);
+                    
+                    deltaResult.addFrameDelta(frameDelta);
+                }
                 
-                debugDrawDeltaAnalysis(deltaAnalysisPanel, deltaFrame, diffImageRGB, deltaImageRGB, prevImageRGB, imageRGB);
+                debugDrawDeltaAnalysis(deltaAnalysisPanel, rects, diffImageRGB, deltaImageRGB, prevImageRGB, imageRGB);
                 
                 Thread.sleep(sleepFrameMillis);
-                
             }
             videoInput.close();
             videoInput = initVideo();
             
             if (useCache) {
                 LOG.info("writing delta analysis to cache file: " + cacheDeltaAnalysisFile);
-                // FileSerialisationUtils.writeToFile(deltaResult, cacheDeltaAnalysisFile);
+                FileSerialisationUtils.writeToFile(deltaResult, cacheDeltaAnalysisFile);
             }
         }
     }
@@ -286,7 +288,7 @@ public class DecodeApp {
     }
 
     private void debugDrawDeltaAnalysis(DeltaImageAnalysisPanel deltaAnalysisPanel, 
-            FrameDelta deltaFrame, 
+            List<Rect> rects, 
             BufferedImage diffImageRGB, BufferedImage deltaImageRGB, BufferedImage prevImageRGB, BufferedImage imageRGB) {
 
         { 
@@ -314,20 +316,17 @@ public class DecodeApp {
         Graphics2D deltaGc = deltaImageRGB.createGraphics();
         deltaGc.setColor(Color.BLACK);
         deltaGc.fillRect(0,  0, dim.width, dim.height);
-
         
-        if (deltaFrame != null) {
-            List<FrameRectDelta> frameRectDeltas = deltaFrame.getDeltas();
-            // LOG.info("found diff rects:" + frameRectDeltas.size());
-            
+        if (! rects.isEmpty()) {
+            // LOG.info("found diff rects:" + rects.size());
             deltaGc.setColor(Color.RED);
             int thick = 2;
             deltaGc.setStroke(new BasicStroke(thick));
+            int thick2 = thick*2;
             
-            for(FrameRectDelta rectDelta : frameRectDeltas) {
-                // draw enlarge thick pixel
-                Rect r = rectDelta.getRect();
-                deltaGc.drawRect(r.fromX-thick, r.fromY-thick, r.getWidth()+2*thick, r.getHeight()+2*thick);
+            for(Rect r : rects) {
+                // draw thick pixel (reduce rect for border)
+                deltaGc.drawRect(r.fromX+thick, r.fromY+thick, r.getWidth()-thick2, r.getHeight()-thick2);
                 
                 // TODO paint within rect
             }

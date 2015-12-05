@@ -1,43 +1,40 @@
 package fr.an.screencast.compressor.imgtool.delta;
 
-import fr.an.screencast.compressor.dtos.delta.DeltaImageAnalysisResult;
-import fr.an.screencast.compressor.dtos.delta.FrameDelta;
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
+import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.QuadDirection;
 import fr.an.screencast.compressor.utils.Rect;
 
-public class DeltaImageAnalysis {
+public class BinaryImageEnclosingRectsFinder {
 
-    private int minDilateRect2X = 8;
-    private int minDilateRectY = 16;
+    private int initialDilateRect = 10;
 
-    private int dilateRect2X = 4;
-    private int dilateRectY = 4;
+    private int dilateRect = 5;
     
     private final Dim dim;
     
     private ImageData remainDiffData;
 
-    private DeltaImageAnalysisResult deltaAnalysisResult;
-    
     private Pt firstDiffPt = new Pt();
     
     // ------------------------------------------------------------------------
     
-    public DeltaImageAnalysis(Dim dim, DeltaImageAnalysisResult deltaAnalysisResult) {
+    public BinaryImageEnclosingRectsFinder(Dim dim) {
         this.dim = dim;
-        this.deltaAnalysisResult = deltaAnalysisResult;
         this.remainDiffData = new ImageData(dim);
     }
 
     // ------------------------------------------------------------------------
     
-    public FrameDelta computeDiff(int frameIndex, RasterImageFunction binaryDiff) {
-        FrameDelta res = new FrameDelta(frameIndex);
-        remainDiffData.set(binaryDiff);
+    public List<Rect> findEnclosingRects(RasterImageFunction binaryFunction) {
+        List<Rect> res = new ArrayList<Rect>();
+        remainDiffData.set(binaryFunction);
 
         Pt findFromPt = new Pt(0, 0);
         Pt diffPt = new Pt();
@@ -55,16 +52,25 @@ public class DeltaImageAnalysis {
             // starting rect enclosing diff point 
             Rect rect = Rect.newPtDim(diffPt, 1, 1);
             // dilatation of rect to avoid small isolated pixel rects
-            rect.fromX = Math.max(0, rect.fromX - minDilateRect2X);
-            rect.toX = Math.min(dim.width, rect.toX + minDilateRect2X);
-            rect.toY = Math.min(dim.height, rect.toY + minDilateRectY);
+            rect.fromX = Math.max(0, rect.fromX - initialDilateRect);
+            rect.toX = Math.min(dim.width, rect.toX + initialDilateRect);
+            rect.toY = Math.min(dim.height, rect.toY + initialDilateRect*2);
     
             // try increase rectange on left,down,right until enclosed by non-diff area
             dilateRectUntilNoMoreDiff(rect);
             
+//            // erode rect and bound to [width,height]
+//            rect.fromX = Math.max(0, rect.fromX - dilateRect);
+//            rect.toX = Math.min(dim.width, rect.toX + dilateRect);
+//            rect.toY = Math.min(dim.height, rect.toY - initialDilateRect);
+            rect.fromX = Math.max(0, rect.fromX);
+            rect.toX = Math.min(dim.width, rect.toX);
+            rect.toY = Math.min(dim.height, rect.toY);
+            
+            
             remainDiffData.setFillRect(rect, 0);
 
-            res.addFrameRectDelta(rect);
+            res.add(rect);
             
             findFromPt.y = diffPt.y;
             findFromPt.x = rect.toX;
@@ -73,11 +79,6 @@ public class DeltaImageAnalysis {
             }
         }
         
-        if (res.getDeltas().isEmpty()) {
-            // System.out.println("NO Diff");
-            return null;
-        }
-        deltaAnalysisResult.addFrameDelta(res);
         return res;
     }
 
@@ -126,14 +127,24 @@ public class DeltaImageAnalysis {
             case RIGHT:
                 if (rect.toX + 1 < width) {
                     int minX = rect.toX + 1;
-                    final int maxX = Math.min(width, minX + 1 + dilateRect2X);
+                    int maxX = Math.min(width, minX + 1 + dilateRect);
                     for(y = rect.fromY, idx=y*width+minX; y < rect.toY; y++,idx=y*width+x) { // TODO optim idx+=?
+                        x = rect.toX + 1;
+                        idx=y*width+x;
+                        ImageRasterUtils.checkIdx(idx, x, y, width);
                         for(x = rect.toX + 1; x < maxX; x++,idx++) {
                             if (remainDiffInts[idx] != 0) {
-                                rect.toX = x+1; 
-                                // rect.toX += Math.min(width, x+dilateRect2X);
-                                lastDiffRight = 1;
-                                continue loop_dir;
+                                x++;
+                                rect.toX = x;
+                                // optim: continue search right for same x,y
+                                if (rect.toX + 1 < width) {
+                                    minX = rect.toX + 1;
+                                    maxX = Math.min(width, minX + 1 + dilateRect);
+                                    lastDiffRight = 1; // should restart from minX ..
+                                } else {
+                                    lastDiffRight = 1;
+                                    continue loop_dir;
+                                }
                             }
                         }
                     }
@@ -145,15 +156,25 @@ public class DeltaImageAnalysis {
                 break;
             case LEFT:
                 if (rect.fromX - 1 >= 0) {
-                    final int minX = Math.max(0, rect.fromX - 1 - dilateRect2X);
-                    final int maxX = rect.fromX;
+                    int minX = Math.max(0, rect.fromX - 1 - dilateRect);
+                    int maxX = rect.fromX;
                     for(y = rect.fromY, idx=y*width+minX; y < rect.toY; y++,idx=y*width+x) { // TODO optim idx+=?
-                        for(x = minX; x < maxX; x++,idx++) {
+                        x = minX;
+                        idx=y*width+x; // TODO
+                        ImageRasterUtils.checkIdx(idx, x, y, width);
+                        for(x = maxX; x >= minX; x--,idx--) {
                             if (remainDiffInts[idx] != 0) {
+                                // optim: continue search left for same x,y
+                                x--;
                                 rect.fromX = x; 
-                                // rect.toX += Math.max(0, x-dilateRect2X);
-                                lastDiffLeft = 1;
-                                continue loop_dir;
+                                if (rect.fromX - 1 >= 0) {
+                                    minX = Math.max(0, rect.fromX - 1 - dilateRect);
+                                    maxX = rect.fromX;
+                                    lastDiffRight = 1; // should restart from minX ..
+                                } else {
+                                    lastDiffLeft = 1;
+                                    continue loop_dir;
+                                }
                             }
                         }
                     }
@@ -166,22 +187,32 @@ public class DeltaImageAnalysis {
             case DOWN:
                 if (rect.toY + 1 < height) {
                     y = rect.toY + 1;
-                    final int maxY = Math.min(height,  y + 1 + dilateRectY);
+                    int maxY = Math.min(height,  y + 1 + dilateRect);
                     idx = y*width+rect.fromX;
                     final int incIndexY = width - rect.toX + rect.fromX;
-                    for(; y < maxY; y++,idx+=incIndexY) {
+                    loop_y: for(; y < maxY; y++,idx+=incIndexY) {
                         x = rect.fromX;
-                        if (idx != y*width+x) throw new IllegalStateException();
+                        idx = y*width+x;
+                        // ImageRasterUtils.checkIdx(idx, x, y, width);
                         for(x = rect.fromX; x < rect.toX; x++,idx++) {
                             if (remainDiffInts[idx] != 0) {
-                                rect.toY = y+1;
-                                // rect.toY += Math.min(height, y+dilateRectY);
-                                lastDiffDown = 1;
-                                continue loop_dir;
+                                y++;
+                                idx += width;
+                                rect.toY = y;
+                                // optim: continue search left for same x,y
+                                if (rect.toY + 1 < height) {
+                                    maxY = Math.min(height,  y + 1 + dilateRect);
+                                    lastDiffDown = 1;
+                                    idx = y*width+rect.fromX; //TODO optim?
+                                    continue loop_y;
+                                } else {
+                                    lastDiffDown = 1;
+                                    continue loop_dir;
+                                }
                             }
                         }
                     }
-                } 
+                }
                 lastDiffDown = 0;
                 if (lastDiffRight == 0 && lastDiffLeft == 0) {
                     return;
