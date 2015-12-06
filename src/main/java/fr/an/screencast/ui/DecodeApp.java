@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor;
+package fr.an.screencast.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -26,12 +26,12 @@ import fr.an.screencast.compressor.imgtool.delta.BinaryImageEnclosingRectsFinder
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
-import fr.an.screencast.compressor.ui.DeltaImageAnalysisPanel;
 import fr.an.screencast.compressor.utils.ColorBarLookupTable;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.FileSerialisationUtils;
 import fr.an.screencast.compressor.utils.ProgessPrinter;
 import fr.an.screencast.compressor.utils.Rect;
+import fr.an.screencast.ui.internal.DeltaImageAnalysisPanel;
 
 public class DecodeApp {
 
@@ -39,6 +39,7 @@ public class DecodeApp {
     
     private static boolean DEBUG = false;
     private static boolean DEBUG_PAINT_DETAILED = true;
+    private boolean debugDraw = true; // use false to benchmark compression performances
     
     private String filename;
     
@@ -220,9 +221,11 @@ public class DecodeApp {
                     deltaResult.addFrameDelta(frameDelta);
                 }
                 
-                debugDrawDeltaAnalysis(deltaAnalysisPanel, rects, diffImageRGB, deltaImageRGB, prevImageRGB, imageRGB);
-                
-                Thread.sleep(sleepFrameMillis);
+                if (debugDraw) {
+                    debugDrawDeltaAnalysis(deltaAnalysisPanel, rects, diffImageRGB, deltaImageRGB, prevImageRGB, imageRGB);
+                    
+                    Thread.sleep(sleepFrameMillis);
+                }
             }
             videoInput.close();
             videoInput = initVideo();

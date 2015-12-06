@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.ui;
+package fr.an.screencast.ui.internal;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;

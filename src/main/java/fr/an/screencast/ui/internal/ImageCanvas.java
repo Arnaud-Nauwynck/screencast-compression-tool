@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.ui;
+package fr.an.screencast.ui.internal;
 
 import java.awt.Graphics;
 import java.awt.Image;
