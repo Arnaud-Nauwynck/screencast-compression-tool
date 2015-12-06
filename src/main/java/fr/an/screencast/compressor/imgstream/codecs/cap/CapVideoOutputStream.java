@@ -46,6 +46,16 @@ public class CapVideoOutputStream implements VideoOutputStream {
         }
 
         this.frame = new FramePacket(dim.width * dim.height);
+        
+        try {
+            oStream.write((dim.width & 0x0000FF00) >>> 8);
+            oStream.write((dim.width & 0x000000FF));
+    
+            oStream.write((dim.height & 0x0000FF00) >>> 8);
+            oStream.write((dim.height & 0x000000FF));
+        } catch(IOException ex) {
+            throw new RuntimeException("Failed", ex);
+        }
     }
 
     @Override
