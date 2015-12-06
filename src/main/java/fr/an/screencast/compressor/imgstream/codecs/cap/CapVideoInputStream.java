@@ -85,8 +85,7 @@ public class CapVideoInputStream implements VideoInputStream {
 
     @Override
     public long getPresentationTimestamp() {
-        // TODO Auto-generated method stub
-        return 0;
+        return frameTime;
     }
 
     @Override

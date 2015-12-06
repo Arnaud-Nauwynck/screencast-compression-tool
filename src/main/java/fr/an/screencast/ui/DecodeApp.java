@@ -1,6 +1,7 @@
 package fr.an.screencast.ui;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -143,11 +144,6 @@ public class DecodeApp {
             videoInput.close();
         }
         
-        if (! filename.endsWith(".cap")) {
-            // sleepFrameMillis *= subSamplingRate;
-        }
-        
-        
         SlidingImageArray slidingImages = new SlidingImageArray(prevSlidingLen, dim, BufferedImage.TYPE_INT_RGB);
                 
         BufferedImage[] bufferImgs = new BufferedImage[14];
@@ -162,7 +158,7 @@ public class DecodeApp {
 
         JFrame appFrame = new JFrame();
         DeltaImageAnalysisPanel deltaAnalysisPanel = new DeltaImageAnalysisPanel();
-        appFrame.getContentPane().add(deltaAnalysisPanel.getJComponent());
+        appFrame.getContentPane().add(deltaAnalysisPanel.getJComponent(), BorderLayout.CENTER);
         appFrame.pack();
         appFrame.setVisible(true);
         appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
