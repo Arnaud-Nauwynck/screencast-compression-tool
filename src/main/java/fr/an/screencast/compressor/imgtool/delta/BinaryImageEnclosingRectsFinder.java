@@ -13,11 +13,11 @@ import fr.an.screencast.compressor.utils.Rect;
 
 public class BinaryImageEnclosingRectsFinder {
 
-    private static final boolean CHECK_IDX = true;
+    private static final boolean CHECK_IDX = true; // false;
     
-    private int initialDilateRect = 10;
+    private int initialDilateRect = 5; // 10;
 
-    private int dilateRect = 10;
+    private int dilateRect = 5; // 10;
     
     private final Dim dim;
     

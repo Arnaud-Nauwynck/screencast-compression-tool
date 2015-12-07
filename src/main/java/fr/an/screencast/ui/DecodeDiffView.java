@@ -44,14 +44,15 @@ public class DecodeDiffView {
     
     private static boolean DEBUG = false;
     private static boolean DEBUG_PAINT_DETAILED = true;
-    private boolean debugDraw = true; // use false to benchmark compression performances
+    private boolean debugDraw = 
+            true; 
+//            false; // use false to benchmark compression performances
     
     private String filename;
     
-    private boolean useCache = true;
+    private boolean useCache = false;
     private File cacheDir = new File("compute-cache");
     
-    private int subSamplingRate = 3;
     private int prevSlidingLen = 3; 
     
     /**
@@ -64,18 +65,10 @@ public class DecodeDiffView {
     
     private int frameRate = 5;
     private ProgessPrinter progressPrinter = new ProgessPrinter(System.out, frameRate, 50, 1000); // print '.' every 50 frames,  "[frameIndex]" every 1000
-
-    private int processFrameFreq = 1;  // 10;
-    private int skipFrameCount = 0;
-    private int skipAfterFrameIndex = Integer.MAX_VALUE; // 500;
-
-    private boolean debugDrawFirstDiffPtMarker = false;
     
     private ColorBarLookupTable colorBarLookupTable = ColorBarLookupTable.getDefault();
     
     private Dim dim; // read from videoInput
-    
-    private long sleepFrameMillis = 0; // 200;
 
     private VideoStreamPlayer videoStreamPlayer;
     
@@ -270,9 +263,11 @@ public class DecodeDiffView {
             
             videoStreamPlayer.addListener(innerDeltaImageAnalysisProcessor);
         }
-        
-        DeltaImageAnalysisViewerListener viewerListener = new DeltaImageAnalysisViewerListener(videoStreamPlayer, deltaResult); 
-        videoStreamPlayer.addListener(viewerListener);
+
+        if (debugDraw) {
+            DeltaImageAnalysisViewerListener viewerListener = new DeltaImageAnalysisViewerListener(videoStreamPlayer, deltaResult); 
+            videoStreamPlayer.addListener(viewerListener);
+        }
         
         videoStreamPlayer.init();
 
