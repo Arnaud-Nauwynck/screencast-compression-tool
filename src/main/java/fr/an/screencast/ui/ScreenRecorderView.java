@@ -2,8 +2,6 @@ package fr.an.screencast.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -18,7 +16,7 @@ import javax.swing.SwingUtilities;
 import fr.an.screencast.recorder.ScreenRecorder;
 import fr.an.screencast.recorder.ScreenRecorderListener;
 
-public class JRecorder implements ScreenRecorderListener, ActionListener {
+public class ScreenRecorderView implements ScreenRecorderListener {
 
     private ScreenRecorder screenRecorder = new ScreenRecorder(this);
 
@@ -36,7 +34,7 @@ public class JRecorder implements ScreenRecorderListener, ActionListener {
 
     public static void main(String[] args) {
         try {
-            JRecorder app = new JRecorder();
+            ScreenRecorderView app = new ScreenRecorderView();
             app.parseArgs(args);
             app.run();
 
@@ -51,7 +49,7 @@ public class JRecorder implements ScreenRecorderListener, ActionListener {
             if (args[0].equals("-white_cursor"))
                 screenRecorder.setUseWhiteCursor(true);
             else {
-                System.out.println("Usage: java -cp .. " + JRecorder.class.getName() + " [OPTION]...");
+                System.out.println("Usage: java -cp .. " + ScreenRecorderView.class.getName() + " [OPTION]...");
                 System.out.println("Start the screen recorder.");
                 System.out.println("Options:   ");
                 System.out.println("   -white_cursor   record with white cursor");
@@ -65,23 +63,24 @@ public class JRecorder implements ScreenRecorderListener, ActionListener {
             JFrame frame = new JFrame();
             frame.addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent e) {
-                    JRecorder.this.dispose();
+                    ScreenRecorderView.this.dispose();
                     frame.dispose();
                 }
             });
 
-            JRecorder jRecorder = new JRecorder();
-            frame.getContentPane().add(jRecorder.getJComponent());
+            ScreenRecorderView view = new ScreenRecorderView();
+            frame.getContentPane().add(view.getJComponent());
             frame.pack();
             frame.setVisible(true);
         });
     }
 
-    public JRecorder() {
+    public ScreenRecorderView() {
         panel = new JPanel();
+        
         control = new JButton("Start Recording");
         control.setActionCommand("start");
-        control.addActionListener(this);
+        control.addActionListener(e -> onActionStartStop());
         panel.add(control, BorderLayout.WEST);
 
         text = new JLabel("Ready to record");
@@ -117,24 +116,20 @@ public class JRecorder implements ScreenRecorderListener, ActionListener {
         }
     }
 
-    public void actionPerformed(ActionEvent ev) {
-        if (ev.getActionCommand().equals("start")) {
-            if (!screenRecorder.isRecording()) {
-                try {
-                    startRecording();
-                    control.setActionCommand("stop");
-                    control.setText("Stop Recording");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+    private void onActionStartStop() {
+        if (!screenRecorder.isRecording()) {
+            try {
+                startRecording();
+                control.setActionCommand("stop");
+                control.setText("Stop Recording");
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } else if (ev.getActionCommand().equals("stop")) {
-            if (screenRecorder.isRecording()) {
-                text.setText("Stopping");
-                screenRecorder.stopRecording();
-                this.outputFile = null;
-                // recordingStopped();
-            }
+        } else {
+            text.setText("Stopping");
+            screenRecorder.stopRecording();
+            this.outputFile = null;
+            // recordingStopped();
         }
     }
 

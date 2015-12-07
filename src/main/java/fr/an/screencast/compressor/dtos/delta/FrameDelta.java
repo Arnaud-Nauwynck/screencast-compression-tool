@@ -22,11 +22,15 @@ public class FrameDelta implements Serializable {
     }
     
     // ------------------------------------------------------------------------
-
+    
+    public int getFrameIndex() {
+        return frameIndex;
+    }
+    
     public void addFrameRectDelta(Rect rect) {
         deltas.add(new FrameRectDelta(this, rect));
     }
-    
+
     public void addFrameRectDeltas(Collection<Rect> rects) {
         for(Rect rect : rects) {
             addFrameRectDelta(rect);
