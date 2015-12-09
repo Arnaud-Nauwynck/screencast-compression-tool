@@ -2,9 +2,9 @@ package fr.an.screencast.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 
 import javax.swing.JFrame;
@@ -102,7 +102,8 @@ public class PlayerView {
             imageCanvas.invalidate();
         }
 
-        public void showNewImage(Image image) {
+        @Override
+        public void showNewImage(BufferedImage image) {
             imageCanvas.setImage(image);
         }
 

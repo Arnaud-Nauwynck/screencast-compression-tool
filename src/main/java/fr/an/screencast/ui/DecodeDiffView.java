@@ -17,16 +17,15 @@ import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.an.screencast.compressor.dtos.delta.DeltaImageAnalysisResult;
-import fr.an.screencast.compressor.dtos.delta.FrameDelta;
-import fr.an.screencast.compressor.dtos.delta.FrameRectDelta;
-import fr.an.screencast.compressor.imgstream.SlidingImageArray;
 import fr.an.screencast.compressor.imgstream.VideoStreamFactory;
 import fr.an.screencast.compressor.imgtool.color.ColorMapAnalysis;
-import fr.an.screencast.compressor.imgtool.delta.BinaryImageEnclosingRectsFinder;
+import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisProcessor;
+import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
+import fr.an.screencast.compressor.imgtool.delta.FrameDelta;
+import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
+import fr.an.screencast.compressor.imgtool.delta.SlidingImageArray;
+import fr.an.screencast.compressor.imgtool.search.BinaryImageEnclosingRectsFinder;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
-import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
-import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.utils.ColorBarLookupTable;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.FileSerialisationUtils;
@@ -150,11 +149,10 @@ public class DecodeDiffView {
         VideoStreamPlayer videoStreamPlayer;
         File cacheDeltaAnalysisFile;
         DeltaImageAnalysisResult deltaResult;
-        
-        SlidingImageArray slidingImages;
-        BinaryImageEnclosingRectsFinder binaryImageRectsFinder;
+        DeltaImageAnalysisProcessor deltaImageAnalysisProcessor;
 
-        public DeltaImageAnalysisProcessorListener(VideoStreamPlayer videoStreamPlayer, File cacheDeltaAnalysisFile, DeltaImageAnalysisResult deltaResult) {
+        public DeltaImageAnalysisProcessorListener(VideoStreamPlayer videoStreamPlayer, File cacheDeltaAnalysisFile, 
+                DeltaImageAnalysisResult deltaResult) {
             this.videoStreamPlayer = videoStreamPlayer;
             this.cacheDeltaAnalysisFile = cacheDeltaAnalysisFile;
             this.deltaResult = deltaResult;
@@ -163,8 +161,7 @@ public class DecodeDiffView {
         @Override
         public void onInit(Dim dim) {
             DecodeDiffView.this.dim = dim;
-            slidingImages = new SlidingImageArray(prevSlidingLen, dim, BufferedImage.TYPE_INT_RGB);
-            binaryImageRectsFinder = new BinaryImageEnclosingRectsFinder(dim);
+            this.deltaImageAnalysisProcessor = new DeltaImageAnalysisProcessor(dim, prevSlidingLen, deltaResult);
                     
             progressPrinter.reset();
             LOG.info("decoding video : " + dim + " - " + progressPrinter.toStringFrequencyInfo());
@@ -181,22 +178,9 @@ public class DecodeDiffView {
         @Override
         public void showNewImage(BufferedImage imageRGB) {
             progressPrinter.next();
+            int frameIndex = videoStreamPlayer.getFrameCount();
             
-            slidingImages.slide(imageRGB);
-            
-            BufferedImage prevImageRGB = slidingImages.getPrevImage()[1];
-            
-            RasterImageFunction binaryDiff = RasterImageFunctions.binaryDiff(dim, imageRGB, prevImageRGB);
-            
-            // compute enclosing rectangles containing differences between image and previous image
-            List<Rect> rects = binaryImageRectsFinder.findEnclosingRects(binaryDiff);
-
-            if (! rects.isEmpty()) {
-                FrameDelta frameDelta = new FrameDelta(videoStreamPlayer.getFrameCount());
-                frameDelta.addFrameRectDeltas(rects);
-                
-                deltaResult.addFrameDelta(frameDelta);
-            }
+            deltaImageAnalysisProcessor.processImage(frameIndex, imageRGB);
         }
         
     }

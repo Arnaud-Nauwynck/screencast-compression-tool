@@ -9,9 +9,7 @@ import java.io.Serializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.an.screencast.compressor.dtos.color.ColorChannelStats;
-import fr.an.screencast.compressor.dtos.color.ColorLRUChangeStats;
-import fr.an.screencast.compressor.dtos.color.ColorMapAnalysisResult;
+import fr.an.screencast.compressor.imgtool.delta.IntValueLRUChangeHistory;
 import fr.an.screencast.compressor.imgtool.utils.HSVColor;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
@@ -53,7 +51,7 @@ public class ColorMapAnalysis implements Serializable {
         
         final ColorChannelStats globalColorChannelStats = result.getGlobalColorChannelStats();
         final ColorChannelStats[] locationToColorStats = result.getLocationToColorStats();
-        final ColorLRUChangeStats[] locationToColorLRUChangeStats = result.getLocationToColorLRUChangeStats();
+        final IntValueLRUChangeHistory[] locationToColorLRUChangeStats = result.getLocationToColorLRUChangeStats();
         
         final ColorModel cm = imageRGB.getColorModel();
         for(int y=0, idx=0; y < height; y++) {
@@ -72,7 +70,7 @@ public class ColorMapAnalysis implements Serializable {
                 
                 locationToColorStats[idx].add(red, green, blue, alpha, hsvColor);
 
-                locationToColorLRUChangeStats[idx].addRGB(rgb, frameIndex);
+                locationToColorLRUChangeStats[idx].addTimeValue(frameIndex, rgb);
                 
 //                // color bits reduction...
 //                int highRed = red >>> 4;
@@ -177,7 +175,7 @@ public class ColorMapAnalysis implements Serializable {
             BufferedImage countChangeHighImg 
             ) {
         final int width = dim.width, height = dim.height;
-        final ColorLRUChangeStats[] locationToColorLRUChangeStats = result.getLocationToColorLRUChangeStats();
+        final IntValueLRUChangeHistory[] locationToColorLRUChangeStats = result.getLocationToColorLRUChangeStats();
 
         int[] countChangeInts = ImageRasterUtils.toInts(countChangeImg);
         int[] countChangeLowInts = ImageRasterUtils.toInts(countChangeLowImg);
@@ -187,7 +185,7 @@ public class ColorMapAnalysis implements Serializable {
         int maxChange = 0;
         for(int y=0, idx=0; y < height; y++) {
             for (int x = 0; x < width; x++,idx++) {
-                ColorLRUChangeStats lruChange = locationToColorLRUChangeStats[idx];
+                IntValueLRUChangeHistory lruChange = locationToColorLRUChangeStats[idx];
                 maxChange = Math.max(maxChange, lruChange.getCountChange()); 
             }
         }
@@ -200,7 +198,7 @@ public class ColorMapAnalysis implements Serializable {
         
         for(int y=0, idx=0; y < height; y++) {
             for (int x = 0; x < width; x++,idx++) {
-                ColorLRUChangeStats lruChange = locationToColorLRUChangeStats[idx];
+                IntValueLRUChangeHistory lruChange = locationToColorLRUChangeStats[idx];
                 int change = lruChange.getCountChange();
 
                 countChangeInts[idx] = colorBarLookupTable.interpolateRGB(change, 0, maxChange);
