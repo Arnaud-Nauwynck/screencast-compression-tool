@@ -52,7 +52,8 @@ public class DecodeDiffView {
     private boolean useCache = false;
     private File cacheDir = new File("compute-cache");
     
-    private int prevSlidingLen = 3; 
+    private int prevSlidingLen = 3;
+    private int perPixelLRUHistory = 8;
     
     /**
      * example: compute on file live-coding.cap  
@@ -112,7 +113,7 @@ public class DecodeDiffView {
         }
         
         if (filename == null) {
-            File testInputFile = new File("src/test/data/live-coding.cap");
+            File testInputFile = new File("data/live-coding.cap");
             if (testInputFile.exists()) {
                 LOG.warn("missing arg '-i <<inputFile>>  ... using found test file '" + testInputFile + "'");
             } else {
@@ -161,7 +162,7 @@ public class DecodeDiffView {
         @Override
         public void onInit(Dim dim) {
             DecodeDiffView.this.dim = dim;
-            this.deltaImageAnalysisProcessor = new DeltaImageAnalysisProcessor(dim, prevSlidingLen, deltaResult);
+            this.deltaImageAnalysisProcessor = new DeltaImageAnalysisProcessor(deltaResult, dim, prevSlidingLen, perPixelLRUHistory);
                     
             progressPrinter.reset();
             LOG.info("decoding video : " + dim + " - " + progressPrinter.toStringFrequencyInfo());

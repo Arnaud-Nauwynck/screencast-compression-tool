@@ -1,7 +1,11 @@
 package fr.an.screencast.compressor.imgtool.delta;
 
+import java.awt.image.BufferedImage;
+
 import fr.an.screencast.compressor.imgtool.utils.FastModuloUtils;
+import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Rect;
 
 /**
  * data structure to keep N-th last changes of color per pixel
@@ -47,7 +51,11 @@ public final class IntImageLRUChangeHistory {
 
     // ------------------------------------------------------------------------
 
-    public void addImg(int frameIndex, int[] data) {
+    public void addTimeValues(int frameIndex, BufferedImage data) {
+        addTimeValues(frameIndex, ImageRasterUtils.toInts(data));
+    }
+    
+    public void addTimeValues(int frameIndex, int[] data) {
         final int height = dim.height, width = dim.width;
         for(int y = 0, idx=0; y < height; y++) {
             for(int x = 0; x < width; x++, idx++) {
@@ -55,9 +63,21 @@ public final class IntImageLRUChangeHistory {
             }
         }
     }
-    
+
+    public void addTimeValues(int frameIndex, int[] data, Rect rect) {
+        final int width = dim.width;
+        int incrIdxY = dim.width - rect.toX + rect.fromX;
+        for(int y = rect.fromY, idx=rect.fromY*width+rect.fromX; y < rect.toY; y++,idx+=incrIdxY) {
+            // idx=y*width+rect.fromX; //TODO OPTIM
+            ImageRasterUtils.checkIdx(idx, rect.fromX, y, width);
+            for(int x = rect.fromX; x < rect.toX; x++, idx++) {
+                addTimeValue(frameIndex, idx, data[idx]);
+            }
+        }
+    }
+
     /** helper for <code>addHist(frameIndex, idx, value)</code> */
-    public void addHist(int frameIndex, int x, int y, int value) {
+    public void addTimeValue(int frameIndex, int x, int y, int value) {
         int idx = y * dim.height + x;
         addTimeValue(frameIndex, idx, value);
     }

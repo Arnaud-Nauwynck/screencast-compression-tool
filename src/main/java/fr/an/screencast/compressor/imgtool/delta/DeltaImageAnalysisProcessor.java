@@ -17,14 +17,17 @@ public class DeltaImageAnalysisProcessor {
 
     private DeltaImageAnalysisResult deltaResult;
     
+    private IntImageLRUChangeHistory imageLRUChangeHistory;
+    
     // ------------------------------------------------------------------------
 
-    public DeltaImageAnalysisProcessor(Dim dim, int prevSlidingLen, DeltaImageAnalysisResult deltaResult) {
-        super();
+    public DeltaImageAnalysisProcessor(DeltaImageAnalysisResult deltaResult, Dim dim, 
+            int prevSlidingLen, int perPixelLRUHistory) {
+        this.deltaResult = deltaResult;
         this.dim = dim;
         this.slidingImages = new SlidingImageArray(prevSlidingLen, dim, BufferedImage.TYPE_INT_RGB);
         this.binaryImageRectsFinder = new BinaryImageEnclosingRectsFinder(dim);
-        this.deltaResult = deltaResult;
+        this.imageLRUChangeHistory = new IntImageLRUChangeHistory(dim, perPixelLRUHistory); 
     }
     
     // ------------------------------------------------------------------------
@@ -40,6 +43,27 @@ public class DeltaImageAnalysisProcessor {
         // compute enclosing rectangles containing differences between image and previous image
         List<Rect> rects = binaryImageRectsFinder.findEnclosingRects(binaryDiff);
 
+        // may restrict for rect / change only
+        imageLRUChangeHistory.addTimeValues(frameIndex, imageRGB);
+        
+        // TODO ... add more analysis in rect ...
+        // check if rect can be restored from "imageLRUChangeHistory", using per-pixel LRU change history
+        // (much larger history than using "slidingImages", using global image sliding history) 
+
+        // check if rect can be re-synthethised using primitive graphical operation:
+        // - fillRectangle()  (drawLine()=degenerated rectangle of thick 1 / border)
+        // - drawRectangle() with border and unchanged content
+        // - drawText()
+        
+        // check if rect can be painted using already seen glyph  (using connex component detection / database of known glyphs)
+        // - drawGlyph()
+        // ...
+        
+        // check if rect can be painted as a video inverse of previous frame
+        
+        // check if rect can be painted from a shift (scrolling) of previous frame
+        
+        
         if (! rects.isEmpty()) {
             FrameDelta frameDelta = new FrameDelta(frameIndex);
             frameDelta.addFrameRectDeltas(rects);
