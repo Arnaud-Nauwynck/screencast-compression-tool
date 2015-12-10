@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor.imgstream;
 
+import java.awt.image.BufferedImage;
 import java.io.Closeable;
 
 import fr.an.screencast.compressor.utils.Dim;
@@ -11,8 +12,6 @@ public interface VideoOutputStream extends Closeable {
     
     public Dim getDim();
     
-    public void addFrame(long presentationTimestamp, int[] img);
-    
-//    public void setFrameImage(BufferedImage img);
+    public void addFrame(int frameIndex, long frameTime, BufferedImage img);
     
 }

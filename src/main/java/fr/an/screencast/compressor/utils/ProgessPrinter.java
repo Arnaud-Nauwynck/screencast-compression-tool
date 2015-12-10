@@ -26,6 +26,10 @@ public class ProgessPrinter {
 
     // ------------------------------------------------------------------------
 
+    public void println() {
+        out.println();
+    }
+    
     public void reset() {
         iterIndex = 0;
         iterProgressModulo = 0;

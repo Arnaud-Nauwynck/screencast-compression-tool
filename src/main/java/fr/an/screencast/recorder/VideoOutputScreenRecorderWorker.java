@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import fr.an.screencast.compressor.imgstream.VideoOutputStream;
+import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
 
 public class VideoOutputScreenRecorderWorker {
@@ -20,12 +21,14 @@ public class VideoOutputScreenRecorderWorker {
     
 
     private class DataPack {
-        public DataPack(int[] newData, long frameTime) {
-            this.newData = newData;
+        public DataPack(BufferedImage img, int frameIndex, long frameTime) {
+            this.img = img;
+            this.frameIndex = frameIndex;
             this.frameTime = frameTime;
         }
+        public int frameIndex;
         public long frameTime;
-        public int[] newData;
+        public BufferedImage img;
     }
     private Queue<DataPack> videoOutputEncoderQueue = new LinkedList<DataPack>();
     
@@ -33,12 +36,12 @@ public class VideoOutputScreenRecorderWorker {
 
     
     private int frameSize;
-    private int[] rawData;
 
     private volatile boolean recording = false;
     private boolean running = false;
 
     private long startTime;
+    private int frameIndex = -1;
     private long frameTime;
     private boolean reset;
     
@@ -139,15 +142,17 @@ public class VideoOutputScreenRecorderWorker {
         BufferedImage bImage = screenSnaphostProvider.captureScreen(recordArea);
         Point mousePos = screenSnaphostProvider.captureMouseLocation();
         frameTime = System.currentTimeMillis() - startTime;
-
+        frameIndex++;
+        
         screenSnaphostProvider.paintMouseInScreenCapture(bImage, mousePos);
 
-        rawData = new int[frameSize];
-
-        bImage.getRGB(0, 0, recordArea.width, recordArea.height, rawData, 0, recordArea.width);
+        BufferedImage extractImage = new BufferedImage(recordArea.width, recordArea.height, bImage.getType()); // TODO.. may re-use allocated image pool
+        int[] extractImageData = ImageRasterUtils.toInts(extractImage);
+        
+        bImage.getRGB(0, 0, recordArea.width, recordArea.height, extractImageData, 0, recordArea.width);
         // long t3 = System.currentTimeMillis();
 
-        enqueuePacketToEncoder(new DataPack(rawData, frameTime));
+        enqueuePacketToEncoder(new DataPack(extractImage, frameIndex, frameTime));
 
         // System.out.println("Times");
         // System.out.println(" capture time:"+(t2-t1));
@@ -173,7 +178,7 @@ public class VideoOutputScreenRecorderWorker {
 
                 try {
                     // long t1 = System.currentTimeMillis();
-                    videoOutput.addFrame(pack.frameTime, pack.newData);
+                    videoOutput.addFrame(pack.frameIndex, pack.frameTime, pack.img);
                     // long t2 = System.currentTimeMillis();
                     // System.out.println(" pack time:"+(t2-t1));
 

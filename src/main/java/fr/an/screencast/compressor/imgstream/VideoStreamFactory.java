@@ -4,6 +4,8 @@ import java.io.File;
 
 import fr.an.screencast.compressor.imgstream.codecs.cap.CapVideoInputStream;
 import fr.an.screencast.compressor.imgstream.codecs.cap.CapVideoOutputStream;
+import fr.an.screencast.compressor.imgstream.codecs.humbleio.HumbleioVideoInputStream;
+import fr.an.screencast.compressor.imgstream.codecs.humbleio.HumbleioVideoOutputStream;
 
 public class VideoStreamFactory {
 
@@ -25,7 +27,7 @@ public class VideoStreamFactory {
         if (fileName.endsWith(".cap")) {
             res = new CapVideoOutputStream(outputFile);
         } else {
-            throw new UnsupportedOperationException();
+            res = new HumbleioVideoOutputStream(outputFile);
         }
         return res;
     }
@@ -37,7 +39,7 @@ public class VideoStreamFactory {
         if (fileName.endsWith(".cap")) {
             res = new CapVideoInputStream(inputFile);
         } else {
-            throw new UnsupportedOperationException();
+            res = new HumbleioVideoInputStream(inputFile);
         }
         return res;
     }

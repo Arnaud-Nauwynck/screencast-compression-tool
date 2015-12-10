@@ -3,6 +3,7 @@ package fr.an.screencast.compressor.imgstream.codecs.humbleio;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.File;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class HumbleioVideoInputStream implements VideoInputStream {
 
     private static final Logger LOG = LoggerFactory.getLogger(HumbleioVideoInputStream.class);
     
-    private String filename;
+    private File inputFile;
     
     private Demuxer demuxer;
     private Decoder videoDecoder;
@@ -45,8 +46,8 @@ public class HumbleioVideoInputStream implements VideoInputStream {
     
     // ------------------------------------------------------------------------
     
-    public HumbleioVideoInputStream(String filename) {
-        this.filename = filename;
+    public HumbleioVideoInputStream(File inputFile) {
+        this.inputFile = inputFile;
     }
 
     // ------------------------------------------------------------------------
@@ -54,7 +55,8 @@ public class HumbleioVideoInputStream implements VideoInputStream {
     public void init() {
         try {
             this.demuxer = Demuxer.make();
-            demuxer.open(filename, null, false, true, null, null);
+
+            demuxer.open(inputFile.getAbsolutePath(), null, false, true, null, null);
         
             int numStreams = demuxer.getNumStreams();
         
@@ -71,7 +73,7 @@ public class HumbleioVideoInputStream implements VideoInputStream {
                 }
             }
             if (videoStreamId == -1) {
-                throw new RuntimeException("could not find video stream in container: " + filename);
+                throw new RuntimeException("could not find video stream in video file: '" + inputFile + "'");
             }
             
             videoDecoder.open(null, null);
@@ -90,7 +92,7 @@ public class HumbleioVideoInputStream implements VideoInputStream {
                     
             packet = MediaPacket.make();
         } catch(Exception ex) {
-            throw new RuntimeException("Failed init HumbleioPacketReader " + filename, ex);
+            throw new RuntimeException("Failed init HumbleioPacketReader '" + inputFile + "'", ex);
         }
     }
     
@@ -175,8 +177,8 @@ public class HumbleioVideoInputStream implements VideoInputStream {
     // ------------------------------------------------------------------------
 
 
-    public String getFilename() {
-        return filename;
+    public File getInputFile() {
+        return inputFile;
     }
 
     public Demuxer getDemuxer() {

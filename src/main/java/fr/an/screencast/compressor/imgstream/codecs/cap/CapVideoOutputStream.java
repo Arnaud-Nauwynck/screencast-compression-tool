@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor.imgstream.codecs.cap;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.OutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import fr.an.screencast.compressor.imgstream.VideoOutputStream;
+import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
 
 public class CapVideoOutputStream implements VideoOutputStream {
@@ -63,8 +65,10 @@ public class CapVideoOutputStream implements VideoOutputStream {
         return dim;
     }
 
-    public void addFrame(long presentationTimestamp, int[] imgData) {
-        frame.nextFrame(imgData, presentationTimestamp, false);
+    public void addFrame(int frameIndex, long frameTime, BufferedImage img) {
+        int[] imgData = ImageRasterUtils.toInts(img);
+        
+        frame.nextFrame(imgData, frameIndex, false);
 
         byte[] packed = new byte[imgData.length * 4];
 
