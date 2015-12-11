@@ -3,6 +3,7 @@ package fr.an.screencast.compressor.imgtool.delta;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.an.screencast.compressor.imgtool.delta.IntImageLRUChangeHistory.FrameIndexPrevValue;
 import fr.an.screencast.compressor.utils.Dim;
 
 public class IntImageLRUChangeHistoryTest {
@@ -28,6 +29,7 @@ public class IntImageLRUChangeHistoryTest {
 
     private void doTestAddValue(Dim dim, int[] img) {
         IntImageLRUChangeHistory sut = new IntImageLRUChangeHistory(dim, 2);
+        FrameIndexPrevValue tmpchg = new FrameIndexPrevValue();
 
         for (int y = 0, idx=0; y < dim.height; y++) {
             for(int x = 0; x < dim.width; x++,idx++) {
@@ -40,36 +42,33 @@ public class IntImageLRUChangeHistoryTest {
                 sut.addTimeValue(frameIndex++, idx, value0);
                 expectedChgCount++;
                 Assert.assertEquals(expectedChgCount, sut.getCountChange(idx));
-                Assert.assertEquals(1, sut.getNthPrevFrameIndex(idx, 0));
-                Assert.assertEquals(value0, sut.getNthPrevValue(idx, 0));
-
+                assertEquals(1, value0, sut.getNthChange(tmpchg, idx, 0));
+                assertEquals(frameIndex, value0, sut.findPrevFrameIndex(tmpchg, idx, frameIndex));
+                
                 // same value (no change) => lru:[v0(t:1)]   t:2 unchanged
                 sut.addTimeValue(frameIndex++, idx, value0);
                 Assert.assertEquals(expectedChgCount, sut.getCountChange(idx));
-                Assert.assertEquals(1, sut.getNthPrevFrameIndex(idx, 0));
-                Assert.assertEquals(value0, sut.getNthPrevValue(idx, 0));
+                assertEquals(1, value0, sut.getNthChange(tmpchg, idx, 0));
+                assertEquals(frameIndex, value0, sut.findPrevFrameIndex(tmpchg, idx, frameIndex));
+                assertEquals(frameIndex, value0, sut.findPrevFrameIndex(tmpchg, idx, frameIndex-1));
                 
                 // addValue => lru:[v1(t:3), v0(t:1)]
                 int value1 = img[idx] + 101;
                 sut.addTimeValue(frameIndex++, idx, value1);
                 expectedChgCount++;
                 Assert.assertEquals(expectedChgCount, sut.getCountChange(idx));
-                Assert.assertEquals(value1, sut.getNthPrevValue(idx, 0));
-                Assert.assertEquals(3, sut.getNthPrevFrameIndex(idx, 0));
-                Assert.assertEquals(value0, sut.getNthPrevValue(idx, 1));
-                Assert.assertEquals(1, sut.getNthPrevFrameIndex(idx, 1));
-                
+                assertEquals(3, value1, sut.getNthChange(tmpchg, idx, 0));
+                assertEquals(1, value0, sut.getNthChange(tmpchg, idx, 1));
+
                 // addValue => lru:[v2(t4), v1(t:3)]    rolled lost history v0(t:1)
                 int value2 = img[idx] + 102;
                 sut.addTimeValue(frameIndex++, idx, value2);
                 expectedChgCount++;
                 Assert.assertEquals(expectedChgCount, sut.getCountChange(idx));
-                Assert.assertEquals(value2, sut.getNthPrevValue(idx, 0));
-                Assert.assertEquals(4, sut.getNthPrevFrameIndex(idx, 0));
-                Assert.assertEquals(value1, sut.getNthPrevValue(idx, 1));
-                Assert.assertEquals(3, sut.getNthPrevFrameIndex(idx, 1));
+                assertEquals(4, value2, sut.getNthChange(tmpchg, idx, 0));
+                assertEquals(3, value1, sut.getNthChange(tmpchg, idx, 1));
                 try {
-                    sut.getNthPrevFrameIndex(idx, 2);
+                    sut.getNthChange(tmpchg, idx, 2);
                     Assert.fail();
                 } catch(IllegalArgumentException ex) {
                     // OK!
@@ -79,4 +78,8 @@ public class IntImageLRUChangeHistoryTest {
         }
     }
 
+    private static void assertEquals(int expectedFrameIndex, int expectedValue, FrameIndexPrevValue actual) {
+        Assert.assertEquals(expectedFrameIndex, actual.frameIndex);
+        Assert.assertEquals(expectedValue, actual.prevValue);
+    }
 }

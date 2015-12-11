@@ -10,6 +10,13 @@ public final class FastModuloUtils {
         return res;
     }
 
+    public static int decrModulo(int val, int modulo) {
+        int res = val - 1;
+        if (res < 0) {
+            res = modulo-1;
+        }
+        return res;
+    }
 
     public static int minusModulo(int val, int minus, int modulo) {
         int res = val - minus;

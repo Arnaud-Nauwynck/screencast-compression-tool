@@ -1,6 +1,8 @@
 package fr.an.screencast.compressor.imgtool.delta;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import fr.an.screencast.compressor.utils.Rect;
 
@@ -12,6 +14,8 @@ public class FrameRectDelta implements Serializable {
     private transient FrameDelta parentFrame;
     private Rect rect;
 
+    private List<DeltaOperation> deltaOperations = new ArrayList<DeltaOperation>();
+    
     // ------------------------------------------------------------------------
 
     public FrameRectDelta(FrameDelta parentFrame, Rect rect) {
@@ -24,6 +28,13 @@ public class FrameRectDelta implements Serializable {
     public Rect getRect() {
         return rect;
     }
-            
+
+    public List<DeltaOperation> getDeltaOperations() {
+        return deltaOperations;
+    }
+
+    public void addDeltaOperation(DeltaOperation p) {
+        deltaOperations.add(p);
+    }
     
 }

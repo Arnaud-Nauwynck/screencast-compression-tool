@@ -27,13 +27,13 @@ public class FrameDelta implements Serializable {
         return frameIndex;
     }
     
-    public void addFrameRectDelta(Rect rect) {
-        deltas.add(new FrameRectDelta(this, rect));
+    public void addFrameRectDelta(FrameRectDelta p) {
+        deltas.add(p);
     }
 
     public void addFrameRectDeltas(Collection<Rect> rects) {
         for(Rect rect : rects) {
-            addFrameRectDelta(rect);
+            addFrameRectDelta(new FrameRectDelta(this, rect));
         }
     }
     

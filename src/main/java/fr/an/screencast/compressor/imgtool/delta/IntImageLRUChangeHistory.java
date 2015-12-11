@@ -1,10 +1,13 @@
 package fr.an.screencast.compressor.imgtool.delta;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.utils.FastModuloUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 
 /**
@@ -105,30 +108,25 @@ public final class IntImageLRUChangeHistory {
         return data[baseIndex+BASE_OFFSET_countChange];
     }
 
-    public int getNthPrevValue(int idx, int n) {
+    public static class FrameIndexPrevValue {
+        int frameIndex;
+        int prevValue;
+    }
+
+    public FrameIndexPrevValue getNthChange(FrameIndexPrevValue res, int idx, int n) {
         if (0 > n || n >= historyLen) {
             throw new IllegalArgumentException();
         }
+        if (res == null) res = new FrameIndexPrevValue();
         final int baseAddr =  idx * histSlotSize;
         int startModulo = data[baseAddr+BASE_OFFSET_startModulo];
         int prevInternalIndexModulo = FastModuloUtils.minusModulo(startModulo, n, historyLen);
-        // inline... return _getPrevValue(idx, prevInternalIndexModulo);
         int histAddr = baseAddr + 2 + prevInternalIndexModulo * 2;
-        return data[histAddr + OFFSET_prevValue];
+        res.prevValue = data[histAddr + OFFSET_prevValue];
+        res.frameIndex = data[histAddr + OFFSET_prevFrameIndex];
+        return res;
     }
-
-    public int getNthPrevFrameIndex(int idx, int n) {
-        if (0 > n || n >= historyLen) {
-            throw new IllegalArgumentException();
-        }
-        final int baseAddr =  idx * histSlotSize;
-        int startModulo = data[baseAddr+BASE_OFFSET_startModulo];
-        int prevInternalIndexModulo = FastModuloUtils.minusModulo(startModulo, n, historyLen);
-        // inline... return _getPrevFrameIndex(idx, prevInternalIndexModulo);
-        int histAddr = baseAddr + 2 + prevInternalIndexModulo * 2;
-        return data[histAddr + OFFSET_prevFrameIndex];
-    }
-
+    
     public int _startModulo(int idx) {
         final int baseAddr =  idx * histSlotSize;
         return data[baseAddr + BASE_OFFSET_startModulo];
@@ -138,17 +136,153 @@ public final class IntImageLRUChangeHistory {
         return FastModuloUtils.minusModulo(_startModulo(idx), n, historyLen);
     }
 
-    public int _getPrevValue(int idx, int internalIndexModulo) {
+    public void _getFramePrevValue(FrameIndexPrevValue res, int idx, int internalIndexModulo) {
         final int baseAddr =  idx * histSlotSize;
         int histAddr = baseAddr + 2 + internalIndexModulo * 2;
-        return data[histAddr + OFFSET_prevValue];
+        res.prevValue = data[histAddr + OFFSET_prevValue];
+        res.frameIndex = data[histAddr + OFFSET_prevFrameIndex];
     }
 
-    public int _getPrevFrameIndex(int idx, int internalIndexModulo) {
+    public FrameIndexPrevValue findPrevFrameIndex(FrameIndexPrevValue res, int idx, int frameIndex) {
+        if (res == null) res = new FrameIndexPrevValue();
         final int baseAddr =  idx * histSlotSize;
-        int histAddr = baseAddr + 2 + internalIndexModulo * 2;
-        return data[histAddr + OFFSET_prevFrameIndex];
+        final int startModulo = data[baseAddr+BASE_OFFSET_startModulo];
+        final int countChange = data[baseAddr+BASE_OFFSET_countChange];
+        // loop from  startModulo .. downto 0 
+        for(int prevModulo = startModulo; prevModulo >= 0; prevModulo--) {
+            _getFramePrevValue(res, idx, prevModulo);
+            if (res.frameIndex <= frameIndex) {
+                res.frameIndex = frameIndex; // overwrite (no return information to caller)
+                return res;
+            }
+        }
+        // loop from min(coutChange,N-1) .. downto startModulo+1
+        for(int prevModulo = Math.min(historyLen-1, countChange); prevModulo > startModulo; prevModulo--) {
+            _getFramePrevValue(res, idx, prevModulo);
+            if (res.frameIndex <= frameIndex) {
+                res.frameIndex = frameIndex;
+                return res;
+            }
+        }
+        res.frameIndex = -1;
+        res.prevValue = 0;
+        return res;
+    }
+    
+    // ------------------------------------------------------------------------
+
+    public static class RectRestorableResult {
+        int frameIndex;
+        Pt prevFrameLocation;
+        int countDiff;
+        int countUnrestorable;
+        
+        public RectRestorableResult(int frameIndex, Pt prevFrameLocation, int countDiff, int countUnrestorable) {
+            this.frameIndex = frameIndex;
+            this.prevFrameLocation = prevFrameLocation;
+            this.countDiff = countDiff;
+            this.countUnrestorable = countUnrestorable;
+        }
+        
+    }
+    
+    /**
+     * @param imageData
+     * @param rect
+     * @return count of diff values
+     */
+    public List<RectRestorableResult> computeRestorableNthPrevFrame(int currentFrameIndex, int[] imgData, Rect rect, Pt prevFrameLocation, 
+            int diffThreshold, int unrestorableThreshold
+            ) {
+        List<RectRestorableResult> res = new ArrayList<RectRestorableResult>();
+        
+//        int bestCountDiffSoFar = Integer.MAX_VALUE;
+//        int bestScoreSoFar = Integer.MAX_VALUE;
+        for(int prevFrameIndex = currentFrameIndex-1; ; prevFrameIndex--) {
+            RectRestorableResult tmpres = computeRestorableRectFrame(prevFrameIndex, imgData, rect, prevFrameLocation, 
+                    diffThreshold, unrestorableThreshold);
+
+            if (tmpres.countDiff == 0 && tmpres.countUnrestorable == 0) {
+                res.add(tmpres);
+                break; // found exact restore, finished
+            }
+
+            if (tmpres.countUnrestorable > unrestorableThreshold) {
+                break; // stop.. (results will be worse and worse)
+            }
+            
+            // TODO return all or only best per score? (smaller countDiff, then smaller countUnrestorable) 
+            res.add(tmpres);
+
+//            if (bestCountDiffSoFar > countDiff) {
+//                bestCountDiffSoFar = countDiff;
+//            }
+//            int score = countDiff + countUnrestorable;
+//            if (bestScoreSoFar > score) {
+//                bestScoreSoFar = score;
+//            }
+        }
+        return res;
     }
 
+    public RectRestorableResult computeRestorableRectFrame(int prevFrameIndex, int[] imgData, Rect rect, Pt prevFrameLocation, 
+            int diffThreshold, int unrestorableThreshold
+            ) {
+        final int width = dim.getWidth();
+        final int incrIdxY = width + rect.fromX - rect.toX; 
+        final FrameIndexPrevValue tmpFramePrevValue = new FrameIndexPrevValue();
+
+        int idx = rect.fromY*width + rect.fromX;
+        int prevIdx = prevFrameLocation.y*width + prevFrameLocation.x;
+        int countDiff = 0;
+        int countUnrestorable = 0;
+        loop_y: for(int y = rect.fromY; y < rect.toY; y++,idx+=incrIdxY,prevIdx+=incrIdxY) {
+            for (int x = rect.fromX; x < rect.toX; x++,idx++,prevIdx++) {
+                findPrevFrameIndex(tmpFramePrevValue, prevIdx, prevFrameIndex);
+                if (tmpFramePrevValue.frameIndex != -1) {
+                    if (imgData[idx] != tmpFramePrevValue.prevValue) {
+                        countDiff++;
+                        if (countDiff > diffThreshold) {
+                            break loop_y;
+                        }
+                    }
+                } else {
+                    countUnrestorable++;
+                    if (countUnrestorable > unrestorableThreshold) {
+                        break loop_y;
+                    }
+                }
+            }
+        }
+        return new RectRestorableResult(prevFrameIndex, prevFrameLocation, countDiff, countUnrestorable);
+    }
+    
+    /**
+     * @param imgData
+     * @param frameIndex
+     * @param rect
+     * @param prevFrameLocation
+     * @return count of unrestored pixel values
+     */
+    public int tryRestoreFrameImageRect(int[] imgData, int frameIndex, Rect rect, Pt prevFrameLocation) {
+        int countUnrestored = 0;
+        final int width = dim.getWidth();
+        final int incrIdxY = width + rect.fromX - rect.toX; 
+        FrameIndexPrevValue tmpFramePrevValue = new FrameIndexPrevValue();
+        
+        int idx = rect.fromY*width + rect.fromX;
+        int prevIdx = prevFrameLocation.y*width + prevFrameLocation.x;
+        for(int y = rect.fromY; y < rect.toY; y++,idx+=incrIdxY,prevIdx+=incrIdxY) {
+            for (int x = rect.fromX; x < rect.toX; x++,idx++,prevIdx++) {
+                findPrevFrameIndex(tmpFramePrevValue, prevIdx, frameIndex);
+                if (tmpFramePrevValue.frameIndex != -1) {
+                    imgData[idx] = tmpFramePrevValue.prevValue;
+                } else {
+                    countUnrestored++;
+                }
+            }
+        }
+        return countUnrestored;
+    }
     
 }

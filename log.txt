@@ -1,2 +1,0 @@
-22:29:52.000 137  [main] INFO  f.a.s.u.VideoStreamReadDoNothingMain - reading video file 'data/test-obj2json.cap', dim: 1920x1080 
-22:30:17.219 25356 [main] INFO  f.a.s.u.VideoStreamReadDoNothingMain - done read 1105 frames, took 25217 ms (=43 ms/1000xframes) 

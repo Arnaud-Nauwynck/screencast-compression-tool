@@ -66,5 +66,15 @@ public final class Pt implements Serializable {
     public String toString() {
         return x + "," + y;
     }
-        
+
+    public static String polyLineToString(Pt[] pts) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pts.length; i++) {
+            sb.append(pts[i]);
+            if (i + 1 < pts.length) {
+                sb.append("->");
+            }
+        }
+        return sb.toString();
+    }
 }
