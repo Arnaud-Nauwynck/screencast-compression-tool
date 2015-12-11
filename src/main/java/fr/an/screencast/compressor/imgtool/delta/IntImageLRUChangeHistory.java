@@ -183,6 +183,15 @@ public final class IntImageLRUChangeHistory {
             this.countDiff = countDiff;
             this.countUnrestorable = countUnrestorable;
         }
+
+        @Override
+        public String toString() {
+            return "RectRestorableResult [countDiff=" + countDiff
+                + ", countUnrestorable=" + countUnrestorable 
+                + ", frameIndex=" + frameIndex + ", prevFrameLocation=" + prevFrameLocation 
+                + "]";
+        }
+        
         
     }
     

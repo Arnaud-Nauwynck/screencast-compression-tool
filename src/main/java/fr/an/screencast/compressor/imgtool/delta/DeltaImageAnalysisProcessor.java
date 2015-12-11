@@ -64,13 +64,19 @@ public class DeltaImageAnalysisProcessor {
                 // (much larger history than using "slidingImages", using global image sliding history) 
                 Pt restoreFromSamePt = new Pt(rect.fromX, rect.fromY);
                 List<RectRestorableResult> restorePerFrames = imageLRUChangeHistory.computeRestorableNthPrevFrame(frameIndex, imageData, rect, restoreFromSamePt, 0, 0);
-                // TODO
-//                if (restorePerFrames != null && !restorePerFrames.isEmpty()) {
-//                    for(RectRestorableResult restorePerFrame : restorePerFrames) {
-//                        restorePerFrame.
-//                    }
-//                    rectDelta.addDeltaOperation(new RestorePrevImageRectDeltaOp(rect, foundRestoreFrameIndex, restoreFromSamePt));
-//                }
+                if (restorePerFrames != null && !restorePerFrames.isEmpty()) {
+                    RectRestorableResult foundExactRestore = null;
+                    for(RectRestorableResult e : restorePerFrames) {
+                        if (e.countDiff == 0 && e.countUnrestorable == 0) {
+                            foundExactRestore = e;
+                            break;
+                        }
+                    }
+                    if (foundExactRestore != null) {
+                        rectDelta.addDeltaOperation(new RestorePrevImageRectDeltaOp(rect, foundExactRestore.frameIndex, restoreFromSamePt));
+                        continue;
+                    }
+                }
                 
                 // check if rect can be re-synthethised using primitive graphical operation:
                 // - fillRectangle()  (drawLine()=degenerated rectangle of thick 1 / border)
@@ -89,11 +95,6 @@ public class DeltaImageAnalysisProcessor {
             }
             deltaResult.addFrameDelta(frameDelta);
         }
-    }
-
-    private int findLRURestoreRect(int[] imageData, Rect rect) {
-        // TODO Auto-generated method stub
-        return 0;
     }
 
 }

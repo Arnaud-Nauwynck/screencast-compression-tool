@@ -21,9 +21,11 @@ import fr.an.screencast.compressor.imgstream.VideoStreamFactory;
 import fr.an.screencast.compressor.imgtool.color.ColorMapAnalysis;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisProcessor;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
+import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
 import fr.an.screencast.compressor.imgtool.delta.FrameDelta;
 import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
 import fr.an.screencast.compressor.imgtool.delta.SlidingImageArray;
+import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.search.BinaryImageEnclosingRectsFinder;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.ColorBarLookupTable;
@@ -353,6 +355,17 @@ public class DecodeDiffView {
             for(FrameRectDelta delta : deltas) {
                 // draw thick pixel (reduce rect for border)
                 Rect r = delta.getRect();
+
+                deltaGc.setColor(Color.RED);
+
+                List<DeltaOperation> deltaOps = delta.getDeltaOperations();
+                if (deltaOps != null && !deltaOps.isEmpty()) {
+                    DeltaOperation op0 = deltaOps.get(0);
+                    if (op0 instanceof RestorePrevImageRectDeltaOp) {
+                        // found restore op for rect! => draw in blue
+                        deltaGc.setColor(Color.BLUE);
+                    }
+                }
                 deltaGc.drawRect(r.fromX+thick, r.fromY+thick, r.getWidth()-thick2, r.getHeight()-thick2);
                 
                 // TODO paint within rect
