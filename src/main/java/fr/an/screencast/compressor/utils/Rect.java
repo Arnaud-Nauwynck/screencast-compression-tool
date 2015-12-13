@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor.utils;
 
+import java.awt.Graphics;
 import java.io.Serializable;
 
 public class Rect implements Serializable {
@@ -32,7 +33,7 @@ public class Rect implements Serializable {
         return new Rect(from.x, from.y, to.x, to.y);
     }
 
-    public static Rect newXYToXY(int fromX, int fromY, int toX, int toY) {
+    public static Rect newPtToPt(int fromX, int fromY, int toX, int toY) {
         return new Rect(fromX, fromY, toX, toY);
     }
 
@@ -65,6 +66,14 @@ public class Rect implements Serializable {
 
     public int getHeight() {
         return toY - fromY;
+    }
+
+    public int getArea() {
+        return getWidth() * getHeight();
+    }
+
+    public boolean isNotEmpty() {
+        return toX > fromX && toY > fromY;
     }
 
     // ------------------------------------------------------------------------
@@ -101,11 +110,34 @@ public class Rect implements Serializable {
         this.toY = toY;
     }
 
+    public void setPtToPt(int fromX, int fromY, int toX, int toY) {
+        this.fromX = fromX;
+        this.fromY = fromY;
+        this.toX = toX;
+        this.toY = toY;
+    }
+
+    public void graphicsFillRect(Graphics g2d) {
+        g2d.fillRect(fromX, fromY, getWidth(), getHeight());        
+    }
+
+    public void graphicsDrawRect(Graphics g2d) {
+        g2d.drawRect(fromX, fromY, getWidth(), getHeight());        
+    }
+
+    public void graphicsDrawRectErode(Graphics g2d, int stroke) {
+        g2d.drawRect(fromX+stroke, fromY+stroke, getWidth()-2*stroke, getHeight()-2*stroke);        
+    }
+
+    public void graphicsDrawRectDilate(Graphics g2d, int stroke) {
+        g2d.drawRect(fromX-stroke, fromY-stroke, getWidth()+2*stroke, getHeight()+2*stroke);        
+    }
+
     // ------------------------------------------------------------------------
 
     @Override
     public String toString() {
-        return "Rect [(" + fromX + "," + toX + ") (" + fromY + "," + toY + ")]";
+        return "[" + fromX + "," + toX + "]x[" + fromY + "," + toY + "]";
     }
 
     @Override
@@ -138,7 +170,5 @@ public class Rect implements Serializable {
             return false;
         return true;
     }
-
-    
     
 }
