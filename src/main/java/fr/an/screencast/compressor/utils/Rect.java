@@ -2,6 +2,7 @@ package fr.an.screencast.compressor.utils;
 
 import java.awt.Graphics;
 import java.io.Serializable;
+import java.util.List;
 
 public class Rect implements Serializable {
 
@@ -45,6 +46,10 @@ public class Rect implements Serializable {
         return new Rect(from.x, from.y, from.x + width, from.y + height);
     }
 
+    public Rect cloneRect() {
+        return new Rect(fromX, fromY, toX, toY);
+    }
+
     // ------------------------------------------------------------------------
     
     public void toAWTRectangle(java.awt.Rectangle dest) {
@@ -76,6 +81,14 @@ public class Rect implements Serializable {
         return toX > fromX && toY > fromY;
     }
 
+    public boolean isEmpty() {
+        return toX <= fromX || toY <= fromY;
+    }
+
+    public Pt getFromPt() {
+        return new Pt(fromX, fromY);
+    }
+    
     // ------------------------------------------------------------------------
     
     public int getFromX() {
@@ -117,6 +130,24 @@ public class Rect implements Serializable {
         this.toY = toY;
     }
 
+    // ------------------------------------------------------------------------
+    
+    public boolean containsPt(Pt pt) {
+        return fromX <= pt.x && pt.x < toX && fromY <= pt.y && pt.y < toY;
+    }
+    
+    public Pt findFirstContainedPt(List<Pt> pts) {
+        Pt res = null;
+        for(Pt pt : pts) {
+            if (containsPt(pt)) {
+                res = pt;
+                break;
+            }
+        }
+        return res;
+    }
+
+    
     public void graphicsFillRect(Graphics g2d) {
         g2d.fillRect(fromX, fromY, getWidth(), getHeight());        
     }

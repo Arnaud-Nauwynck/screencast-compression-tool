@@ -1,6 +1,7 @@
 package fr.an.screencast.compressor.imgtool.delta;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.delta.IntImageLRUChangeHistory.RectRestorableResult;
@@ -12,6 +13,7 @@ import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
+import fr.an.screencast.compressor.utils.RectUtils;
 
 public class DeltaImageAnalysisProcessor {
 
@@ -51,18 +53,23 @@ public class DeltaImageAnalysisProcessor {
         if (rects != null && !rects.isEmpty()) {
             FrameDelta frameDelta = new FrameDelta(frameIndex);
 
+            // update LRU color change per pixel
             for(Rect rect : rects) {
+                imageLRUChangeHistory.addTimeValues(frameIndex, imageData, rect);
+            }
+            
+            
+            for(int i = 0; i < rects.size(); i++) {
+                Rect rect = rects.get(i);
                 FrameRectDelta rectDelta = new FrameRectDelta(frameDelta, rect);
                 frameDelta.addFrameRectDelta(rectDelta);
 
-                // update LRU color change per pixel
-                imageLRUChangeHistory.addTimeValues(frameIndex, imageData, rect);
                 
                 // TODO ... add more analysis in rect ...
                 
                 // check if rect can be (fully) restored from "imageLRUChangeHistory", using per-pixel LRU change history
                 // (much larger history than using "slidingImages", using global image sliding history) 
-                Pt restoreFromSamePt = new Pt(rect.fromX, rect.fromY);
+                Pt restoreFromSamePt = rect.getFromPt();
                 List<RectRestorableResult> restorePerFrames = imageLRUChangeHistory.computeRestorableNthPrevFrame(frameIndex, imageData, rect, restoreFromSamePt, 0, 0);
                 if (restorePerFrames != null && !restorePerFrames.isEmpty()) {
                     RectRestorableResult foundExactRestore = null;
@@ -73,7 +80,51 @@ public class DeltaImageAnalysisProcessor {
                         }
                     }
                     if (foundExactRestore != null) {
-                        rectDelta.addDeltaOperation(new RestorePrevImageRectDeltaOp(rect, foundExactRestore.frameIndex, restoreFromSamePt));
+                        Rect mergeRestorableRect = rect;
+                        Rect mergeRect = new Rect();
+                        List<Rect> detailedMergeRects = new ArrayList<Rect>();
+                        int restoreFrameIndex = foundExactRestore.frameIndex;
+                        // try to merge small rects with same restore operation
+                        Rect[] mergeComplRects = RectUtils.newArray(4);
+                        List<Pt> unrestorablePts = new ArrayList<Pt>();
+                        loop_mergeOther: for (int j = i+1; j < rects.size(); j++) {
+                            Rect otherRect = rects.get(j);
+                            mergeRect = RectUtils.enclosingRect(mergeRect, mergeRestorableRect, otherRect);
+                            if (mergeRect.findFirstContainedPt(unrestorablePts) != null) {
+                                continue;
+                            }
+                            RectRestorableResult restorableOther = imageLRUChangeHistory.computeRestorableRectFrame(restoreFrameIndex, imageData, 
+                                otherRect, otherRect.getFromPt(), 0, 0);
+                            if (restorableOther != null && restorableOther.isExactRestoration() 
+                                    && restorableOther.frameIndex == restoreFrameIndex) {
+                                // can merge if complements rect are also restorable
+                                boolean canMerge = true;
+                                RectUtils.complementOfEnclosing(mergeComplRects, mergeRestorableRect, otherRect);
+                                for(Rect mergeComplRect : mergeComplRects) {
+                                    if (mergeComplRect.isEmpty()) {
+                                        break;
+                                    }
+                                    RectRestorableResult complRestorable = imageLRUChangeHistory.computeRestorableRectFrame(restoreFrameIndex, imageData, 
+                                        mergeComplRect, mergeComplRect.getFromPt(), 0, 0);
+                                    if (complRestorable.isExactRestoration() 
+                                            && complRestorable.frameIndex == restoreFrameIndex) {
+                                    } else {
+                                        if (complRestorable.firstUnrestorablePt != null) {
+                                            unrestorablePts.add(complRestorable.firstUnrestorablePt);
+                                            canMerge = false;
+                                            continue loop_mergeOther;
+                                        }
+                                    }
+                                }
+                                if (canMerge) {
+                                    mergeRestorableRect = mergeRect.cloneRect();
+                                    rects.remove(j);
+                                    detailedMergeRects.add(otherRect);
+                                    j--;
+                                }
+                            }
+                        }
+                        rectDelta.addDeltaOperation(new RestorePrevImageRectDeltaOp(mergeRestorableRect, restoreFrameIndex, restoreFromSamePt, detailedMergeRects));
                         continue;
                     }
                 }

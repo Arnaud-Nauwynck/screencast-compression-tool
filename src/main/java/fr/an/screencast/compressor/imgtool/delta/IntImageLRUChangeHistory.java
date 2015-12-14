@@ -176,14 +176,20 @@ public final class IntImageLRUChangeHistory {
         Pt prevFrameLocation;
         int countDiff;
         int countUnrestorable;
+        Pt firstUnrestorablePt;
         
-        public RectRestorableResult(int frameIndex, Pt prevFrameLocation, int countDiff, int countUnrestorable) {
+        public RectRestorableResult(int frameIndex, Pt prevFrameLocation, int countDiff, int countUnrestorable, Pt firstUnrestorablePt) {
             this.frameIndex = frameIndex;
             this.prevFrameLocation = prevFrameLocation;
             this.countDiff = countDiff;
             this.countUnrestorable = countUnrestorable;
+            this.firstUnrestorablePt = firstUnrestorablePt;
         }
 
+        public boolean isExactRestoration() {
+            return countDiff == 0 && countUnrestorable == 0;
+        }
+        
         @Override
         public String toString() {
             return "RectRestorableResult [countDiff=" + countDiff
@@ -245,6 +251,7 @@ public final class IntImageLRUChangeHistory {
         int prevIdx = prevFrameLocation.y*width + prevFrameLocation.x;
         int countDiff = 0;
         int countUnrestorable = 0;
+        Pt firstUnrestorablePt = null;
         loop_y: for(int y = rect.fromY; y < rect.toY; y++,idx+=incrIdxY,prevIdx+=incrIdxY) {
             for (int x = rect.fromX; x < rect.toX; x++,idx++,prevIdx++) {
                 findPrevFrameIndex(tmpFramePrevValue, prevIdx, prevFrameIndex);
@@ -257,13 +264,16 @@ public final class IntImageLRUChangeHistory {
                     }
                 } else {
                     countUnrestorable++;
+                    if (firstUnrestorablePt == null) {
+                        firstUnrestorablePt = new Pt(x, y);
+                    }
                     if (countUnrestorable > unrestorableThreshold) {
                         break loop_y;
                     }
                 }
             }
         }
-        return new RectRestorableResult(prevFrameIndex, prevFrameLocation, countDiff, countUnrestorable);
+        return new RectRestorableResult(prevFrameIndex, prevFrameLocation, countDiff, countUnrestorable, firstUnrestorablePt);
     }
     
     /**

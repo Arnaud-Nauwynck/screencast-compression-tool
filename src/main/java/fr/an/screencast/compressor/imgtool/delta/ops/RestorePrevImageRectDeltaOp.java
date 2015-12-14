@@ -2,6 +2,7 @@ package fr.an.screencast.compressor.imgtool.delta.ops;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.delta.DeltaContext;
 import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
@@ -19,10 +20,13 @@ public class RestorePrevImageRectDeltaOp extends DeltaOperation {
     private final int prevFrameOffset; // 0 if copy from self image
     private final Pt prevFrameLocation;
     
-    public RestorePrevImageRectDeltaOp(Rect rect, int prevFrameOffset, Pt prevFrameLocation) {
+    private final transient List<Rect> detailedMergeRects;
+    
+    public RestorePrevImageRectDeltaOp(Rect rect, int prevFrameOffset, Pt prevFrameLocation, List<Rect> detailedMergeRects) {
         this.rect = rect;
         this.prevFrameOffset = prevFrameOffset;
         this.prevFrameLocation = prevFrameLocation;
+        this.detailedMergeRects = detailedMergeRects;
     }
 
     @Override
@@ -47,6 +51,24 @@ public class RestorePrevImageRectDeltaOp extends DeltaOperation {
             imageLRUChange.tryRestoreFrameImageRect(destData, prevFrameIndex, rect, prevFrameLocation);
         }
     }
+    
+    public Rect getRect() {
+        return rect;
+    }
+
+    public int getPrevFrameOffset() {
+        return prevFrameOffset;
+    }
+
+    public Pt getPrevFrameLocation() {
+        return prevFrameLocation;
+    }
+
+    public List<Rect> getDetailedMergeRects() {
+        return detailedMergeRects;
+    }
+
+
     
     public String toString() {
         return "RestorePrevImageRect[rect:" + rect + ", frameOffset:" + prevFrameOffset + ", prevLoc:" + prevFrameLocation + "]";

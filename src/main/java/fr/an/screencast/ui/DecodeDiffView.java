@@ -363,10 +363,22 @@ public class DecodeDiffView {
                     DeltaOperation op0 = deltaOps.get(0);
                     if (op0 instanceof RestorePrevImageRectDeltaOp) {
                         // found restore op for rect! => draw in blue
+                        RestorePrevImageRectDeltaOp restoreOp = (RestorePrevImageRectDeltaOp) op0;
+                        List<Rect> detailedMergeRects = restoreOp.getDetailedMergeRects();
+                        if (detailedMergeRects.size() > 1) {
+                            Color lightBlue = new Color(0, 0, 50);
+                            deltaGc.setColor(lightBlue);
+                            r.graphicsFillRect(deltaGc);
+
+                            deltaGc.setColor(Color.BLUE);
+                            for(Rect detailedMergeRect : detailedMergeRects) {
+                                detailedMergeRect.graphicsDrawRectErode(deltaGc, 1);
+                            }
+                        }
                         deltaGc.setColor(Color.BLUE);
                     }
                 }
-                deltaGc.drawRect(r.fromX+thick, r.fromY+thick, r.getWidth()-thick2, r.getHeight()-thick2);
+                r.graphicsDrawRectErode(deltaGc, thick2);
                 
                 // TODO paint within rect
             }
