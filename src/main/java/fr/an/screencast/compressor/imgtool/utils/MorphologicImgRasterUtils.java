@@ -2,8 +2,11 @@ package fr.an.screencast.compressor.imgtool.utils;
 
 import fr.an.screencast.compressor.utils.Rect;
 
-public class MorphologicImgRasterUtils {
+public final class MorphologicImgRasterUtils {
 
+    /* private to force all static */
+    private MorphologicImgRasterUtils() {}
+    
     public static void erodeMinRGB(final int[] dest, final int[] src, final int width, final int height, final Rect roi) { 
         // assume roi is strictly within image dimension (copy border otherwise)
         // ImageRasterUtils.copyRect(dest, src, width, height, roi);

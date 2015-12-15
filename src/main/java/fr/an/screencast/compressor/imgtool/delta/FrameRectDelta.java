@@ -36,5 +36,5 @@ public class FrameRectDelta implements Serializable {
     public void addDeltaOperation(DeltaOperation p) {
         deltaOperations.add(p);
     }
-    
+
 }

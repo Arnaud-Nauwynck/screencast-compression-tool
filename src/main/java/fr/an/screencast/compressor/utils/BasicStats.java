@@ -8,8 +8,8 @@ public final class BasicStats implements Serializable {
     /** */
     private static final long serialVersionUID = 1L;
     
-    private int min;
-    private int max;
+    private int min = Integer.MAX_VALUE;
+    private int max = Integer.MIN_VALUE;
     
     private long count;
     private long sum;

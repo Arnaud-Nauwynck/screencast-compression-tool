@@ -47,4 +47,8 @@ public class ColorBitsReducer {
         }
     }
     
+    public int reduceRGBLeastSignificantBits(int value) {
+        return value & rgbLeastSignificantBitsMask;
+    }
+    
 }

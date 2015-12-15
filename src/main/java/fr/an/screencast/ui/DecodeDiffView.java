@@ -25,6 +25,7 @@ import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
 import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
 import fr.an.screencast.compressor.imgtool.delta.FrameDelta;
 import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
+import fr.an.screencast.compressor.imgtool.delta.ops.MostUsedColorFillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.ColorBarLookupTable;
@@ -385,6 +386,16 @@ public class DecodeDiffView {
                             }
                         }
                         deltaGc.setColor(Color.BLUE);
+                    } else if (op0 instanceof MostUsedColorFillRectDeltaOp) {
+                        MostUsedColorFillRectDeltaOp op = (MostUsedColorFillRectDeltaOp) op0;
+                        Rect subRect = op.getRect();
+                        int color = op.getFillColor();
+                        deltaGc.setColor(new Color(color));
+                        subRect.graphicsFillRect(deltaGc);
+                        // op.getColorCount();
+                        
+                    } else {
+                        // TODO
                     }
                 }
                 r.graphicsDrawRectErode(deltaGc, thick2);

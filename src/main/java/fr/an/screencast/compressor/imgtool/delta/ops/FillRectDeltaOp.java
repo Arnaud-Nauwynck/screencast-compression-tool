@@ -13,12 +13,20 @@ public class FillRectDeltaOp extends DeltaOperation {
     /** */
     private static final long serialVersionUID = 1L;
     
-    private final Rect rect;
-    private final int fillColor;
+    protected final Rect rect;
+    protected final int fillColor;
     
     public FillRectDeltaOp(Rect rect, int fillColor) {
         this.rect = rect;
         this.fillColor = fillColor;
+    }
+    
+    public Rect getRect() {
+        return rect;
+    }
+
+    public int getFillColor() {
+        return fillColor;
     }
 
     @Override

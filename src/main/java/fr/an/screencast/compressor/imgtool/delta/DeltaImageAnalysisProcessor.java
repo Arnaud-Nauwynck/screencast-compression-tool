@@ -5,13 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.color.ColorBitsReducer;
+import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap;
+import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap.ValueLocationStats;
 import fr.an.screencast.compressor.imgtool.delta.IntImageLRUChangeHistory.RectRestorableResult;
+import fr.an.screencast.compressor.imgtool.delta.ops.MostUsedColorFillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.search.BinaryImageEnclosingRectsFinder;
-import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
+import fr.an.screencast.compressor.utils.BasicStats;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
@@ -19,6 +22,8 @@ import fr.an.screencast.compressor.utils.RectUtils;
 
 public class DeltaImageAnalysisProcessor {
 
+    private static boolean DEBUG_REDUCED_COLORMAP = false;
+    
     private Dim dim;
     private SlidingImageArray slidingImages;
     private BinaryImageEnclosingRectsFinder binaryImageRectsFinder;
@@ -38,7 +43,7 @@ public class DeltaImageAnalysisProcessor {
     private int perPixelLRUHistory;
     // settings for colorBitsReducer
     private int colorBitsReduceOpenSize = 1;
-    private int colorBitsLeastSignificantBitsCount = 4;
+    private int colorBitsLeastSignificantBitsCount = 5;
 
     
     // ------------------------------------------------------------------------
@@ -93,6 +98,38 @@ public class DeltaImageAnalysisProcessor {
                 FrameRectDelta rectDelta = new FrameRectDelta(frameDelta, rect);
                 frameDelta.addFrameRectDelta(rectDelta);
 
+                ColorToLocationStatsMap reducedColorStats = new ColorToLocationStatsMap();
+                reducedColorStats.addPts(frameIndex, rect, colorReduceImg);
+
+                ValueLocationStats mostUsedReducedColor = reducedColorStats.findMostUsedColor();
+                int rectArea = rect.getArea();
+                int thresholdColorArea = rectArea - (rectArea>>>4); // 100-16 = 84%  
+                if (mostUsedReducedColor.getCount() > thresholdColorArea) {
+                    BasicStats xStats = mostUsedReducedColor.getxStats();
+                    BasicStats yStats = mostUsedReducedColor.getyStats();
+                    Rect subRect = Rect.newPtToPt(xStats.getMin(), yStats.getMin(), xStats.getMax(), yStats.getMax());
+                    int colorSubRectArea = subRect.getArea();
+                    int mostUsedColor = mostUsedReducedColor.getValue(); //TODO ...should reeval exact color!
+                    
+                    MostUsedColorFillRectDeltaOp op = new MostUsedColorFillRectDeltaOp(subRect, mostUsedColor, mostUsedReducedColor.getCount());
+                    rectDelta.addDeltaOperation(op);
+                    
+                    if (colorSubRectArea == mostUsedReducedColor.getCount()) {
+                        // found exact (TODO use not reduced color)
+                    }
+                    continue; //TODO 
+                }
+                
+                if (DEBUG_REDUCED_COLORMAP) {
+                    ColorToLocationStatsMap debugNoReducedColorStats = new ColorToLocationStatsMap();
+                    debugNoReducedColorStats.addPts(frameIndex, rect, imageRGB);
+    
+                    System.out.println();
+                    System.out.println("frameIndex: " + frameIndex + " rect:" + rect + " (area=" + rect.getArea() + ")");
+                    System.out.println("  reduced Color Stats:" + reducedColorStats.toString());
+                    System.out.println("  NOT reduced Stats  :" + debugNoReducedColorStats.toString());
+                }
+                
                 
                 // TODO ... add more analysis in rect ...
                 
