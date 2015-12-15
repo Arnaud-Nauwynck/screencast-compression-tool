@@ -50,4 +50,65 @@ public final class RGBUtils {
         return redOf(rgb) + ";" + greenOf(rgb) + ";" + blueOf(rgb)
             + ((alphaOf(rgb) != 255)? ";" + alphaOf(rgb) : "");  
     }
+
+    
+    public static int minRGB(int rgb1, int rgb2, int rgb3) {
+        int r = minRed(rgb1, rgb2, rgb3);
+        int g = minGreen(rgb1, rgb2, rgb3);
+        int b = minBlue(rgb1, rgb2, rgb3);
+        int a = minAlpha(rgb1, rgb2, rgb3);
+        return rgb2Int(r, g, b, a);
+    }
+    
+    public static int maxRGB(int rgb1, int rgb2, int rgb3) {
+        int r = maxRed(rgb1, rgb2, rgb3);
+        int g = maxGreen(rgb1, rgb2, rgb3);
+        int b = maxBlue(rgb1, rgb2, rgb3);
+        int a = maxAlpha(rgb1, rgb2, rgb3);
+        return rgb2Int(r, g, b, a);
+    }
+    
+    
+    public static int minRed(int rgb1, int rgb2, int rgb3) {
+        int r1 = RGBUtils.redOf(rgb1), r2 = RGBUtils.redOf(rgb2), r3 = RGBUtils.redOf(rgb3);   
+        return min(r1, r2, r3);
+    }
+    public static int minGreen(int rgb1, int rgb2, int rgb3) {
+        int g1 = RGBUtils.greenOf(rgb1), g2 = RGBUtils.greenOf(rgb2), g3 = RGBUtils.greenOf(rgb3);   
+        return min(g1, g2, g3);
+    }
+    public static int minBlue(int rgb1, int rgb2, int rgb3) {
+        int b1 = RGBUtils.blueOf(rgb1), b2 = RGBUtils.blueOf(rgb2), b3 = RGBUtils.blueOf(rgb3);   
+        return min(b1, b2, b3);
+    }
+    public static int minAlpha(int rgb1, int rgb2, int rgb3) {
+        int b1 = RGBUtils.alphaOf(rgb1), b2 = RGBUtils.alphaOf(rgb2), b3 = RGBUtils.alphaOf(rgb3);   
+        return min(b1, b2, b3);
+    }
+
+    public static int maxRed(int rgb1, int rgb2, int rgb3) {
+        int r1 = RGBUtils.redOf(rgb1), r2 = RGBUtils.redOf(rgb2), r3 = RGBUtils.redOf(rgb3);   
+        return max(r1, r2, r3);
+    }
+    public static int maxGreen(int rgb1, int rgb2, int rgb3) {
+        int g1 = RGBUtils.greenOf(rgb1), g2 = RGBUtils.greenOf(rgb2), g3 = RGBUtils.greenOf(rgb3);   
+        return max(g1, g2, g3);
+    }
+    public static int maxBlue(int rgb1, int rgb2, int rgb3) {
+        int b1 = RGBUtils.blueOf(rgb1), b2 = RGBUtils.blueOf(rgb2), b3 = RGBUtils.blueOf(rgb3);   
+        return max(b1, b2, b3);
+    }
+    public static int maxAlpha(int rgb1, int rgb2, int rgb3) {
+        int b1 = RGBUtils.alphaOf(rgb1), b2 = RGBUtils.alphaOf(rgb2), b3 = RGBUtils.alphaOf(rgb3);   
+        return max(b1, b2, b3);
+    }
+
+    public static int min(int a, int b, int c) {
+        return Math.min(a, Math.min(b, c));
+    }
+
+    public static int max(int a, int b, int c) {
+        return Math.max(a, Math.max(b, c));
+    }
+
 }

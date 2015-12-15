@@ -4,9 +4,11 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.an.screencast.compressor.imgtool.color.ColorBitsReducer;
 import fr.an.screencast.compressor.imgtool.delta.IntImageLRUChangeHistory.RectRestorableResult;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.search.BinaryImageEnclosingRectsFinder;
+import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
@@ -17,35 +19,62 @@ import fr.an.screencast.compressor.utils.RectUtils;
 
 public class DeltaImageAnalysisProcessor {
 
-    private final Dim dim;
+    private Dim dim;
     private SlidingImageArray slidingImages;
     private BinaryImageEnclosingRectsFinder binaryImageRectsFinder;
 
     private DeltaImageAnalysisResult deltaResult;
+    private DeltaImageAnalysisFrameDetailed deltaFrameDetailed;
     
     private IntImageLRUChangeHistory imageLRUChangeHistory;
     
+    private ColorBitsReducer colorBitsReducer;
+    private BufferedImage colorReduceImg;
+    private BufferedImage colorReduceTmpImg;
+
+    // settings for slidingImages
+    private int prevSlidingLen;
+    // settings for imageLRUChangeHistory
+    private int perPixelLRUHistory;
+    // settings for colorBitsReducer
+    private int colorBitsReduceOpenSize = 1;
+    private int colorBitsLeastSignificantBitsCount = 4;
+
+    
     // ------------------------------------------------------------------------
 
-    public DeltaImageAnalysisProcessor(DeltaImageAnalysisResult deltaResult, Dim dim, 
+    public DeltaImageAnalysisProcessor(DeltaImageAnalysisResult deltaResult, DeltaImageAnalysisFrameDetailed deltaFrameDetailed, 
             int prevSlidingLen, int perPixelLRUHistory) {
         this.deltaResult = deltaResult;
-        this.dim = dim;
-        this.slidingImages = new SlidingImageArray(prevSlidingLen, dim, BufferedImage.TYPE_INT_RGB);
-        this.binaryImageRectsFinder = new BinaryImageEnclosingRectsFinder(dim);
-        this.imageLRUChangeHistory = new IntImageLRUChangeHistory(dim, perPixelLRUHistory); 
+        this.deltaFrameDetailed = deltaFrameDetailed;
+        this.prevSlidingLen = prevSlidingLen;
+        this.perPixelLRUHistory = perPixelLRUHistory;
+        this.colorBitsReducer = new ColorBitsReducer(colorBitsReduceOpenSize, colorBitsLeastSignificantBitsCount);
     }
     
     // ------------------------------------------------------------------------
 
+    public void init(Dim dim) {
+        this.dim = dim;
+        this.slidingImages = new SlidingImageArray(prevSlidingLen, dim, BufferedImage.TYPE_INT_RGB);
+        this.binaryImageRectsFinder = new BinaryImageEnclosingRectsFinder(dim);
+        this.imageLRUChangeHistory = new IntImageLRUChangeHistory(dim, perPixelLRUHistory);
+        this.colorReduceImg = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
+        this.colorReduceTmpImg = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
+    }
     
     public void processImage(int frameIndex, BufferedImage imageRGB) {
+        final int[] imageData = ImageRasterUtils.toInts(imageRGB);
         slidingImages.slide(imageRGB);
         
         BufferedImage prevImageRGB = slidingImages.getPrevImage()[1];
-        final int[] imageData = ImageRasterUtils.toInts(imageRGB);
         
         RasterImageFunction binaryDiff = RasterImageFunctions.binaryDiff(dim, imageRGB, prevImageRGB);
+
+        Rect dimRectMinus1 = Rect.newPtToPt(1, 1, dim.width-1, dim.height-1);
+        colorBitsReducer.processImage(colorReduceImg, colorReduceTmpImg, imageRGB, dimRectMinus1);
+
+        deltaFrameDetailed.setColorReduceImg(colorReduceImg);
         
         // compute enclosing rectangles containing differences between image and previous image
         List<Rect> rects = binaryImageRectsFinder.findEnclosingRects(binaryDiff);
@@ -148,4 +177,7 @@ public class DeltaImageAnalysisProcessor {
         }
     }
 
+
+    
+    
 }

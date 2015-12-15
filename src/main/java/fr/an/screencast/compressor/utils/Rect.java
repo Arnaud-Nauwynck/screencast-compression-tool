@@ -46,6 +46,10 @@ public class Rect implements Serializable {
         return new Rect(from.x, from.y, from.x + width, from.y + height);
     }
 
+    public static Rect newDim(Dim dim) {
+        return new Rect(0, 0, dim.width, dim.height);
+    }
+
     public Rect cloneRect() {
         return new Rect(fromX, fromY, toX, toY);
     }
