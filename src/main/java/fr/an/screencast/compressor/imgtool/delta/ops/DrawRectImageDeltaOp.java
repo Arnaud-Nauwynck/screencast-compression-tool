@@ -24,6 +24,14 @@ public class DrawRectImageDeltaOp extends DeltaOperation {
         dest.getRaster().setPixels(rect.fromX, rect.fromY, rect.getWidth(), rect.getHeight(), img);
     }
     
+    public Rect getRect() {
+        return rect;
+    }
+
+    public int[] getImg() {
+        return img;
+    }
+
     public String toString() {
         return "DrawRectImage[rect:" + rect + ", img:.." + img.length + "]";
     }

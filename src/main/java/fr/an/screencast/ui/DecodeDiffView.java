@@ -19,9 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgstream.VideoStreamFactory;
 import fr.an.screencast.compressor.imgtool.color.ColorMapAnalysis;
-import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisFrameDetailed;
+import fr.an.screencast.compressor.imgtool.delta.FrameDeltaDetailed;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisProcessor;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
+import fr.an.screencast.compressor.imgtool.delta.DeltaOpFrame2BitStreamStructDataEncoder;
 import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
 import fr.an.screencast.compressor.imgtool.delta.FrameDelta;
 import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
@@ -153,13 +154,17 @@ public class DecodeDiffView {
         File cacheDeltaAnalysisFile;
         DeltaImageAnalysisResult deltaResult;
         DeltaImageAnalysisProcessor deltaImageAnalysisProcessor;
-
+        
+        DeltaOpFrame2BitStreamStructDataEncoder deltaOpFrameBitsEncoder;
+        
         public DeltaImageAnalysisProcessorListener(VideoStreamPlayer videoStreamPlayer, File cacheDeltaAnalysisFile, 
-                DeltaImageAnalysisResult deltaResult, DeltaImageAnalysisFrameDetailed deltaFrameDetailed) {
+                DeltaImageAnalysisResult deltaResult, FrameDeltaDetailed deltaFrameDetailed,
+                File deltaOpFrameEncoderOutputFile) {
             this.videoStreamPlayer = videoStreamPlayer;
             this.cacheDeltaAnalysisFile = cacheDeltaAnalysisFile;
             this.deltaResult = deltaResult;
             this.deltaImageAnalysisProcessor = new DeltaImageAnalysisProcessor(deltaResult, deltaFrameDetailed, prevSlidingLen, perPixelLRUHistory);
+            this.deltaOpFrameBitsEncoder = new DeltaOpFrame2BitStreamStructDataEncoder(deltaOpFrameEncoderOutputFile);
         }
         
         @Override
@@ -167,7 +172,9 @@ public class DecodeDiffView {
             DecodeDiffView.this.dim = dim;
             
             deltaImageAnalysisProcessor.init(dim);
-                    
+            
+            deltaOpFrameBitsEncoder.init(dim);
+            
             progressPrinter.reset();
             LOG.info("decoding video : " + dim + " - " + progressPrinter.toStringFrequencyInfo());
         }
@@ -178,6 +185,8 @@ public class DecodeDiffView {
                 LOG.info("writing delta analysis to cache file: " + cacheDeltaAnalysisFile);
                 FileSerialisationUtils.writeToFile(deltaResult, cacheDeltaAnalysisFile);
             }
+            
+            deltaOpFrameBitsEncoder.close();
         }
 
         @Override
@@ -185,7 +194,9 @@ public class DecodeDiffView {
             progressPrinter.next();
             int frameIndex = videoStreamPlayer.getFrameCount();
             
-            deltaImageAnalysisProcessor.processImage(frameIndex, imageRGB);
+            FrameDeltaDetailed frameDeltaDetailed = deltaImageAnalysisProcessor.processImage(frameIndex, imageRGB);
+            
+            deltaOpFrameBitsEncoder.encodeDeltaOpFrame(frameDeltaDetailed, imageRGB);
         }
         
     }
@@ -193,7 +204,7 @@ public class DecodeDiffView {
     private class DeltaImageAnalysisViewerListener extends ScreenPlayerListenerAdapter {
         VideoStreamPlayer videoStreamPlayer;
         DeltaImageAnalysisResult deltaResult;
-        DeltaImageAnalysisFrameDetailed deltaFrameDetailed;
+        FrameDeltaDetailed deltaFrameDetailed;
         int frameDeltaIndex = 0;
 
         BufferedImage prevImageRGB;
@@ -201,7 +212,7 @@ public class DecodeDiffView {
         BufferedImage diffImageRGB;
         BufferedImage deltaImageRGB;
         
-        public DeltaImageAnalysisViewerListener(VideoStreamPlayer videoStreamPlayer, DeltaImageAnalysisResult deltaResult, DeltaImageAnalysisFrameDetailed deltaFrameDetailed) {
+        public DeltaImageAnalysisViewerListener(VideoStreamPlayer videoStreamPlayer, DeltaImageAnalysisResult deltaResult, FrameDeltaDetailed deltaFrameDetailed) {
             this.videoStreamPlayer = videoStreamPlayer;
             this.deltaResult = deltaResult;
             this.deltaFrameDetailed = deltaFrameDetailed;
@@ -251,13 +262,15 @@ public class DecodeDiffView {
     private void processVideo() throws Exception {
         DeltaImageAnalysisResult deltaResult = null;
         File cacheDeltaAnalysisFile = new File(cacheDir, new File(filename).getName() + "-delta.ser");
-        DeltaImageAnalysisFrameDetailed deltaFrameDetailed = new DeltaImageAnalysisFrameDetailed();
+        File deltaOpFrameEncoderOutputFile = new File(cacheDir, new File(filename).getName() + "-deltaop-video.bin");
+        FrameDeltaDetailed deltaFrameDetailed = new FrameDeltaDetailed();
         if (useCache && cacheDeltaAnalysisFile.exists() && cacheDeltaAnalysisFile.canRead()) {
             LOG.info("reading color analysis from cache file: " + cacheDeltaAnalysisFile);
             deltaResult = FileSerialisationUtils.readFromFile(cacheDeltaAnalysisFile);
         } else {
             deltaResult = new DeltaImageAnalysisResult();
-            innerDeltaImageAnalysisProcessor = new DeltaImageAnalysisProcessorListener(videoStreamPlayer, cacheDeltaAnalysisFile, deltaResult, deltaFrameDetailed);
+            innerDeltaImageAnalysisProcessor = new DeltaImageAnalysisProcessorListener(videoStreamPlayer, cacheDeltaAnalysisFile, deltaResult, deltaFrameDetailed,
+                deltaOpFrameEncoderOutputFile);
             
             videoStreamPlayer.addListener(innerDeltaImageAnalysisProcessor);
         }

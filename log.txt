@@ -1,1 +1,0 @@
-23:39:06.099 361  [main] INFO  fr.an.screencast.ui.DecodeDiffView - decoding video : 1920x1080 - display progress every 50 frames = 10 s 
