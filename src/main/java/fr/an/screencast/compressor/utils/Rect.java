@@ -77,6 +77,10 @@ public class Rect implements Serializable {
         return toY - fromY;
     }
 
+    public Dim getDim() {
+        return new Dim(getWidth(), getHeight());
+    }
+    
     public int getArea() {
         return getWidth() * getHeight();
     }

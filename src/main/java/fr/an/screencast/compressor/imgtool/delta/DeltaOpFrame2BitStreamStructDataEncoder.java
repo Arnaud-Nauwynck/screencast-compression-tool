@@ -25,6 +25,7 @@ import fr.an.util.encoder.structio.BitStreamStructDataOutput;
 public class DeltaOpFrame2BitStreamStructDataEncoder {
     
     private static final Logger LOG = LoggerFactory.getLogger(DeltaOpFrame2BitStreamStructDataEncoder.class);
+    private static final boolean DEBUG = false;
     
     private File outputFile;
     
@@ -35,6 +36,11 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
     private Pt dimPt;
     
     private HuffmanTable<Class<? extends DeltaOperation>> deltaOpClassHuffmanTable = new HuffmanTable<Class<? extends DeltaOperation>>();
+    
+    
+    private long sumRectImgBytes; 
+    private long sumRectImgBytesPrintFreq = 1024*1024; // print "m" every 1M of raw uncompressed rect image  
+    private long sumRectImgBytesPrintModulo = 0;
     
     // ------------------------------------------------------------------------
 
@@ -58,7 +64,9 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
         
         // TODO hard-coded deltaOp class & frequency
         deltaOpClassHuffmanTable.addSymbol(DrawRectImageDeltaOp.class, 10);
-        deltaOpClassHuffmanTable.addSymbol(DrawRectImageDeltaOp.class, 10);
+        deltaOpClassHuffmanTable.addSymbol(RestorePrevImageRectDeltaOp.class, 5);
+        deltaOpClassHuffmanTable.addSymbol(FillRectDeltaOp.class, 1);
+        
     }
 
     public void close() {
@@ -124,7 +132,25 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
     private void writeDrawRectImageDeltaOp(DrawRectImageDeltaOp op, FrameRectDeltaDetailed rectDeltaDetailed, Pt currPos) {
         Rect opRect = op.getRect();
         int[] rectImg = op.getImg();
-        System.out.println(opRect.getArea() + ": drawRectImageOp " + opRect + " (area:" + (opRect.getArea()*4/1024) + " ko)");
+        
+        int area = opRect.getArea();
+        if (area != rectImg.length) {
+            System.out.println(area + " != drawRectImageOp " + opRect); 
+        }
+        
+        if (DEBUG) {
+            System.out.println(area + ": drawRectImageOp " + opRect + " (area:" + (area*3/1024) + " ko)");
+        }
+        
+        long imgBytes = 3 * area; 
+        sumRectImgBytes += imgBytes; 
+        sumRectImgBytesPrintModulo += imgBytes;
+        while (sumRectImgBytesPrintModulo > sumRectImgBytesPrintFreq) {
+            sumRectImgBytesPrintModulo -= sumRectImgBytesPrintFreq;
+            System.out.print("m");
+        }
+
+        
         writeRectWithConstraints(opRect, currPos, dimPt);
         
         // TODO ... should use varlength encoding + no repeat of background (most used color)
@@ -140,7 +166,7 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
 //        
 //        writeImgData(rectImg, colorsHuffmanTable);
         
-//        writeImgData_naive(rectImg);
+        writeImgData_naive(rectImg);
     }
 
 

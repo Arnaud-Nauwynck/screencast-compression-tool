@@ -102,6 +102,11 @@ public class VideoStreamPlayer {
         }
     }
 
+    
+    public boolean isFastForward() {
+        return fastForward;
+    }
+    
     public void fastforward() {
         if (videoInputStream == null) {
             return;

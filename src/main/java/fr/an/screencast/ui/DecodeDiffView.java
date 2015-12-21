@@ -19,12 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgstream.VideoStreamFactory;
 import fr.an.screencast.compressor.imgtool.color.ColorMapAnalysis;
-import fr.an.screencast.compressor.imgtool.delta.FrameDeltaDetailed;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisProcessor;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
 import fr.an.screencast.compressor.imgtool.delta.DeltaOpFrame2BitStreamStructDataEncoder;
 import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
 import fr.an.screencast.compressor.imgtool.delta.FrameDelta;
+import fr.an.screencast.compressor.imgtool.delta.FrameDeltaDetailed;
 import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
 import fr.an.screencast.compressor.imgtool.delta.ops.MostUsedColorFillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
@@ -229,32 +229,25 @@ public class DecodeDiffView {
         
         @Override
         public void showNewImage(BufferedImage imageRGB) {
-            int frameIndex = videoStreamPlayer.getFrameCount();
-            List<FrameDelta> frameDeltas = deltaResult.getFrameDeltas();
-            FrameDelta frameDelta = null;
-            if (frameDeltaIndex < frameDeltas.size()) {
-                FrameDelta tmpFrameDelta = frameDeltas.get(frameDeltaIndex);
-                if (tmpFrameDelta.getFrameIndex() == frameIndex) { 
-                    frameDelta = tmpFrameDelta;
-                    frameDeltaIndex++;
+            FrameDelta frameDelta = deltaResult.getLastFrameDelta();
+
+            if (! videoStreamPlayer.isFastForward() || (frameDeltaIndex%50 == 0)) {
+                // slide previous and copy current 
+                BufferedImage tmp = prevImageRGB;
+                prevImageRGB = currImageRGB;
+                currImageRGB = tmp;
+                imageRGB.copyData(currImageRGB.getRaster());
+                
+                debugDrawDeltaAnalysis(prevImageRGB, currImageRGB, frameDelta, diffImageRGB, deltaImageRGB);
+    
+                BufferedImage bottomLeftImg = diffImageRGB;
+                // temporary display reduce color img
+                if (deltaFrameDetailed != null) {
+                    bottomLeftImg = deltaFrameDetailed.getColorReduceImg();
                 }
-            }
-
-            // slide previous and copy current 
-            BufferedImage tmp = prevImageRGB;
-            prevImageRGB = currImageRGB;
-            currImageRGB = tmp;
-            imageRGB.copyData(currImageRGB.getRaster());
             
-            debugDrawDeltaAnalysis(prevImageRGB, currImageRGB, frameDelta, diffImageRGB, deltaImageRGB);
-
-            BufferedImage bottomLeftImg = diffImageRGB;
-            // temporary display reduce color img
-            if (deltaFrameDetailed != null) {
-                bottomLeftImg = deltaFrameDetailed.getColorReduceImg();
+                deltaAnalysisPanel.asyncSetImages(prevImageRGB, currImageRGB, bottomLeftImg, deltaImageRGB);
             }
-            
-            deltaAnalysisPanel.asyncSetImages(prevImageRGB, currImageRGB, bottomLeftImg, deltaImageRGB);
         }
     }
     

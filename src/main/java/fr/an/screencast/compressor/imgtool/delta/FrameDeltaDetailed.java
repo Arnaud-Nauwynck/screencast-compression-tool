@@ -20,6 +20,12 @@ public class FrameDeltaDetailed {
 
     // ------------------------------------------------------------------------
 
+    public void clear() {
+        frameRectDeltaDetaileds.clear();
+        this.resultFrameDelta = null;
+        this.colorReduceImg = null;
+    }
+    
     public int getFrameIndex() {
         return frameIndex;
     }

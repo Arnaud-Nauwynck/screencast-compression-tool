@@ -70,10 +70,10 @@ public class DeltaImageAnalysisProcessor {
     
     public FrameDeltaDetailed processImage(int frameIndex, BufferedImage imageRGB) {
         FrameDelta frameDelta = new FrameDelta(frameIndex);
+
+        frameDeltaDetailed.clear();
         frameDeltaDetailed.setResultFrameDelta(frameDelta);
-        
         frameDeltaDetailed.setFrameIndex(frameIndex);
-        frameDeltaDetailed.setResultFrameDelta(frameDelta);
         
         final int[] imageData = ImageRasterUtils.toInts(imageRGB);
         slidingImages.slide(imageRGB);
@@ -139,8 +139,9 @@ public class DeltaImageAnalysisProcessor {
                 
                 
                 // unknown ... do explicit fill image for rect!
-                rectDelta.addDeltaOperation(new DrawRectImageDeltaOp(rect, imageData));
-            
+                int[] subImg = new int[rect.getArea()];
+                ImageRasterUtils.drawRectImg(rect.getDim(), subImg, dim, imageData, rect.getFromPt());
+                rectDelta.addDeltaOperation(new DrawRectImageDeltaOp(rect, subImg));
             }
         }
         deltaResult.addFrameDelta(frameDelta);
