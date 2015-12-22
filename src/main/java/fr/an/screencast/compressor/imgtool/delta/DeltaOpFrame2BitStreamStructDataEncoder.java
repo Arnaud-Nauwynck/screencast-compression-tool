@@ -16,6 +16,7 @@ import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap.ValueLo
 import fr.an.screencast.compressor.imgtool.delta.ops.DrawRectImageDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.FillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
+import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
@@ -161,13 +162,22 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
         // TODO ... should use varlength encoding + no repeat of background (most used color)
 
         // compute most used color => background
-        ColorToLocationStatsMap colorStats = rectDeltaDetailed.getColorStats();
-        ValueLocationStats mostUsedColor = colorStats.findMostUsedColor();
-        if (mostUsedColor == null) {
-            LOG.error("should not occur!");
-            return;
+        int backgroundColor;
+        {
+            ColorToLocationStatsMap colorStats = rectDeltaDetailed.getColorStats();
+            if (colorStats == null) {
+                // LOG.info("colorStat not computed.. need reeval backgroundColor");
+                backgroundColor = RGBUtils.greyRgb2Int(255);
+            } else {
+                ValueLocationStats mostUsedColor = colorStats.findMostUsedColor();
+                if (mostUsedColor == null) {
+                    // LOG.info("should not occur: null most used color");
+                    backgroundColor = RGBUtils.greyRgb2Int(255);
+                } else {
+                    backgroundColor = mostUsedColor.getValue();
+                }
+            }
         }
-        final int backgroundColor = mostUsedColor.getValue();
         
 //        // encode rectImg using huffman
 //        // reuse already computed color map analysis from rectDeltaDetailed
