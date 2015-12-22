@@ -26,10 +26,11 @@ public class DrawRectImageDeltaOp extends DeltaOperation {
     public void apply(DeltaContext context, BufferedImage dest) {
         int[] destData = ImageRasterUtils.toInts(dest);
         Dim destDim = new Dim(dest.getWidth(), dest.getHeight());
+        Pt destPt = rect.getFromPt();
         Dim srcDim = rect.getDim();
-        Pt destLocation = new Pt(rect.fromX, rect.fromY);
+        Rect srcROI = Rect.newDim(rect.getDim());
         
-        ImageRasterUtils.drawRectImg(destDim, destData, srcDim, img, destLocation);
+        ImageRasterUtils.drawRectImg(destDim, destData, destPt, srcDim, img, srcROI);
     }
     
     public Rect getRect() {

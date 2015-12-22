@@ -69,14 +69,20 @@ public class ImageRasterUtils {
      * @param src
      * @param destLocation
      */
-    public static void drawRectImg(Dim destDim, final int[] dest, Dim srcDim, final int[] src, Pt destLocation) {
-        final int width = destDim.getWidth();
+    public static void drawRectImg(Dim destDim, final int[] dest, Pt destLocation, 
+            Dim srcDim, final int[] src, Rect srcROI
+            ) {
+        final int destWidth = destDim.getWidth();
         final int srcWidth = srcDim.getWidth();
-        int srcIdx = 0;
-        int idx = destLocation.x;
-        final int lastY = Math.min(destDim.height, destLocation.y + srcDim.height);
-        for(int y = destLocation.y; y < lastY; y++,idx+=width,srcIdx+=srcWidth) {
-            System.arraycopy(dest, idx, src, srcIdx, srcWidth);
+        final int copyHeight = Math.min(destDim.height - destLocation.y, 
+                    Math.min(srcDim.height - srcROI.fromY, srcROI.getHeight()));
+        final int copyWidth = Math.min(destDim.width - destLocation.x, 
+                    Math.min(srcDim.width - srcROI.fromX, srcROI.getWidth()));
+        int srcIdx = srcROI.fromY * srcDim.width + srcROI.fromX;
+        int destIdx = destLocation.y * destWidth + destLocation.x;
+        final int destMaxIdx = (destLocation.y + copyHeight) * destWidth + destLocation.x;
+        for(; destIdx < destMaxIdx; destIdx+=destWidth,srcIdx+=srcWidth) {
+            System.arraycopy(src, srcIdx, dest, destIdx, copyWidth);
         }
     }
 }

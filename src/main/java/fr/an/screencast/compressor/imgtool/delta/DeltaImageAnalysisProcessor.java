@@ -140,7 +140,8 @@ public class DeltaImageAnalysisProcessor {
                 
                 // unknown ... do explicit fill image for rect!
                 int[] subImg = new int[rect.getArea()];
-                ImageRasterUtils.drawRectImg(rect.getDim(), subImg, dim, imageData, rect.getFromPt());
+                ImageRasterUtils.drawRectImg(rect.getDim(), subImg, new Pt(0, 0), 
+                    dim, imageData, rect);
                 rectDelta.addDeltaOperation(new DrawRectImageDeltaOp(rect, subImg));
             }
         }

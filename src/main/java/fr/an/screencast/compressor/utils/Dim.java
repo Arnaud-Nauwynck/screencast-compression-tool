@@ -32,6 +32,10 @@ public final class Dim implements Serializable {
         return height;
     }
 
+    public int getArea() {
+        return width * height;
+    }
+
     @Override
     public String toString() {
         return width + "x" + height;

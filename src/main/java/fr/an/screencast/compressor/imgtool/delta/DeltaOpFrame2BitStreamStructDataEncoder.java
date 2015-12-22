@@ -11,6 +11,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap;
+import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap.ValueLocationStats;
 import fr.an.screencast.compressor.imgtool.delta.ops.DrawRectImageDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.FillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
@@ -42,6 +44,8 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
     private long sumRectImgBytesPrintFreq = 1024*1024; // print "m" every 1M of raw uncompressed rect image  
     private long sumRectImgBytesPrintModulo = 0;
     
+    private ImgVarLengthBackgroundBitStreamEncoder imgVarLengthBitEncoder;
+    
     // ------------------------------------------------------------------------
 
     public DeltaOpFrame2BitStreamStructDataEncoder(File outputFile) {
@@ -67,6 +71,7 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
         deltaOpClassHuffmanTable.addSymbol(RestorePrevImageRectDeltaOp.class, 5);
         deltaOpClassHuffmanTable.addSymbol(FillRectDeltaOp.class, 1);
         
+        imgVarLengthBitEncoder = new ImgVarLengthBackgroundBitStreamEncoder(bitsStructOutput);
     }
 
     public void close() {
@@ -154,46 +159,31 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
         writeRectWithConstraints(opRect, currPos, dimPt);
         
         // TODO ... should use varlength encoding + no repeat of background (most used color)
+
+        // compute most used color => background
+        ColorToLocationStatsMap colorStats = rectDeltaDetailed.getColorStats();
+        ValueLocationStats mostUsedColor = colorStats.findMostUsedColor();
+        if (mostUsedColor == null) {
+            LOG.error("should not occur!");
+            return;
+        }
+        final int backgroundColor = mostUsedColor.getValue();
         
 //        // encode rectImg using huffman
 //        // reuse already computed color map analysis from rectDeltaDetailed
-//        ColorToLocationStatsMap colorStats = rectDeltaDetailed.getColorStats();
 //        HuffmanTable<Integer> colorsHuffmanTable = new HuffmanTable<Integer>();
 //        for(ValueLocationStats colorStat : colorStats.getValueToLocationStats().values()) {
 //            colorsHuffmanTable.addSymbol(colorStat.getValue(), colorStat.getCount());
 //        }
 //        colorsHuffmanTable.compute();
-//        
 //        writeImgData(rectImg, colorsHuffmanTable);
         
-        writeImgData_naive(rectImg);
+//        writeImgData_naive(rectImg);
+        
+        imgVarLengthBitEncoder.writeImgData_divideVarLengthWithBackground(rectImg, backgroundColor);
+        
     }
 
-
-    private void writeImgData(int[] rectImg, HuffmanTable<Integer> huffmanTable) {
-        // encode HuffmanTable codes first !
-        final int len = rectImg.length;
-        huffmanTable.writeEncode(bitsStructOutput, len, (out,value) -> out.writeInt(value));
-        // encode data
-        for (int i = 0; i < len; i++) {
-            int rgbValue = rectImg[i];
-            huffmanTable.writeEncodeSymbol(bitsStructOutput, rgbValue);
-        }
-    }
-
-    
-    private void writeImgData_naive(int[] rectImg) {
-        // encode HuffmanTable codes first !
-        final int len = rectImg.length;
-        // encode data
-        for (int i = 0; i < len; i++) {
-            int rgbValue = rectImg[i];
-            bitsStructOutput.writeInt(rgbValue);
-        }
-    }
-
-    
-    
     private void writeRestorePrevImageRectDeltaOp(RestorePrevImageRectDeltaOp op, 
             FrameDeltaDetailed frameDeltaDetailed,     
             Pt fromPos, Pt toPos) {

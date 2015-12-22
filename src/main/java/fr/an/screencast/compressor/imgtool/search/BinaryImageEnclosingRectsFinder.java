@@ -127,7 +127,7 @@ public class BinaryImageEnclosingRectsFinder {
             // test enlarge rect in direction 'dir'
             switch(dir) {
             case RIGHT:
-                if (rect.toX + 1 < width) {
+                if (rect.toX < width) {
                     x = rect.toX + 1;
                     y = rect.fromY;
                     idx = y*width+x;
@@ -177,7 +177,7 @@ public class BinaryImageEnclosingRectsFinder {
                             if (remainDiffInts[idx] != 0) {
                                 // optim: continue search left for same x,y
                                 rect.fromX = x-1; 
-                                if (rect.fromX - 1 >= 0) {
+                                if (rect.fromX >= 0) {
                                     minX = Math.max(0, rect.fromX - 1 - dilateRect);
                                     maxX = rect.fromX;
                                     lastDiffRight = 1; // should restart from minX ..
@@ -195,7 +195,7 @@ public class BinaryImageEnclosingRectsFinder {
                 }
                 break;
             case DOWN:
-                if (rect.toY + 1 < height) {
+                if (rect.toY < height) {
                     x = rect.fromX;
                     y = rect.toY + 1;
                     int maxY = Math.min(height,  y + 1 + dilateRect);
@@ -208,11 +208,11 @@ public class BinaryImageEnclosingRectsFinder {
                             if (remainDiffInts[idx] != 0) {
                                 rect.toY = y + 1;
                                 // optim: continue search left for same x,y
-                                if (rect.toY + 1 < height) {
+                                if (rect.toY < height) {
                                     maxY = Math.min(height,  y + 1 + dilateRect);
                                     lastDiffDown = 1;
-                                    y++;
-                                    idx += width;
+                                    // y++;
+                                    // idx += width;
                                     continue loop_y;
                                 } else {
                                     lastDiffDown = 1;

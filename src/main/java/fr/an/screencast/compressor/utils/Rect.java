@@ -176,7 +176,7 @@ public class Rect implements Serializable {
 
     @Override
     public String toString() {
-        return "[" + fromX + "," + toX + "]x[" + fromY + "," + toY + "]";
+        return "x:[" + fromX + "," + toX + "( . y:[" + fromY + "," + toY + "(";
     }
 
     @Override
