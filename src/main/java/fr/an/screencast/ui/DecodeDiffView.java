@@ -18,10 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgstream.VideoStreamFactory;
+import fr.an.screencast.compressor.imgstream.codecs.deltabitstream.DeltaOpFrame2BitStreamStructDataEncoder;
 import fr.an.screencast.compressor.imgtool.color.ColorMapAnalysis;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisProcessor;
 import fr.an.screencast.compressor.imgtool.delta.DeltaImageAnalysisResult;
-import fr.an.screencast.compressor.imgtool.delta.DeltaOpFrame2BitStreamStructDataEncoder;
 import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
 import fr.an.screencast.compressor.imgtool.delta.FrameDelta;
 import fr.an.screencast.compressor.imgtool.delta.FrameDeltaDetailed;

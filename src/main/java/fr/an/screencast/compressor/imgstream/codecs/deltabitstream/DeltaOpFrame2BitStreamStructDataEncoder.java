@@ -1,18 +1,26 @@
-package fr.an.screencast.compressor.imgtool.delta;
+package fr.an.screencast.compressor.imgstream.codecs.deltabitstream;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.zip.DeflaterOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap;
 import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap.ValueLocationStats;
+import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
+import fr.an.screencast.compressor.imgtool.delta.FrameDeltaDetailed;
+import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
+import fr.an.screencast.compressor.imgtool.delta.FrameRectDeltaDetailed;
 import fr.an.screencast.compressor.imgtool.delta.ops.DrawRectImageDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.FillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
@@ -96,15 +104,24 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
                 
                 List<DeltaOperation> deltaOps = rectDelta.getDeltaOperations();
                 // bitsStructOutput.writeInt(deltaOps != null? deltaOps.size() : 0);
+                final int maxOpTypePlus1 = 4;
+                
                 for(DeltaOperation deltaOp : deltaOps) {
-                    bitsStructOutput.writeBit(true); // hasMoreOp
+                    // bitsStructOutput.writeBit(true); // hasMoreOp
+                    
+
+                    // TODO write op type
+                    
                     if (deltaOp instanceof DrawRectImageDeltaOp) {
+                        bitsStructOutput.writeIntMinMax(0, maxOpTypePlus1, 0);
                         DrawRectImageDeltaOp op2 = (DrawRectImageDeltaOp) deltaOp;
                         writeDrawRectImageDeltaOp(op2, rectDeltaDetailed, currPos);
                     } else if (deltaOp instanceof RestorePrevImageRectDeltaOp) {
+                        bitsStructOutput.writeIntMinMax(0, maxOpTypePlus1, 1);
                         RestorePrevImageRectDeltaOp op2 = (RestorePrevImageRectDeltaOp) deltaOp;
                         writeRestorePrevImageRectDeltaOp(op2, frameDeltaDetailed, currPos, dimPt);
                     } else if (deltaOp instanceof FillRectDeltaOp) {
+                        bitsStructOutput.writeIntMinMax(0, maxOpTypePlus1, 2);
                         FillRectDeltaOp op2 = (FillRectDeltaOp) deltaOp;
                         writeFillRectDeltaOp(op2, currPos);
 //                    } else if (deltaOp instanceof DrawLineDeltaOp) {
@@ -118,7 +135,8 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
                     }
                     
                 }
-                bitsStructOutput.writeBit(false); // hasMoreOp
+                // bitsStructOutput.writeBit(false); // hasMoreOp
+                bitsStructOutput.writeIntMinMax(0, maxOpTypePlus1, 3);
                 
                 currPos.y = deltaRect.getFromY();
             }
@@ -158,40 +176,61 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
 
         
         writeRectWithConstraints(opRect, currPos, dimPt);
+  
         
-        // TODO ... should use varlength encoding + no repeat of background (most used color)
-
-        // compute most used color => background
-        int backgroundColor;
-        {
-            ColorToLocationStatsMap colorStats = rectDeltaDetailed.getColorStats();
-            if (colorStats == null) {
-                // LOG.info("colorStat not computed.. need reeval backgroundColor");
-                backgroundColor = RGBUtils.greyRgb2Int(255);
-            } else {
-                ValueLocationStats mostUsedColor = colorStats.findMostUsedColor();
-                if (mostUsedColor == null) {
-                    // LOG.info("should not occur: null most used color");
-                    backgroundColor = RGBUtils.greyRgb2Int(255);
-                } else {
-                    backgroundColor = mostUsedColor.getValue();
-                }
+        byte[] gzipBytes;
+        try {
+            ByteArrayOutputStream gzipBuffer = new ByteArrayOutputStream(rectImg.length >> 1);
+            DeflaterOutputStream gzipOut = new DeflaterOutputStream(gzipBuffer); 
+            for(int i = 0; i < rectImg.length; i++) {
+                int rgba = rectImg[i];
+                int r = RGBUtils.redOf(rgba), g = RGBUtils.greenOf(rgba), b = RGBUtils.blueOf(rgba); 
+                gzipOut.write(r);
+                gzipOut.write(g);
+                gzipOut.write(b);
             }
+            gzipOut.flush();
+            gzipBytes = gzipBuffer.toByteArray();
+        } catch(IOException ex) {
+            throw new RuntimeIOException("should not occur", ex);
         }
         
-//        // encode rectImg using huffman
-//        // reuse already computed color map analysis from rectDeltaDetailed
-//        HuffmanTable<Integer> colorsHuffmanTable = new HuffmanTable<Integer>();
-//        for(ValueLocationStats colorStat : colorStats.getValueToLocationStats().values()) {
-//            colorsHuffmanTable.addSymbol(colorStat.getValue(), colorStat.getCount());
+        bitsStructOutput.writeIntMinMax(0, rectImg.length, gzipBytes.length);
+        bitsStructOutput.writeBytes(gzipBytes, gzipBytes.length);
+        
+//        // TODO ... may use varlength encoding + no repeat of background (most used color)
+//
+//        // compute most used color => background
+//        int backgroundColor;
+//        {
+//            ColorToLocationStatsMap colorStats = rectDeltaDetailed.getColorStats();
+//            if (colorStats == null) {
+//                // LOG.info("colorStat not computed.. need reeval backgroundColor");
+//                backgroundColor = RGBUtils.greyRgb2Int(255);
+//            } else {
+//                ValueLocationStats mostUsedColor = colorStats.findMostUsedColor();
+//                if (mostUsedColor == null) {
+//                    // LOG.info("should not occur: null most used color");
+//                    backgroundColor = RGBUtils.greyRgb2Int(255);
+//                } else {
+//                    backgroundColor = mostUsedColor.getValue();
+//                }
+//            }
 //        }
-//        colorsHuffmanTable.compute();
-//        writeImgData(rectImg, colorsHuffmanTable);
-        
-//        writeImgData_naive(rectImg);
-        
-        imgVarLengthBitEncoder.writeImgData_divideVarLengthWithBackground(rectImg, backgroundColor);
-        
+//        
+////        // encode rectImg using huffman
+////        // reuse already computed color map analysis from rectDeltaDetailed
+////        HuffmanTable<Integer> colorsHuffmanTable = new HuffmanTable<Integer>();
+////        for(ValueLocationStats colorStat : colorStats.getValueToLocationStats().values()) {
+////            colorsHuffmanTable.addSymbol(colorStat.getValue(), colorStat.getCount());
+////        }
+////        colorsHuffmanTable.compute();
+////        writeImgData(rectImg, colorsHuffmanTable);
+//        
+////        writeImgData_naive(rectImg);
+//        
+//        imgVarLengthBitEncoder.writeImgData_divideVarLengthWithBg(rectImg, backgroundColor);
+//        
     }
 
     private void writeRestorePrevImageRectDeltaOp(RestorePrevImageRectDeltaOp op, 
