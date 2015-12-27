@@ -1,13 +1,25 @@
 package fr.an.screencast.compressor.imgtool.rectdescr;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.MutableDim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
+import fr.an.screencast.compressor.utils.Segment;
 
 /**
  * helper method for detecting rectangular image descriptions
@@ -246,4 +258,145 @@ public final class RectImgDescrDetectorHelper {
         Rect rect = Rect.newPtDim(pt, width, height);
         return new RoundBorderRectImgDescr(rect, cornerBgColor, borderColor, borderThick, new Dim(topCornerDim), new Dim(bottomCornerDim), null);
     }
+    
+
+    public RectImgDescription detectVertSplit(Rect rect) {
+        // scan vertical full lines, and sort by colors
+        Map<Integer, List<Segment>> colorsToSplits = detectVerticalBorderSplits(rect);
+
+        if (colorsToSplits.isEmpty()) {
+            return null;
+        }
+
+        if (colorsToSplits.size() == 1) {
+            List<Segment> splitBorders = colorsToSplits.values().iterator().next();
+            if (splitBorders.size() == 1) {
+                // only 1 split.. use simpler class instead of ColumnsSplitRectImgDescr
+                Segment splitBorder = splitBorders.get(0);
+                return new VerticalSplitRectImgDescr(rect, null, splitBorder, null);
+            }
+        }
+        
+        // get color splits with highest split count (/ larger border?)  
+        int maxCount = 0;
+        int splitColor = 0;
+        List<Segment> splitBorders = null;
+        for(Map.Entry<Integer,List<Segment>> e : colorsToSplits.entrySet()) {
+            List<Segment> ls = e.getValue();
+            if (maxCount < ls.size()) {
+                maxCount = ls.size();
+                splitBorders = ls;
+                splitColor = e.getKey();
+            }
+        }
+        
+        List<RectImgDescription> columns = new ArrayList<RectImgDescription>();
+        if (colorsToSplits.size() > 1) {
+            // decompose columns with othre colors vertical borders ...
+            // TODO
+        }
+        return new ColumnsSplitRectImgDescr(rect, splitColor, splitBorders, columns);
+    }
+    
+    public Map<Integer, List<Segment>> detectVerticalBorderSplits(Rect rect) {
+        Map<Integer,List<Segment>> colorsToSplits = new HashMap<Integer,List<Segment>>();
+        final int rectH = rect.getHeight();
+        int idx = rect.fromY * dim.width + rect.fromX;
+        for(int x = rect.fromX; x < rect.toX; x++,idx++) {
+            int lineH = sameCountsImg.getDownSameCount(idx);
+            if (lineH == rectH) {
+                int color = imgData[idx];
+                // find following lines with same height & color
+                int fromX = x;
+                int wSameColor = sameCountsImg.getDownSameCount(idx);
+                if (wSameColor > 1) {
+                    final int maxToX = Math.min(rect.toX, x+wSameColor); 
+                    for(; x < maxToX; x++,idx++) {
+                        int lineH2 = sameCountsImg.getDownSameCount(idx);
+                        if (lineH2 != rectH) {
+                            break;
+                        }
+                    }
+                }
+                List<Segment> splits = colorsToSplits.get(color);
+                if (splits == null) {
+                    splits = new ArrayList<Segment>();
+                    colorsToSplits.put(color, splits);
+                }
+                splits.add(new Segment(fromX, x));
+            }
+        }
+        return colorsToSplits;
+    }
+
+    public RectImgDescription detectHorizontalSplit(Rect rect) {
+        // scan horizontal full lines, and sort by colors
+        Map<Integer, List<Segment>> colorsToSplits = detectHorizontalBorderSplits(rect);
+
+        if (colorsToSplits.isEmpty()) {
+            return null;
+        }
+
+        if (colorsToSplits.size() == 1) {
+            List<Segment> splitBorders = colorsToSplits.values().iterator().next();
+            if (splitBorders.size() == 1) {
+                // only 1 split.. use simpler class instead of ColumnsSplitRectImgDescr
+                Segment splitBorder = splitBorders.get(0);
+                return new HorizontalSplitRectImgDescr(rect, null, splitBorder, null);
+            }
+        }
+        
+        // get color splits with highest split count (/ larger border?)  
+        int maxCount = 0;
+        int splitColor = 0;
+        List<Segment> splitBorders = null;
+        for(Map.Entry<Integer,List<Segment>> e : colorsToSplits.entrySet()) {
+            List<Segment> ls = e.getValue();
+            if (maxCount < ls.size()) {
+                maxCount = ls.size();
+                splitBorders = ls;
+                splitColor = e.getKey();
+            }
+        }
+        
+        List<RectImgDescription> rows = new ArrayList<RectImgDescription>();
+        if (colorsToSplits.size() > 1) {
+            // decompose columns with othre colors vertical borders ...
+            // TODO
+        }
+        return new LinesSplitRectImgDescr(rect, splitColor, splitBorders, rows);
+    }
+    
+    public Map<Integer, List<Segment>> detectHorizontalBorderSplits(Rect rect) {
+        Map<Integer,List<Segment>> colorsToSplits = new HashMap<Integer,List<Segment>>();
+        final int rectW = rect.getWidth();
+        final int W = dim.getWidth();
+        int idx = rect.fromY * dim.width + rect.fromX;
+        for(int y = rect.fromY; y < rect.toY; y++,idx+=W) {
+            int lineW = sameCountsImg.getRightSameCount(idx);
+            if (lineW == rectW) {
+                int color = imgData[idx];
+                // find following lines with same height & color
+                int fromY = y;
+                int hSameColor = sameCountsImg.getRightSameCount(idx);
+                if (hSameColor > 1) {
+                    final int maxToY = Math.min(rect.toY, y+hSameColor); 
+                    for(; y < maxToY; y++,idx+=W) {
+                        int lineW2 = sameCountsImg.getRightSameCount(idx);
+                        if (lineW2 != rectW) {
+                            break;
+                        }
+                    }
+                }
+                List<Segment> splits = colorsToSplits.get(color);
+                if (splits == null) {
+                    splits = new ArrayList<Segment>();
+                    colorsToSplits.put(color, splits);
+                }
+                splits.add(new Segment(fromY, y));
+            }
+        }
+        return colorsToSplits;
+    }
+
 }

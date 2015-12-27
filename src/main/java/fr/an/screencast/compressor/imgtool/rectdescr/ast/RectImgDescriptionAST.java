@@ -1,8 +1,11 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
+import java.util.List;
+
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
+import fr.an.screencast.compressor.utils.Segment;
 
 /**
  * 
@@ -186,11 +189,13 @@ public class RectImgDescriptionAST {
     public static class VerticalSplitRectImgDescr extends RectImgDescription {
         
         private RectImgDescription left;
+        private Segment splitBorder;
         private RectImgDescription right;
         
-        public VerticalSplitRectImgDescr(Rect rect, RectImgDescription left, RectImgDescription right) {
+        public VerticalSplitRectImgDescr(Rect rect, RectImgDescription left, Segment splitBorder, RectImgDescription right) {
             super(rect);
             this.left = left;
+            this.splitBorder = splitBorder;
             this.right = right;
         }
 
@@ -204,6 +209,14 @@ public class RectImgDescriptionAST {
 
         public void setLeft(RectImgDescription left) {
             this.left = left;
+        }
+        
+        public Segment getSplitBorder() {
+            return splitBorder;
+        }
+
+        public void setSplitBorder(Segment splitBorder) {
+            this.splitBorder = splitBorder;
         }
 
         public RectImgDescription getRight() {
@@ -221,11 +234,13 @@ public class RectImgDescriptionAST {
 
     public static class HorizontalSplitRectImgDescr extends RectImgDescription {
         private RectImgDescription up;
+        private Segment splitBorder;
         private RectImgDescription down;
         
-        public HorizontalSplitRectImgDescr(Rect rect, RectImgDescription up, RectImgDescription down) {
+        public HorizontalSplitRectImgDescr(Rect rect, RectImgDescription up, Segment splitBorder, RectImgDescription down) {
             super(rect);
             this.up = up;
+            this.splitBorder = splitBorder;
             this.down = down;
         }
 
@@ -239,6 +254,14 @@ public class RectImgDescriptionAST {
 
         public void setUp(RectImgDescription up) {
             this.up = up;
+        }
+        
+        public Segment getSplitBorder() {
+            return splitBorder;
+        }
+
+        public void setSplitBorder(Segment splitBorder) {
+            this.splitBorder = splitBorder;
         }
 
         public RectImgDescription getDown() {
@@ -256,12 +279,21 @@ public class RectImgDescriptionAST {
     public static class LinesSplitRectImgDescr extends RectImgDescription {
 
         private int backgroundColor;
-        // private int interLinespace; // redundant with lines
+        private Segment[] splitBorders;
         private RectImgDescription[] lines;
         
-        public LinesSplitRectImgDescr(Rect rect, int backgroundColor, RectImgDescription[] lines) {
+        public LinesSplitRectImgDescr(Rect rect, int backgroundColor, List<Segment> splitBorders, List<RectImgDescription> lines) {
+            this(rect, backgroundColor, 
+                (splitBorders != null)? splitBorders.toArray(new Segment[splitBorders.size()]) : null,
+                (lines != null)? lines.toArray(new RectImgDescription[lines.size()]) : null);
+        }
+        
+        public LinesSplitRectImgDescr(Rect rect, int backgroundColor, 
+                Segment[] splitBorders,
+                RectImgDescription[] lines) {
             super(rect);
             this.backgroundColor = backgroundColor;
+            this.splitBorders = splitBorders;
             this.lines = lines;
         }
         
@@ -277,6 +309,13 @@ public class RectImgDescriptionAST {
             this.backgroundColor = backgroundColor;
         }
 
+        public Segment[] getSplitBorders() {
+            return splitBorders;
+        }
+
+        public void setSplitBorders(Segment[] splitBorders) {
+            this.splitBorders = splitBorders;
+        }
 
         public RectImgDescription[] getLines() {
             return lines;
@@ -294,12 +333,21 @@ public class RectImgDescriptionAST {
     public static class ColumnsSplitRectImgDescr extends RectImgDescription {
         
         private int backgroundColor;
-        // private int interspace; // redundant with columns
+        private Segment[] splitBorders;
         private RectImgDescription[] columns;
-        
-        public ColumnsSplitRectImgDescr(Rect rect, int backgroundColor, RectImgDescription[] columns) {
+
+        public ColumnsSplitRectImgDescr(Rect rect, int backgroundColor, List<Segment> splitBorders, 
+                List<RectImgDescription> columns) {
+            this(rect, backgroundColor,
+                (splitBorders != null)? splitBorders.toArray(new Segment[splitBorders.size()]) : null,
+                (columns != null)? columns.toArray(new RectImgDescription[columns.size()]) : null);
+        }
+
+        public ColumnsSplitRectImgDescr(Rect rect, int backgroundColor, 
+                Segment[] splitBorders, RectImgDescription[] columns) {
             super(rect);
             this.backgroundColor = backgroundColor;
+            this.splitBorders = splitBorders;
             this.columns = columns;
         }
         
@@ -310,9 +358,19 @@ public class RectImgDescriptionAST {
         public int getBackgroundColor() {
             return backgroundColor;
         }
+        
         public void setBackgroundColor(int backgroundColor) {
             this.backgroundColor = backgroundColor;
         }
+
+        public Segment[] getSplitBorders() {
+            return splitBorders;
+        }
+
+        public void setSplitBorders(Segment[] splitBorders) {
+            this.splitBorders = splitBorders;
+        }
+
         public RectImgDescription[] getColumns() {
             return columns;
         }

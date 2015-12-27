@@ -13,10 +13,10 @@ public final class RGBUtils {
     }
 
     public static int rgb2Int(int r, int g, int b) {
-        return rgb2Int(r, g, b, 255);
+        return rgb2Int(r, g, b, 0);
     }
     public static int greyRgb2Int(int grey) {
-        return rgb2Int(grey,  grey,  grey, 255);
+        return rgb2Int(grey,  grey,  grey, 0);
     }
     
     public static int rgb2Int256(int r, int g, int b, int a) {

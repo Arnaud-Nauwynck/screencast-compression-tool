@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.imgtool.delta;
+package fr.an.screencast.compressor.imgstream.codecs.deltabitstream;
 
 import fr.an.util.encoder.huffman.HuffmanTable;
 import fr.an.util.encoder.structio.BitStreamStructDataOutput;
@@ -7,10 +7,7 @@ public class ImgVarLengthBackgroundBitStreamEncoder {
 
     private BitStreamStructDataOutput bitsStructOutput;
     
-    private int[] bufferVarLengthPos;
-    private int[] bufferVarLengthColor;
-    private int[] bufferVarLengthLen;
-    private int[] bufferVarLengthBackgroundLen;
+    private ColorBgSegmentArray allocatedSegmentArray = new ColorBgSegmentArray();
     
     // ------------------------------------------------------------------------
 
@@ -42,99 +39,123 @@ public class ImgVarLengthBackgroundBitStreamEncoder {
     }
 
 
-    public void writeImgData_divideVarLengthWithBackground(final int[] imgData, final int backgroundColor) {
-        if (bufferVarLengthPos == null || bufferVarLengthPos.length < imgData.length) {
-            bufferVarLengthPos = new int[imgData.length];
-            bufferVarLengthColor = new int[imgData.length];
-            bufferVarLengthLen = new int[imgData.length];
-            bufferVarLengthBackgroundLen = new int[imgData.length];
+    public void writeImgData_divideVarLengthWithBg(final int[] imgData, final int BgColor) {
+        if (allocatedSegmentArray == null) {
+            allocatedSegmentArray = new ColorBgSegmentArray();
         }
+        ColorBgSegmentArray segmentArray = allocatedSegmentArray;
+        // compute varlength alternance of color / Bg color
         
-        // compute varlength alternance of color / background color
-        final int[] varLengthPos = bufferVarLengthPos;
-        final int[] varLengthColor = bufferVarLengthColor;
-        final int[] varLengthLen = bufferVarLengthLen;
-        final int[] varLengthBackgroundLen = bufferVarLengthBackgroundLen;
+        segmentArray.computeSegmentsForImgAndBgColor(imgData, BgColor);
+        segmentArray.computeSegmentsHuffmanTableAndMinMaxLens();
         
-        final int len = imgData.length;
-        int idx = 0;
-        int segmentIdx = 0;
-        // iterate on backgroundColor  (until color != backgroundColor)
-        for(; idx < len; idx++) {
-            if (backgroundColor != imgData[idx]) {
-                break;
-            }
-        }
-        if (idx != 0) {
-            varLengthPos[0] = 0;
-            varLengthColor[0] = 0;
-            varLengthLen[0] = 0;
-            varLengthBackgroundLen[0] = idx;
-            segmentIdx++;
-        }
+        int len = imgData.length;
+        int segmentsCount = segmentArray.size();
+        bitsStructOutput.writeIntMinMax(0, len, segmentsCount);
         
-        for(; idx < len;) {
-            varLengthPos[segmentIdx] = idx;
-            final int currColor = imgData[idx];
-            bufferVarLengthColor[segmentIdx] = currColor;
-            // iterate until color != currColor
-            idx++;
-            for(; idx < len; idx++) {
-                if (currColor != imgData[idx]) {
-                    break;
-                }
-            }
-            int startBackgroundIdx = idx; 
-            bufferVarLengthLen[segmentIdx] = idx - varLengthPos[segmentIdx];
-            // iterate in background
-            for(; idx < len; idx++) {
-                if (backgroundColor != imgData[idx]) {
-                    break;
-                }
-            }
-            varLengthBackgroundLen[segmentIdx] = idx - startBackgroundIdx;
-            segmentIdx++;
-        }
-        final int segmentCount = segmentIdx;
+        bitsStructOutput.writeIntMinMax(0, len - segmentsCount*1, segmentArray.maxSegmentLenPlusBgLen);
+        bitsStructOutput.writeIntMinMax(0, segmentArray.maxSegmentLenPlusBgLen, segmentArray.minSegmentLenPlusBgLen);
         
-        // compute huffman table of color frequency per segments (not per absolute count)
-        // also compute min/max for varLengthLen[.] and varLengthBackgroundLen[.]
-        HuffmanTable<Integer> fgColorHuffmanTable = new HuffmanTable<Integer>();
-        int minVarLengthLen = Integer.MAX_VALUE;
-        int maxVarLengthLen = Integer.MIN_VALUE;
-        int minVarLengthBackgroundLen = varLengthBackgroundLen[0];
-        int maxVarLengthBackgroundLen = varLengthBackgroundLen[0];
-        for(int i = 1; i < segmentCount; i++) {
-            fgColorHuffmanTable.incrSymbolFreq(bufferVarLengthColor[i], 1);
-            
-            minVarLengthLen = Math.min(minVarLengthLen, varLengthLen[i]);
-            maxVarLengthLen = Math.max(maxVarLengthLen, varLengthLen[i]);
-            minVarLengthBackgroundLen = Math.min(minVarLengthBackgroundLen, varLengthBackgroundLen[i]);
-            maxVarLengthBackgroundLen = Math.max(maxVarLengthBackgroundLen, varLengthBackgroundLen[i]);
-        }
-        fgColorHuffmanTable.compute();
+        bitsStructOutput.writeIntMinMax(0, segmentArray.maxSegmentLenPlusBgLen, segmentArray.maxSegmentBgLen);
+        bitsStructOutput.writeIntMinMax(0, segmentArray.maxSegmentBgLen, segmentArray.minSegmentBgLen);
         
-        bitsStructOutput.writeIntMinMax(0, len, segmentCount);
-        bitsStructOutput.writeIntMinMax(0, len, minVarLengthLen); //TOOPTIM?
-        bitsStructOutput.writeIntMinMax(0, len, maxVarLengthLen); //TOOPTIM?
-        bitsStructOutput.writeIntMinMax(0, len, minVarLengthBackgroundLen); //TOOPTIM?
-        bitsStructOutput.writeIntMinMax(0, len, maxVarLengthBackgroundLen); //TOOPTIM?
+        int knownMaxRemainMaxLen = segmentArray.maxSegmentLenPlusBgLen; // ??? remainMaxLen - segmentArray.maxSegmentBgLen - segmentsCount * segmentArray.minSegmentBgLen;
+        bitsStructOutput.writeIntMinMax(0, knownMaxRemainMaxLen, segmentArray.maxSegmentLen);
+        bitsStructOutput.writeIntMinMax(0, segmentArray.maxSegmentLen, segmentArray.minSegmentLen);
         
         // encode var length data ... using recursive Divide & Conquer on mid position
-        recursiveEncodeVarLengthWithBackground(1, segmentCount,
-            varLengthPos, varLengthColor, varLengthLen, varLengthBackgroundLen,
-            fgColorHuffmanTable,
-            minVarLengthLen, maxVarLengthLen, minVarLengthBackgroundLen, maxVarLengthBackgroundLen);
+        recursiveEncodeVarLengthWithBg(0, ColorBgSegmentArray.iterAt(1), ColorBgSegmentArray.iterAt(segmentsCount), segmentArray,
+            segmentArray.fgColorHuffmanTable,
+            segmentArray.minSegmentLen, segmentArray.maxSegmentLen, 
+            segmentArray.minSegmentBgLen, segmentArray.maxSegmentBgLen,
+            segmentArray.minSegmentLenPlusBgLen, segmentArray.maxSegmentLenPlusBgLen);
     }
     
-    private void recursiveEncodeVarLengthWithBackground(int fromSegment, int toSegment, 
-            int[] varLengthPos, int[] varLengthColor, int[] varLengthLen, int[] varLengthBackgroundLen, 
+    
+    /*pp*/ void recursiveEncodeVarLengthWithBg(
+            int posFrom, int segmentIterFrom, int segmentIterTo, 
+            ColorBgSegmentArray varLenArray, 
             HuffmanTable<Integer> fgColorHuffmanTable, 
-            int minVarLengthLen, int maxVarLengthLen,
-            int minVarLengthBackgroundLen, int maxVarLengthBackgroundLen) {
+            int minSegmentLen, int maxSegmentLen,
+            int minSegmentBgLen, int maxSegmentBgLen,
+            int minSegmentLenPlusBgLen, int maxSegmentLenPlusBgLen) {
+        assert segmentIterFrom < segmentIterTo;
+        // int iterPrev = segmentIterFrom - ColorBgSegmentArray.iterIncr();
+        // assert posFrom == varLenArray.getPos(iterPrev) + varLenArray.getLen(iterPrev) + varLenArray.getBgLen(iterPrev);
+        int posTo = varLenArray.getPos(segmentIterTo);
+
+//        if (segmentIterFrom + ColorBgSegmentArray.iterIncr() == segmentIterTo) {
+//            // degenerated case: only 1 point .. encode without recursion
+//            final int iter = segmentIterFrom;
+//            int pos = varLenArray.getPos(iter);
+//            bitsStructOutput.writeIntMinMax(posFrom, posTo, pos);
+//            int remainLen = posTo - pos;
+//            int segmentLen = varLenArray.getLen(iter);
+//            bitsStructOutput.writeIntMinMax(minSegmentLen, Math.min(maxSegmentLen, remainLen), segmentLen);
+//            assert remainLen - segmentLen == varLenArray.getBgLen(iter); 
+//            // bitsStructOutput.writeIntMinMax(minSegmentBgLen, remainLen, varLenArray.getBgLen(iter));
+//            int color = varLenArray.getColor(iter); 
+//            varLenArray.fgColorHuffmanTable.writeEncodeSymbol(bitsStructOutput, color);
+//
+//            return;
+//        }
         
-//        TODO 
+        // Divide & Conquer ...
+        // split using mid point
+        final int iterMid = (segmentIterFrom + segmentIterTo) >>> 1;
         
+        // encode mid segment : pos,len,bgLen,color
+        final int posMid = varLenArray.getPos(iterMid);
+        final int segmentLenMid = varLenArray.getLen(iterMid);
+        final int segmentBgLenMid = varLenArray.getBgLen(iterMid);
+        final int colorMid = varLenArray.getColor(iterMid); 
+
+        // encode mid segment pos
+        // => compute known min/max for pos ... better than [posFrom, posTo( 
+        // knowing that spaces must be reserved for inserting N segments with minLen/minBgLen
+        final int leftRemainSegmentCount = (iterMid - segmentIterFrom) >>> 2; // TOCHECK
+        final int rightRemainSegmentCount = (segmentIterTo - iterMid) >>> 2; // TOCHECK
+        int knownMinForPosMid = posFrom + leftRemainSegmentCount * minSegmentLenPlusBgLen;
+        int knownMaxForPosMid = posTo - rightRemainSegmentCount * minSegmentLenPlusBgLen;
+        
+        bitsStructOutput.writeIntMinMax(knownMinForPosMid, knownMaxForPosMid, posMid);
+        
+        
+        int remainRight = posTo - posMid;
+        // encode mid segment len
+        // TOOPTIM:   remainRight -= ?
+        bitsStructOutput.writeIntMinMax(minSegmentLen, Math.min(maxSegmentLen, remainRight), segmentLenMid);
+        // encode mid segment bgLen
+        remainRight -= segmentLenMid;
+        bitsStructOutput.writeIntMinMax(minSegmentBgLen, Math.min(maxSegmentBgLen, remainRight), segmentBgLenMid );
+        // encode mid segment color
+        varLenArray.fgColorHuffmanTable.writeEncodeSymbol(bitsStructOutput, colorMid);
+
+        // recurse on left part
+        if (segmentIterFrom != iterMid) {
+            // OPTIM? .. may re-encode better remaining min/max (& recompute huffmanTable).. 
+            recursiveEncodeVarLengthWithBg(
+                posFrom, segmentIterFrom, iterMid, 
+                varLenArray, 
+                fgColorHuffmanTable, 
+                minSegmentLen, maxSegmentLen,
+                minSegmentBgLen, maxSegmentBgLen,
+                minSegmentLenPlusBgLen, maxSegmentLenPlusBgLen);
+        }
+        
+        // recurse on right part
+        int posMidRight = posMid + segmentLenMid + segmentBgLenMid;
+        int iterMidRight = iterMid + ColorBgSegmentArray.iterIncr();
+        if (iterMidRight != segmentIterTo) {
+            recursiveEncodeVarLengthWithBg(
+                posMidRight, iterMidRight, segmentIterTo, 
+                varLenArray, 
+                fgColorHuffmanTable, 
+                minSegmentLen, maxSegmentLen,
+                minSegmentBgLen, maxSegmentBgLen,
+                minSegmentLenPlusBgLen, maxSegmentLenPlusBgLen);
+        }
     }
 
+    
 }
