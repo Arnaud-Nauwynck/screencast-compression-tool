@@ -11,6 +11,10 @@ public class ImageDataAssert {
         assertEquals(expected, actual.getData(), dim.width, dim.height);
     }
 
+    public static void assertEquals(int[] expected, int[] actual, Dim dim) {
+        assertEquals(expected, actual, dim.width, dim.height);
+    }
+    
     public static void assertEquals(int[] expected, int[] actual, int width, int height) {
         for(int y = 0, idx_xy = 0; y < height; y++) {
             for(int x = 0; x < width; x++,idx_xy++) {

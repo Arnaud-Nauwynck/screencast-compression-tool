@@ -25,8 +25,6 @@ public class ColorBitsReducer {
         final int[] srcData = ImageRasterUtils.toInts(srcRGB);
         final int width = srcRGB.getWidth(), height = srcRGB.getHeight();
 
-        int x, y, idx;
-
         // TODO assume roi is strictly within image dimension!!
         ImageRasterUtils.copyRect(destData, srcData, width, height, roi);
 
@@ -38,17 +36,34 @@ public class ColorBitsReducer {
         }
         
         // remove least significant bits
-        idx = roi.fromY*width+roi.fromX;
-        final int incrIdxY = roi.fromY + roi.fromX - roi.toX;
-        for (y = roi.fromY; y < roi.toY; y++,idx+=incrIdxY) {
-            for (x = roi.fromX; x < roi.toX; x++,idx++) {
-                destData[idx] = destData[idx] & rgbLeastSignificantBitsMask; 
-            }
-        }
+        maskColorBits(width, destData, rgbLeastSignificantBitsMask, roi);
     }
     
     public int reduceRGBLeastSignificantBits(int value) {
         return value & rgbLeastSignificantBitsMask;
     }
     
+    public static void maskColorBits(final int width, int[] img, int colorBitMask, final Rect roi) {
+        int idx = roi.fromY*width+roi.fromX;
+        final int incrIdxY = roi.fromY + roi.fromX - roi.toX;
+        for (int y = roi.fromY; y < roi.toY; y++,idx+=incrIdxY) {
+            for (int x = roi.fromX; x < roi.toX; x++,idx++) {
+                img[idx] = img[idx] & colorBitMask; 
+            }
+        }
+    }
+    
+    public static void maskColorBits(int[] img, int colorBitMask) {
+        final int len = img.length;
+        for (int idx = 0; idx != len; idx++) {
+            img[idx] = img[idx] & colorBitMask; 
+        }
+    }
+
+    public static void maskLeastSignificantBits(int[] img, int nbRemovedColorBits) {
+        int colorMask = (0xff >>> nbRemovedColorBits) << nbRemovedColorBits;
+        int rgbLeastSignificantBitsMask = RGBUtils.rgb2Int(colorMask, colorMask, colorMask);
+        maskColorBits(img, rgbLeastSignificantBitsMask);
+    }
+
 }

@@ -19,7 +19,7 @@ public class ImageRasterUtils {
         if (CHECK) {
             int checkIdx = y * width + x;
             if (idx != checkIdx) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("expecting idx(=y*w+x) " + checkIdx + ", got " + idx + " for x:" + x + ", y:" + y + ", width:" + width);
             }
         }
     }

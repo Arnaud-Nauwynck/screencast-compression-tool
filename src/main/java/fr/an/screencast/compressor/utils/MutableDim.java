@@ -3,28 +3,27 @@ package fr.an.screencast.compressor.utils;
 import java.awt.Point;
 import java.io.Serializable;
 
-public final class Dim implements Serializable {
+public final class MutableDim implements Serializable {
 
     /** */
     private static final long serialVersionUID = 1L;
     
-    public final int width;
-    public final int height;
+    public int width;
+    public int height;
     
     // ------------------------------------------------------------------------
 
-    public Dim(MutableDim src) {
-        this.width = src.width;
-        this.height = src.height;
+    public MutableDim() {
     }
-
-    public Dim(int width, int height) {
+    
+    public MutableDim(int width, int height) {
         this.width = width;
         this.height = height;
     }
 
     // ------------------------------------------------------------------------
 
+    
     public Point toAwtPoint() {
         return new java.awt.Point(width, height);
     }
@@ -33,8 +32,16 @@ public final class Dim implements Serializable {
         return width;
     }
 
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
     public int getHeight() {
         return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 
     public int getArea() {
@@ -63,11 +70,11 @@ public final class Dim implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        Dim other = (Dim) obj;
+        MutableDim other = (MutableDim) obj;
         return eq(other);
     }
     
-    public boolean eq(Dim other) {
+    public boolean eq(MutableDim other) {
         return width == other.width && height == other.height;
     }
     
