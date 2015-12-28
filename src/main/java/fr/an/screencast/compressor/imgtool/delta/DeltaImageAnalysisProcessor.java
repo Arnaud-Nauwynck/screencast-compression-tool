@@ -11,8 +11,10 @@ import fr.an.screencast.compressor.imgtool.delta.IntImageLRUChangeHistory.RectRe
 import fr.an.screencast.compressor.imgtool.delta.ops.DrawRectImageDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.FillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
+import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.search.BinaryImageEnclosingRectsFinder;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
+import fr.an.screencast.compressor.imgtool.utils.IntsCRC32;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunction;
 import fr.an.screencast.compressor.imgtool.utils.RasterImageFunctions;
 import fr.an.screencast.compressor.utils.Dim;
@@ -24,6 +26,9 @@ public class DeltaImageAnalysisProcessor {
 
     private static boolean DEBUG_REDUCED_COLORMAP = false;
     
+    private static int DEFAULT_GLYPHMRUTABLE_SIZE = 1000;
+    private static int DEFAULT_MAX_AREA_FOR_GLYPH = 150*150;
+    
     private Dim dim;
     private SlidingImageArray slidingImages;
     private BinaryImageEnclosingRectsFinder binaryImageRectsFinder;
@@ -32,6 +37,9 @@ public class DeltaImageAnalysisProcessor {
     private FrameDeltaDetailed frameDeltaDetailed;
     
     private IntImageLRUChangeHistory imageLRUChangeHistory;
+    
+    private GlyphMRUTable glyphMRUTable;
+    private int maxAreaForGlyph = DEFAULT_MAX_AREA_FOR_GLYPH;
     
     private ColorBitsReducer colorBitsReducer;
     private BufferedImage colorReduceImg;
@@ -55,6 +63,7 @@ public class DeltaImageAnalysisProcessor {
         this.prevSlidingLen = prevSlidingLen;
         this.perPixelLRUHistory = perPixelLRUHistory;
         this.colorBitsReducer = new ColorBitsReducer(colorBitsReduceOpenSize, colorBitsLeastSignificantBitsCount);
+        this.glyphMRUTable = new GlyphMRUTable(DEFAULT_GLYPHMRUTABLE_SIZE); 
     }
     
     // ------------------------------------------------------------------------
@@ -107,6 +116,7 @@ public class DeltaImageAnalysisProcessor {
                 rectDeltaDetailed.setResultFrameRectDelta(rectDelta);
                 frameDeltaDetailed.addFrameRectDelta(rectDeltaDetailed);
                 
+                
                 ColorToLocationStatsMap reducedColorStats = new ColorToLocationStatsMap();
                 reducedColorStats.addPts(frameIndex, rect, colorReduceImg);
 
@@ -130,8 +140,16 @@ public class DeltaImageAnalysisProcessor {
                 // - drawText()
                 
                 // check if rect can be painted using already seen glyph  (using connex component detection / database of known glyphs)
-                // - drawGlyph()
-                // ...
+                Dim rectDim = rect.getDim();
+                if (rect.getArea() < maxAreaForGlyph) {
+                    // TODO ... should compute glyph CRC without copying data
+                    int[] subImg = new int[rect.getArea()];
+                    ImageRasterUtils.drawRectImg(rectDim, subImg, new Pt(0, 0), dim, imageData, rect);
+                    int crc = IntsCRC32.crc32(subImg, 0, rect.getArea());
+                    
+                    // TODO ... glyphMRUTable.findOrAddGlyph(rectDim, subImg);
+                }
+                
                 
                 // check if rect can be painted as a video inverse of previous frame
                 
@@ -140,7 +158,7 @@ public class DeltaImageAnalysisProcessor {
                 
                 // unknown ... do explicit fill image for rect!
                 int[] subImg = new int[rect.getArea()];
-                ImageRasterUtils.drawRectImg(rect.getDim(), subImg, new Pt(0, 0), 
+                ImageRasterUtils.drawRectImg(rectDim, subImg, new Pt(0, 0), 
                     dim, imageData, rect);
                 rectDelta.addDeltaOperation(new DrawRectImageDeltaOp(rect, subImg));
             }
