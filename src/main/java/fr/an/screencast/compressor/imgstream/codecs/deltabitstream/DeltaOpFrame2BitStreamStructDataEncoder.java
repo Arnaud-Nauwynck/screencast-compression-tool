@@ -11,25 +11,28 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.zip.DeflaterOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap;
-import fr.an.screencast.compressor.imgtool.color.ColorToLocationStatsMap.ValueLocationStats;
 import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
 import fr.an.screencast.compressor.imgtool.delta.FrameDeltaDetailed;
 import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
 import fr.an.screencast.compressor.imgtool.delta.FrameRectDeltaDetailed;
+import fr.an.screencast.compressor.imgtool.delta.ops.AddAndDrawGlyphRectDeltaOp;
+import fr.an.screencast.compressor.imgtool.delta.ops.AddGlyphDeltaOp;
+import fr.an.screencast.compressor.imgtool.delta.ops.DrawGlyphRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.DrawRectImageDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.FillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
+import fr.an.screencast.compressor.imgtool.delta.ops.StopDoNothingDeltaOperation;
+import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.util.bits.OutputStreamToBitOutputStream;
 import fr.an.util.bits.RuntimeIOException;
+import fr.an.util.encoder.huffman.HuffmanBitsCode;
 import fr.an.util.encoder.huffman.HuffmanTable;
 import fr.an.util.encoder.structio.BitStreamStructDataOutput;
 
@@ -75,10 +78,16 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
         }
         this.bitsStructOutput = new BitStreamStructDataOutput(bitStreamOutput);
         
-        // TODO hard-coded deltaOp class & frequency
-        deltaOpClassHuffmanTable.addSymbol(DrawRectImageDeltaOp.class, 10);
-        deltaOpClassHuffmanTable.addSymbol(RestorePrevImageRectDeltaOp.class, 5);
+        // TODO TOOPTIM, for now, use hard-coded deltaOp class & frequency
+        deltaOpClassHuffmanTable.addSymbol(DrawRectImageDeltaOp.class, 20);
+        deltaOpClassHuffmanTable.addSymbol(RestorePrevImageRectDeltaOp.class, 10);
         deltaOpClassHuffmanTable.addSymbol(FillRectDeltaOp.class, 1);
+        deltaOpClassHuffmanTable.addSymbol(AddGlyphDeltaOp.class, 1);
+        deltaOpClassHuffmanTable.addSymbol(DrawGlyphRectDeltaOp.class, 5);
+        deltaOpClassHuffmanTable.addSymbol(AddAndDrawGlyphRectDeltaOp.class, 10);
+        deltaOpClassHuffmanTable.addSymbol(StopDoNothingDeltaOperation.class, 2);
+        
+        deltaOpClassHuffmanTable.compute();
         
         imgVarLengthBitEncoder = new ImgVarLengthBackgroundBitStreamEncoder(bitsStructOutput);
     }
@@ -104,26 +113,29 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
                 
                 List<DeltaOperation> deltaOps = rectDelta.getDeltaOperations();
                 // bitsStructOutput.writeInt(deltaOps != null? deltaOps.size() : 0);
-                final int maxOpTypePlus1 = 4;
                 
                 for(DeltaOperation deltaOp : deltaOps) {
                     // bitsStructOutput.writeBit(true); // hasMoreOp
                     
-
-                    // TODO write op type
+                    Class<? extends DeltaOperation> deltaOpClass = deltaOp.getClass();
+                    deltaOpClassHuffmanTable.writeEncodeSymbol(bitsStructOutput, deltaOpClass);
                     
                     if (deltaOp instanceof DrawRectImageDeltaOp) {
-                        bitsStructOutput.writeIntMinMax(0, maxOpTypePlus1, 0);
                         DrawRectImageDeltaOp op2 = (DrawRectImageDeltaOp) deltaOp;
                         writeDrawRectImageDeltaOp(op2, rectDeltaDetailed, currPos);
                     } else if (deltaOp instanceof RestorePrevImageRectDeltaOp) {
-                        bitsStructOutput.writeIntMinMax(0, maxOpTypePlus1, 1);
                         RestorePrevImageRectDeltaOp op2 = (RestorePrevImageRectDeltaOp) deltaOp;
                         writeRestorePrevImageRectDeltaOp(op2, frameDeltaDetailed, currPos, dimPt);
                     } else if (deltaOp instanceof FillRectDeltaOp) {
-                        bitsStructOutput.writeIntMinMax(0, maxOpTypePlus1, 2);
                         FillRectDeltaOp op2 = (FillRectDeltaOp) deltaOp;
                         writeFillRectDeltaOp(op2, currPos);
+                    } else if (deltaOp instanceof AddGlyphDeltaOp) {
+                        writeAddGlyphDeltaOp((AddGlyphDeltaOp) deltaOp);
+                    } else if (deltaOp instanceof DrawGlyphRectDeltaOp) {
+                        writeDrawGlyphRectDeltaOp((DrawGlyphRectDeltaOp) deltaOp, currPos);
+                    } else if (deltaOp instanceof AddAndDrawGlyphRectDeltaOp) {
+                        writeAddAndDrawGlyphRectDeltaOp((AddAndDrawGlyphRectDeltaOp) deltaOp, currPos);
+                        
 //                    } else if (deltaOp instanceof DrawLineDeltaOp) {
 //                        // TODO unused yet..
 //                    } else if (deltaOp instanceof MostUsedColorFillRectDeltaOp) {
@@ -135,13 +147,45 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
                     }
                     
                 }
-                // bitsStructOutput.writeBit(false); // hasMoreOp
-                bitsStructOutput.writeIntMinMax(0, maxOpTypePlus1, 3);
+                deltaOpClassHuffmanTable.writeEncodeSymbol(bitsStructOutput, StopDoNothingDeltaOperation.class);
                 
                 currPos.y = deltaRect.getFromY();
             }
         }
         // bitsStructOutput.writeBit(false); // hasMoreRect
+    }
+
+    private void writeAddAndDrawGlyphRectDeltaOp(AddAndDrawGlyphRectDeltaOp op, Pt currPos) {
+        Rect opRect = op.getRect();
+        int[] glyphData = op.getGlyphData();
+        
+        writeRectWithConstraints(opRect, currPos, dimPt);
+        writeEncodeImgData(glyphData);
+    }
+
+    private void writeDrawGlyphRectDeltaOp(DrawGlyphRectDeltaOp op, Pt currPos) {
+        Rect opRect = op.getRect();
+        GlyphIndexOrCode glyphIndexOrCode = op.getGlyphIndexOrCode();
+        
+        writeRectWithConstraints(opRect, currPos, dimPt);
+        boolean isYoung = glyphIndexOrCode.isYoung();
+        bitsStructOutput.writeBit(isYoung);
+        if (isYoung) {
+            int glyphIndex = glyphIndexOrCode.getYoungIndex();
+            int maxIndex = 1024*8; // Integer.MAX_VALUE; // TODO OPTIM
+            bitsStructOutput.writeIntMinMax(0, maxIndex, glyphIndex);
+        } else {
+            HuffmanBitsCode code = glyphIndexOrCode.getOldHuffmanCode();
+            code.writeCodeTo(bitsStructOutput);
+        }
+    }
+
+    private void writeAddGlyphDeltaOp(AddGlyphDeltaOp op) {
+        Dim glyphDim = op.getGlyphDim();
+        int[] glyphData = op.getGlyphData();
+        
+        writeDimMinMax(new Dim(1,1), dim, glyphDim);
+        writeEncodeImgData(glyphData);
     }
 
     private void writeFillRectDeltaOp(FillRectDeltaOp op, Pt currPos) {
@@ -173,30 +217,10 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
             sumRectImgBytesPrintModulo -= sumRectImgBytesPrintFreq;
             System.out.print("m");
         }
-
         
         writeRectWithConstraints(opRect, currPos, dimPt);
-  
         
-        byte[] gzipBytes;
-        try {
-            ByteArrayOutputStream gzipBuffer = new ByteArrayOutputStream(rectImg.length >> 1);
-            DeflaterOutputStream gzipOut = new DeflaterOutputStream(gzipBuffer); 
-            for(int i = 0; i < rectImg.length; i++) {
-                int rgba = rectImg[i];
-                int r = RGBUtils.redOf(rgba), g = RGBUtils.greenOf(rgba), b = RGBUtils.blueOf(rgba); 
-                gzipOut.write(r);
-                gzipOut.write(g);
-                gzipOut.write(b);
-            }
-            gzipOut.flush();
-            gzipBytes = gzipBuffer.toByteArray();
-        } catch(IOException ex) {
-            throw new RuntimeIOException("should not occur", ex);
-        }
-        
-        bitsStructOutput.writeIntMinMax(0, rectImg.length, gzipBytes.length);
-        bitsStructOutput.writeBytes(gzipBytes, gzipBytes.length);
+        writeEncodeImgData(rectImg);
         
 //        // TODO ... may use varlength encoding + no repeat of background (most used color)
 //
@@ -233,6 +257,28 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
 //        
     }
 
+    private void writeEncodeImgData(int[] rectImg) {
+        byte[] gzipBytes;
+        try {
+            ByteArrayOutputStream gzipBuffer = new ByteArrayOutputStream(rectImg.length >> 1);
+            DeflaterOutputStream gzipOut = new DeflaterOutputStream(gzipBuffer); 
+            for(int i = 0; i < rectImg.length; i++) {
+                int rgba = rectImg[i];
+                int r = RGBUtils.redOf(rgba), g = RGBUtils.greenOf(rgba), b = RGBUtils.blueOf(rgba); 
+                gzipOut.write(r);
+                gzipOut.write(g);
+                gzipOut.write(b);
+            }
+            gzipOut.flush();
+            gzipBytes = gzipBuffer.toByteArray();
+        } catch(IOException ex) {
+            throw new RuntimeIOException("should not occur", ex);
+        }
+        
+        bitsStructOutput.writeIntMinMax(0, rectImg.length, gzipBytes.length);
+        bitsStructOutput.writeBytes(gzipBytes, gzipBytes.length);
+    }
+
     private void writeRestorePrevImageRectDeltaOp(RestorePrevImageRectDeltaOp op, 
             FrameDeltaDetailed frameDeltaDetailed,     
             Pt fromPos, Pt toPos) {
@@ -259,5 +305,9 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
         bitsStructOutput.writeIntMinMax(rect.fromY, toPos.y, rect.toY);
     }
 
+    private void writeDimMinMax(Dim minDim, Dim maxDim, Dim dim) {
+        bitsStructOutput.writeIntMinMax(minDim.width, maxDim.width, dim.width); 
+        bitsStructOutput.writeIntMinMax(minDim.height, maxDim.height, dim.height); 
+    }
     
 }

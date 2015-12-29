@@ -26,6 +26,11 @@ import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
 import fr.an.screencast.compressor.imgtool.delta.FrameDelta;
 import fr.an.screencast.compressor.imgtool.delta.FrameDeltaDetailed;
 import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
+import fr.an.screencast.compressor.imgtool.delta.ops.AddAndDrawGlyphRectDeltaOp;
+import fr.an.screencast.compressor.imgtool.delta.ops.AddGlyphDeltaOp;
+import fr.an.screencast.compressor.imgtool.delta.ops.DrawGlyphRectDeltaOp;
+import fr.an.screencast.compressor.imgtool.delta.ops.DrawRectImageDeltaOp;
+import fr.an.screencast.compressor.imgtool.delta.ops.FillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.MostUsedColorFillRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.delta.ops.RestorePrevImageRectDeltaOp;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
@@ -212,6 +217,8 @@ public class DecodeDiffView {
         BufferedImage diffImageRGB;
         BufferedImage deltaImageRGB;
         
+        Graphics2D deltaGc;
+
         public DeltaImageAnalysisViewerListener(VideoStreamPlayer videoStreamPlayer, DeltaImageAnalysisResult deltaResult, FrameDeltaDetailed deltaFrameDetailed) {
             this.videoStreamPlayer = videoStreamPlayer;
             this.deltaResult = deltaResult;
@@ -225,21 +232,29 @@ public class DecodeDiffView {
             currImageRGB = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
             diffImageRGB = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
             deltaImageRGB = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
+            
+            deltaGc = deltaImageRGB.createGraphics();
+
+            deltaGc.setColor(Color.BLACK);
+            deltaGc.fillRect(0,  0, dim.width, dim.height);
         }
         
         @Override
         public void showNewImage(BufferedImage imageRGB) {
             FrameDelta frameDelta = deltaResult.getLastFrameDelta();
-
-            if (! videoStreamPlayer.isFastForward() || (frameDeltaIndex%50 == 0)) {
+            int frameCount = videoStreamPlayer.getFrameCount();
+            
+            if (! videoStreamPlayer.isFastForward() || (frameCount%25 == 0)) {
                 // slide previous and copy current 
                 BufferedImage tmp = prevImageRGB;
                 prevImageRGB = currImageRGB;
                 currImageRGB = tmp;
                 imageRGB.copyData(currImageRGB.getRaster());
-                
-                debugDrawDeltaAnalysis(prevImageRGB, currImageRGB, frameDelta, diffImageRGB, deltaImageRGB);
-    
+
+
+                debugDrawDeltaAnalysis(prevImageRGB, currImageRGB, frameDelta, diffImageRGB, deltaGc);
+
+
                 BufferedImage bottomLeftImg = diffImageRGB;
                 // temporary display reduce color img
                 if (deltaFrameDetailed != null) {
@@ -247,6 +262,13 @@ public class DecodeDiffView {
                 }
             
                 deltaAnalysisPanel.asyncSetImages(prevImageRGB, currImageRGB, bottomLeftImg, deltaImageRGB);
+
+                deltaGc.setColor(Color.BLACK);
+                deltaGc.fillRect(0,  0, dim.width, dim.height);
+            } else {
+                // accumulate delta changes in image
+                debugDrawDelta(deltaGc, frameDelta);
+
             }
         }
     }
@@ -333,7 +355,7 @@ public class DecodeDiffView {
     private void debugDrawDeltaAnalysis(
             BufferedImage prevImageRGB, BufferedImage currImageRGB,
             FrameDelta frameDelta, 
-            BufferedImage diffImageRGB, BufferedImage deltaImageRGB) {
+            BufferedImage diffImageRGB, Graphics2D deltaGc) {
         
         { 
             Graphics2D diffGc = diffImageRGB.createGraphics();
@@ -356,9 +378,15 @@ public class DecodeDiffView {
             diffGc.dispose();
         }
         
-        Graphics2D deltaGc = deltaImageRGB.createGraphics();
-        deltaGc.setColor(Color.BLACK);
-        deltaGc.fillRect(0,  0, dim.width, dim.height);
+        // no fill... accumulate changes
+        // deltaGc.setColor(Color.BLACK);
+        // deltaGc.fillRect(0,  0, dim.width, dim.height);
+
+        debugDrawDelta(deltaGc, frameDelta);
+        
+    }
+
+    private void debugDrawDelta(Graphics2D deltaGc, FrameDelta frameDelta) {
         
         List<FrameRectDelta> deltas = (frameDelta != null)? frameDelta.getDeltas() : Collections.emptyList();
         if (! deltas.isEmpty()) {
@@ -376,32 +404,55 @@ public class DecodeDiffView {
 
                 List<DeltaOperation> deltaOps = delta.getDeltaOperations();
                 if (deltaOps != null && !deltaOps.isEmpty()) {
-                    DeltaOperation op0 = deltaOps.get(0);
-                    if (op0 instanceof RestorePrevImageRectDeltaOp) {
-                        // found restore op for rect! => draw in blue
-                        RestorePrevImageRectDeltaOp restoreOp = (RestorePrevImageRectDeltaOp) op0;
-                        List<Rect> detailedMergeRects = restoreOp.getDetailedMergeRects();
-                        if (detailedMergeRects.size() > 1) {
-                            Color lightBlue = new Color(0, 0, 50);
-                            deltaGc.setColor(lightBlue);
-                            r.graphicsFillRect(deltaGc);
-
-                            deltaGc.setColor(Color.BLUE);
-                            for(Rect detailedMergeRect : detailedMergeRects) {
-                                detailedMergeRect.graphicsDrawRectErode(deltaGc, 1);
+                    for(DeltaOperation op : deltaOps) {
+    
+                        if (op instanceof FillRectDeltaOp) {
+                            FillRectDeltaOp op2 = (FillRectDeltaOp) op;
+                            deltaGc.setColor(Color.WHITE);
+                            
+                        } else if (op instanceof DrawRectImageDeltaOp) {
+                            DrawRectImageDeltaOp op2 = (DrawRectImageDeltaOp) op;
+                            deltaGc.setColor(Color.RED);
+                            
+                        } else if (op instanceof RestorePrevImageRectDeltaOp) {
+                            // found restore op for rect! => draw in blue
+                            RestorePrevImageRectDeltaOp restoreOp = (RestorePrevImageRectDeltaOp) op;
+                            List<Rect> detailedMergeRects = restoreOp.getDetailedMergeRects();
+                            if (detailedMergeRects.size() > 1) {
+                                Color lightBlue = new Color(0, 0, 50);
+                                deltaGc.setColor(lightBlue);
+                                r.graphicsFillRect(deltaGc);
+    
+                                deltaGc.setColor(Color.BLUE);
+                                for(Rect detailedMergeRect : detailedMergeRects) {
+                                    detailedMergeRect.graphicsDrawRectErode(deltaGc, 1);
+                                }
                             }
-                        }
-                        deltaGc.setColor(Color.BLUE);
-                    } else if (op0 instanceof MostUsedColorFillRectDeltaOp) {
-                        MostUsedColorFillRectDeltaOp op = (MostUsedColorFillRectDeltaOp) op0;
-                        Rect subRect = op.getRect();
-                        int color = op.getFillColor();
-                        deltaGc.setColor(new Color(color));
-                        subRect.graphicsFillRect(deltaGc);
-                        // op.getColorCount();
+                            deltaGc.setColor(Color.BLUE);
+                        } else if (op instanceof MostUsedColorFillRectDeltaOp) {
+                            MostUsedColorFillRectDeltaOp op2 = (MostUsedColorFillRectDeltaOp) op;
+                            Rect subRect = op2.getRect();
+                            int color = op2.getFillColor();
+                            deltaGc.setColor(new Color(color));
+                            subRect.graphicsFillRect(deltaGc);
+                            // op.getColorCount();
+                            
+                        } else if (op instanceof AddAndDrawGlyphRectDeltaOp) {
+                            // AddAndDrawGlyphRectDeltaOp op2 = (AddAndDrawGlyphRectDeltaOp) op;
+                            // Rect opRect = op2.getRect();
+                            deltaGc.setColor(Color.ORANGE);
+    
+                        } else if (op instanceof DrawGlyphRectDeltaOp) {
+                            // DrawGlyphRectDeltaOp op2 = (DrawGlyphRectDeltaOp) op;
+                            // Rect opRect = op2.getRect();
+                            deltaGc.setColor(Color.GREEN);
+    
+                        } else if (op instanceof AddGlyphDeltaOp) {
+                            // nothing to draw!
                         
-                    } else {
-                        // TODO
+                        } else {
+                            // unrecognised DeltaOp !!
+                        }
                     }
                 }
                 r.graphicsDrawRectErode(deltaGc, thick2);
@@ -409,8 +460,6 @@ public class DecodeDiffView {
                 // TODO paint within rect
             }
         }
-        
-        deltaGc.dispose();
     }
 
     private void debugDrawColorAnalysis(DeltaImageAnalysisPanel deltaAnalysisPanel, ColorMapAnalysis colorAnalysis, 

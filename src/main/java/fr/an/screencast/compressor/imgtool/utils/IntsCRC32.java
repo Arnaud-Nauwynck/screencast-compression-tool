@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.CRC32;
 
+import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Rect;
+
 /**
  * CRC32 for computing on int[] instead of byte[]
  * 
@@ -46,6 +49,24 @@ public final class IntsCRC32 {
         lock.unlock();
     }
     
+    public static int crc32ImgRect(Dim dim, int[] img, Rect roi) {
+        ByteBuffer bb = allocBuffer();
+        CRC32 crc = new CRC32();
+        final int incrIdxY = dim.width + roi.fromX - roi.toX;
+        final int roiWidth = roi.getWidth();
+        if (roiWidth < BLOCK_INTS_COUNT) {
+            for (int y = roi.fromY, idx = y*dim.width+roi.fromX; y < roi.toY; y++,idx+=incrIdxY) {
+                crcUpdateSegment(crc, img, idx, idx+roiWidth, bb);
+            }
+        } else {
+            for (int y = roi.fromY, idx = y*dim.width+roi.fromX; y < roi.toY; y++,idx+=incrIdxY) {
+                crcUpdateByBlocks(crc, img, idx, roiWidth, bb);
+            }
+        }
+        freeBuffer(bb);
+        return (int) crc.getValue();
+    }
+    
     public static int crc32(int[] data, int offset, int len) { 
         if (len < BENCHMARK_MAXINTS_DIRECT) {
             return crc32InMemory(data, offset, len);
@@ -53,45 +74,41 @@ public final class IntsCRC32 {
         CRC32 crc = new CRC32();
         if (len < BENCHMARK_MAXINTS_COPYALLOC) {
             ByteBuffer bb = ByteBuffer.allocate(len * 4); // => new on heap  (else allocateDirect() ..)
-            final int toI = offset + len;
-            for (int i = offset; i < toI; i++) {
-                bb.putInt(data[i]);
-            }
-            bb.flip();
-            crc.update(bb);
+            crcUpdateSegment(crc, data, offset, offset + len, bb);
         } else {
             // split in reusable buffer..
             ByteBuffer bb = allocBuffer();
-            // TODO .. may use ... IntBuffer.wrap(data) + copy
-            final int toI = offset + len;
-            int i = offset;
-            int remainLen = len;
-            while (remainLen > BLOCK_INTS_COUNT) {
-                // update by block
-                int maxI = i + BLOCK_INTS_COUNT;
-                bb.clear();
-                for (; i < maxI; i++) {
-                    bb.putInt(data[i]);
-                }
-                bb.flip();
-                crc.update(bb);
-                remainLen -= BLOCK_INTS_COUNT;
-            }
-            // update remaining 
-            bb.clear();
-            for (; i < toI; i++) {
-                bb.putInt(data[i]);
-            }
-            bb.flip();
-            crc.update(bb);
-            
-            bb.clear();
+            crcUpdateByBlocks(crc, data, offset, len, bb);
             freeBuffer(bb);
         }
         return (int) crc.getValue();
     }
     
     
+    public static void crcUpdateByBlocks(CRC32 crc, int[] data, int offset, int len, ByteBuffer bb) {
+        final int toI = offset + len;
+        int i = offset;
+        int remainLen = len;
+        while (remainLen > BLOCK_INTS_COUNT) {
+            // update by block
+            int maxI = i + BLOCK_INTS_COUNT;
+            crcUpdateSegment(crc, data, i, maxI, bb);
+            i = maxI;
+            remainLen -= BLOCK_INTS_COUNT;
+        }
+        crcUpdateSegment(crc, data, i, toI, bb);
+        bb.clear();        
+    }
+
+    public static void crcUpdateSegment(CRC32 crc, int[] data, int fromIndex, int toIndex, ByteBuffer bb) {
+        bb.clear();
+        for (int i = fromIndex; i < toIndex; i++) {
+            bb.putInt(data[i]);
+        }
+        bb.flip();
+        crc.update(bb);
+    }
+
     // ------------------------------------------------------------------------
 
     

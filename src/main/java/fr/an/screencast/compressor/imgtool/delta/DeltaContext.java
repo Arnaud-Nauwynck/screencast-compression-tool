@@ -1,6 +1,8 @@
 package fr.an.screencast.compressor.imgtool.delta;
 
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 
@@ -12,6 +14,8 @@ public class DeltaContext {
     private IntImageLRUChangeHistory imageLRUChangeHistory;
 
     private GlyphMRUTable glyphMRUTable;
+    
+    private Map<String,Object> props = new HashMap<String,Object>();
     
     // ------------------------------------------------------------------------
     
@@ -42,4 +46,12 @@ public class DeltaContext {
         return glyphMRUTable;
     }
     
+    public void putProp(String key, Object value) {
+        props.put(key, value);
+    }
+
+    public Object getProp(String key) {
+        return props.get(key);
+    }
+
 }
