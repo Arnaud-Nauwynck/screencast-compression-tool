@@ -192,6 +192,8 @@ public class VideoStreamPlayer {
         }
         boolean hasNext = videoInputStream.readNextImage();
         if (!hasNext) {
+            running = false;
+            shouldStop = true;
             listeners.onPlayerStopped();
             return;
         }
