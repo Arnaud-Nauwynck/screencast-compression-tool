@@ -46,6 +46,10 @@ public class Rect implements Serializable {
         return new Rect(from.x, from.y, from.x + width, from.y + height);
     }
 
+    public static Rect newPtDim(int fromX, int fromY, int width, int height) {
+        return new Rect(fromX, fromY, fromX + width, fromY + height);
+    }
+
     public static Rect newDim(Dim dim) {
         return new Rect(0, 0, dim.width, dim.height);
     }
@@ -155,6 +159,20 @@ public class Rect implements Serializable {
         return res;
     }
 
+    public Rect newErode(int erodeSize) {
+        int newFromX = fromX + erodeSize;
+        int newToX = toX - erodeSize;
+        if (newFromX > newToX) {
+            newFromX = newToX = (fromX + toX) / 2; 
+        }
+        int newFromY = fromY + erodeSize;
+        int newToY = toY - erodeSize;
+        if (newFromY > newToY) {
+            newFromY = newToY = (fromY + toY) / 2; 
+        }
+        return new Rect(newFromX, newFromY, newToX, newToY);
+    }
+    
     
     public void graphicsFillRect(Graphics g2d) {
         g2d.fillRect(fromX, fromY, getWidth(), getHeight());        
@@ -176,7 +194,7 @@ public class Rect implements Serializable {
 
     @Override
     public String toString() {
-        return "x:[" + fromX + "," + toX + "( . y:[" + fromY + "," + toY + "(";
+        return "x:[" + fromX + "," + toX + "( . y:[" + fromY + "," + toY + "( dim:" + getWidth() + "x" + getHeight();
     }
 
     @Override
@@ -209,5 +227,5 @@ public class Rect implements Serializable {
             return false;
         return true;
     }
-    
+
 }

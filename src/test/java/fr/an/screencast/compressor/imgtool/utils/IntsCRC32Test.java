@@ -8,6 +8,10 @@ import java.util.zip.CRC32;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Pt;
+import fr.an.screencast.compressor.utils.Rect;
+
 @SuppressWarnings("restriction")
 public class IntsCRC32Test {
 
@@ -61,6 +65,25 @@ public class IntsCRC32Test {
         int expected = IntsCRC32.crc32InMemory(intValues, 0, intValues.length);
         Assert.assertEquals(expected, res);
     }
+
+    @Test
+    public void testCrcUpdateSegment() {
+        // Prepare
+        int[] data = new int[] { 2, 3, 4, 3, 4, 5 };
+        ByteBuffer bb = ByteBuffer.allocate(data.length * 4);
+//        for (int i = 0; i < data.length; i++) {
+//            bb.putInt(data[i]);
+//        }
+//        bb.flip();
+        CRC32 crc = new CRC32();
+        // Perform
+        IntsCRC32.crcUpdateSegment(crc, data, 0, data.length, bb);
+        int res = (int) crc.getValue();
+        // Post-check
+        int checkCrc = IntsCRC32.crc32InMemory(data, 0, data.length);
+        Assert.assertEquals(checkCrc, res);
+    }
+    
     
     @Test
     public void testCrc32_10000() {
@@ -163,5 +186,25 @@ public class IntsCRC32Test {
         }
     }
 
+    @Test
+    public void testCrc32ImgRect() {
+        // Prepare
+        Dim dim = new Dim(4, 3);
+        int[] img = new int[] {
+            0, 1, 2, 3, //
+            1, 2, 3, 4, //
+            2, 3, 4, 5 //
+        };
+        Dim roiDim = new Dim(3, 2);
+        Rect rect = Rect.newPtDim(new Pt(1, 1), roiDim);
+        // Perform
+        int crc = IntsCRC32.crc32ImgRect(dim, img, rect); 
+        // Post-check
+        int[] glyphData = ImageRasterUtils.getCopyData(dim, img, rect);
+        ImageDataAssert.assertEquals(new int[] { 2, 3, 4, 3, 4, 5 }, glyphData, roiDim);
+        int checkCrc = IntsCRC32.crc32(glyphData, 0, glyphData.length);
+        Assert.assertEquals(checkCrc, crc);
+    }
+    
     
 }

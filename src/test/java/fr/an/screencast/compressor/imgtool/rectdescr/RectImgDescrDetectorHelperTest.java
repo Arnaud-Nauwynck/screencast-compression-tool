@@ -1,8 +1,13 @@
 package fr.an.screencast.compressor.imgtool.rectdescr;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -30,15 +35,51 @@ public class RectImgDescrDetectorHelperTest {
     protected static ImageData img_screen1920x1080;
     
     @BeforeClass
-    public static void prepareImg() {
-        BufferedImage img = ImageTstUtils.getImageTest_1920x1080();
+    public static void prepareImg() throws IOException {
+        BufferedImage img = ImageTstUtils.getImageTest_1920x1080_color6bits();
         Dim dim = new Dim(img.getWidth(), img.getHeight());
         int[] imgData = ImageRasterUtils.toInts(img);
-        // clear least significant bits!!! (color 0;0;0 ~= 0;0;1 !!)
-        ColorBitsReducer.maskLeastSignificantBits(imgData, 1);
         img_screen1920x1080 = new ImageData(dim, imgData);
     }
 
+    @Test
+    public void testDetectDilateBorder() {
+        // Prepare
+        Dim maxDim = new Dim(30, 30);
+        Dim dim = img_screen1920x1080.getDim();
+        Rect maxWithinRect = Rect.newDim(dim);
+        RectImgDescrDetectorHelper sut = new RectImgDescrDetectorHelper(dim);
+        sut.setImg(img_screen1920x1080.getData());
+        Dim dim1 = new Dim(1, 1);
+        Dim dim4 = new Dim(4, 4);
+        // Perform&Post-check
+        
+        // pixel already in background
+        doTestDetectDilateBorder(Rect.newPtToPt(10, 10, 11, 11), sut, Rect.newPtDim(new Pt(10, 10), dim1), maxDim, maxWithinRect);
+        
+        // pixel in "A" => rect around "A"
+        doTestDetectDilateBorder(Rect.newPtToPt(11, 8, 22, 19), sut, Rect.newPtDim(new Pt(17, 15), dim4), maxDim, maxWithinRect);
+
+        // pixel in "new icon" => rect around icon.... pb: non uniform background!! TODO ...
+        doTestDetectDilateBorder(null, sut, Rect.newPtDim(new Pt(18, 114), dim4), maxDim, maxWithinRect);
+        
+        // pixel in "package icon" => rect around icon
+        doTestDetectDilateBorder(Rect.newPtToPt(11, 159, 21, 173), sut, Rect.newPtDim(new Pt(15, 163), dim4), maxDim, maxWithinRect);
+        
+        // Post-check
+    }
+
+    private void doTestDetectDilateBorder(Rect expectedRect, RectImgDescrDetectorHelper sut, Rect rect, Dim maxDim, Rect maxWithinRect) {
+        Rect res = sut.detectDilateBorder(rect, maxDim, maxWithinRect);
+        if (expectedRect == null) {
+            Assert.assertNull(res);
+        } else {
+            Assert.assertEquals(expectedRect, res);
+        }
+    }
+
+    
+    
     @Test
     public void testDetectExactFillRect_screen1920x1080() {
         // Prepare

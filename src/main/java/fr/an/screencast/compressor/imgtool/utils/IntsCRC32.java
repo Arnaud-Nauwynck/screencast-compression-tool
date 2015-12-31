@@ -52,14 +52,15 @@ public final class IntsCRC32 {
     public static int crc32ImgRect(Dim dim, int[] img, Rect roi) {
         ByteBuffer bb = allocBuffer();
         CRC32 crc = new CRC32();
-        final int incrIdxY = dim.width + roi.fromX - roi.toX;
+        final int W = dim.width;
         final int roiWidth = roi.getWidth();
         if (roiWidth < BLOCK_INTS_COUNT) {
-            for (int y = roi.fromY, idx = y*dim.width+roi.fromX; y < roi.toY; y++,idx+=incrIdxY) {
+            for (int y = roi.fromY, idx = y*dim.width+roi.fromX; y < roi.toY; y++,idx+=W) {
+                // ImageRasterUtils.checkIdx(idx, roi.fromX, y, W);
                 crcUpdateSegment(crc, img, idx, idx+roiWidth, bb);
             }
         } else {
-            for (int y = roi.fromY, idx = y*dim.width+roi.fromX; y < roi.toY; y++,idx+=incrIdxY) {
+            for (int y = roi.fromY, idx = y*dim.width+roi.fromX; y < roi.toY; y++,idx+=W) {
                 crcUpdateByBlocks(crc, img, idx, roiWidth, bb);
             }
         }

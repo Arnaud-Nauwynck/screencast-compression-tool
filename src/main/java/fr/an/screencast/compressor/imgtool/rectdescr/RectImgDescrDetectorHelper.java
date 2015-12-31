@@ -18,6 +18,7 @@ import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.MutableDim;
 import fr.an.screencast.compressor.utils.Pt;
+import fr.an.screencast.compressor.utils.QuadDirection;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
 
@@ -64,6 +65,139 @@ public final class RectImgDescrDetectorHelper {
         // OK found fill rect
         return new FillRectImgDescr(new Rect(rect), color);
     }
+    
+    public Rect detectDilateBorder(Rect rect, Dim maxDim, Rect maxWithinRect) {
+        final int W = dim.width;
+        int fromX = rect.fromX, fromY = rect.fromY, toX = rect.toX, toY = rect.toY;
+        int idxUpLeft = rect.fromY * W + rect.fromX; 
+        int idxUpRight = rect.fromY * W + rect.toX; 
+        int idxDownLeft = rect.toY * W + rect.fromX; 
+        int rectWidth = rect.getWidth();
+        int rectHeight = rect.getHeight();
+        boolean reeval = true, reevalLeft = true, reevalRight = true, reevalUp = true, reevalDown = true;
+        int prev;
+        
+        for(QuadDirection dir = QuadDirection.RIGHT; reeval; dir = dir.nextClockwise()) {
+            
+            ImageRasterUtils.checkIdx(idxUpLeft, fromX, fromY, W);
+            ImageRasterUtils.checkIdx(idxUpRight, toX, fromY, W);
+            ImageRasterUtils.checkIdx(idxDownLeft, fromX, toY, W);
+            if (fromX + rectWidth != toX) {
+                throw new AssertionError();
+            }
+            if (fromY + rectHeight != toY) {
+                throw new AssertionError();
+            }
+            
+            switch(dir) {
+            case RIGHT:
+                if (! reevalRight) {
+                    continue;
+                }
+                prev = fromX;
+                while(toX < dim.width && sameCountsImg.getDownSameCount(idxUpRight) < rectHeight) {
+                    toX++;
+                    idxUpRight++;
+                    rectWidth++;
+                    if (rectWidth > maxDim.width) {
+                        return null;
+                    }
+                    if (toX >= maxWithinRect.toX) {
+                        return null;
+                    }                    
+                }
+                reevalRight = false;
+                if (prev != fromX) {
+                    reeval = reevalUp = reevalDown = true;
+                } else {
+                    reeval = reevalUp || reevalDown || reevalLeft;
+                }
+                break;
+            case UP:
+                if (! reevalUp) {
+                    continue;
+                }
+                prev = fromY;
+                while(fromY >= 0 && sameCountsImg.getRightSameCount(idxUpLeft) < rectWidth) {
+                    fromY--;
+                    idxUpLeft-=W;
+                    idxUpRight-=W;
+                    rectHeight++;
+                    if (rectHeight > maxDim.height) {
+                        return null;
+                    }
+                    if (fromY < maxWithinRect.fromY) {
+                        return null;
+                    }                    
+                }
+                reevalUp = false; 
+                if (prev != fromY) {
+                    reeval = reevalLeft = reevalRight = true;
+                } else {
+                    reeval = reevalLeft || reevalRight || reevalDown;
+                }
+                break;
+            case LEFT:
+                if (! reevalLeft) {
+                    continue;
+                }
+                prev = fromX;
+                while(fromX >= 0 && sameCountsImg.getDownSameCount(idxUpLeft) < rectHeight) {
+                    fromX--;
+                    idxUpLeft--;
+                    idxDownLeft--;
+                    rectWidth++;
+                    if (rectWidth > maxDim.width) {
+                        return null;
+                    }
+                    if (fromX < maxWithinRect.fromX) {
+                        return null;
+                    }                    
+                }
+                reevalLeft = false;
+                if (prev != fromX) {
+                    reeval = reevalUp = reevalDown = true;
+                } else {
+                    reeval = reevalUp || reevalDown || reevalRight;
+                }
+                break;
+            case DOWN:
+                if (! reevalDown) {
+                    continue;
+                }
+                prev = toY;
+                while(toY < dim.height && sameCountsImg.getRightSameCount(idxDownLeft) < rectWidth) {
+                    toY++;
+                    idxDownLeft+=W;
+                    rectHeight++;
+                    if (rectHeight > maxDim.height) {
+                        return null;
+                    }
+                    if (toY >= maxWithinRect.toY) {
+                        return null;
+                    }                    
+                }
+                reevalDown = false;
+                if (prev != toY) {
+                    reeval = reevalLeft = reevalRight = true;
+                } else {
+                    reeval = reevalLeft || reevalRight || reevalUp;
+                }
+                break;
+            }
+            
+            if (reeval != (reevalLeft || reevalRight || reevalUp || reevalDown)) {
+                throw new RuntimeException();
+            }
+        }
+
+        // assert same color on border
+        int color = imgData[fromY * W + fromX];
+        
+        
+        return Rect.newPtDim(fromX, fromY, rectWidth, rectHeight);
+    }
+    
     
     public BorderRectImgDescr detectBorder1AtUL(Pt pt, MutableDim rectDim) {
         //

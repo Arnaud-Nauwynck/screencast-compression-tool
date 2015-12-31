@@ -1,12 +1,20 @@
 package fr.an.screencast.compressor.imgtool.glyph;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
+import javax.imageio.ImageIO;
+
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
@@ -124,18 +132,22 @@ public class GlyphMRUTable {
         GlyphMRUNode glyph = glyphByCrcKey.get(key);
         return glyph;
     }
+
+    public void incrUseCount(GlyphMRUNode glyphNode) {
+        glyphNode.useCount++;
+    }
+
+    public GlyphMRUNode addGlyph(Dim imgDim, int[] img, Rect rect, int crc) {
+        Dim glyphDim = rect.getDim();
+        int[] glyphData = ImageRasterUtils.getCopyData(imgDim, img, rect); 
+        // assert crc == IntsCRC32.crc32(glyphData, 0, glyphData.length);
         
-    public GlyphMRUNode addGlyph(Dim dim, int[] img, Rect rect, int crc) {
-        int[] data = new int[rect.getArea()];
-        ImageRasterUtils.drawRectImg(rect.getDim(), data, new Pt(0, 0), dim, img, rect);
-        // assert crc == IntsCRC32.crc32(data, 0, data.length);
-        
-        GlyphKey crcKey = new GlyphKey(dim, crc, data);
+        GlyphKey crcKey = new GlyphKey(glyphDim, crc, glyphData);
         GlyphMRUNode glyph = glyphByCrcKey.get(crcKey);
         if (glyph == null) {
             GlyphIndexOrCode indexOrCode = new GlyphIndexOrCode(youngGlyphIndexCount++, null);
             glyph = new GlyphMRUNode(crcKey, globalGlyphIdCount++, indexOrCode);
-            glyph.priorityKeep = data.length >>> 4;
+            glyph.priorityKeep = glyphData.length >>> 4;
 
             if (glyphByCrcKey.size() + 1 > maxSize) {
                 removeLeastUsedGlyph();
@@ -159,6 +171,9 @@ public class GlyphMRUTable {
             n.priorityKeep--;
             if (n.priorityKeep < minPriority) {
                 minPriority = n.priorityKeep;
+                foundMin = n;
+            } else if (n.priorityKeep == minPriority && n.getData().length > foundMin.getData().length) {
+                // when equals prioririty => remove bigest glyph area
                 foundMin = n;
             }
         }
@@ -187,4 +202,50 @@ public class GlyphMRUTable {
         ImageRasterUtils.drawRectImg(destDim, destData, rectFromPt, glyphDim, glyphData, glyphROI);        
     }
     
+    public static class GlyphByUseCountComparator implements Comparator<GlyphMRUNode> {
+
+        @Override
+        public int compare(GlyphMRUNode o1, GlyphMRUNode o2) {
+            int res = Integer.compare(o1.useCount, o2.useCount);
+            if (res != 0) {
+                return res;
+            }
+            res = - Integer.compare(o1.getData().length, o2.getData().length);
+            if (res != 0) {
+                return res;
+            }
+            res = Integer.compare(o1.id, o2.id);
+            return res;
+        }
+        
+    }
+    
+    public void debugDumpGlyphs(File dir) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        
+        Set<GlyphMRUNode> sortedGlyphs = new TreeSet<GlyphMRUNode>(new GlyphByUseCountComparator());
+        sortedGlyphs.addAll(glyphByCrcKey.values());
+        
+        sb.append("<html><body>\n");
+        for(GlyphMRUNode n : sortedGlyphs) {
+            int width = n.key.dim.width;
+            int height = n.key.dim.height;
+            sb.append("<span>");
+            // sb.append("<div>");
+            sb.append(n.id + ": " + width + "x" + height);
+            sb.append(" uses:" + n.useCount);
+            String glyphFilename = "glyph-" + n.id + ".png";
+            sb.append("<img src='" + glyphFilename + "' border=1 width=" + (3*width) + " height=" + (3*height) + "></img>");
+            // sb.append("</div>");
+            sb.append("</span>");
+            
+            BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            ImageRasterUtils.copyData(img, n.key.data);
+            ImageIO.write(img, "png", new File(dir, glyphFilename));
+        }
+        sb.append("</body></html>");
+        FileUtils.write(new File(dir, "index.html"), sb.toString());
+        
+    }
+
 }

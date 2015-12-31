@@ -22,4 +22,14 @@ public enum QuadDirection {
         }
     }
 
+    public QuadDirection nextClockwise() {
+        switch(this) {
+        case RIGHT: return DOWN;
+        case UP: return RIGHT;
+        case LEFT: return UP;
+        case DOWN: return LEFT;            
+        default: return LEFT; // can not occur
+        }
+    }
+
 }

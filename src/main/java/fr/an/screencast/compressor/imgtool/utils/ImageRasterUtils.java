@@ -13,6 +13,11 @@ public class ImageRasterUtils {
         return ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
     }
     
+    public static void copyData(BufferedImage dest, int[] src) {
+        int[] destData = toInts(dest);
+        System.arraycopy(src, 0, destData, 0, src.length);
+    }
+    
     public static final boolean CHECK = true;
     
     public static void checkIdx(int idx, int x, int y, int width) {
@@ -85,4 +90,19 @@ public class ImageRasterUtils {
             System.arraycopy(src, srcIdx, dest, destIdx, copyWidth);
         }
     }
+    
+    public static int[] getCopyData(Dim srcDim, final int[] src, Rect srcROI) {
+        final int W = srcDim.getWidth();
+        final int destLen = srcROI.getArea();
+        final int[] dest = new int[destLen];
+        
+        final int roiW = srcROI.getWidth();
+        int srcIdx = srcROI.fromY * srcDim.width + srcROI.fromX;
+        int destIdx = 0;
+        for(; destIdx < destLen; destIdx+=roiW,srcIdx+=W) {
+            System.arraycopy(src, srcIdx, dest, destIdx, roiW);
+        }
+        return dest;
+    }
+    
 }
