@@ -30,9 +30,9 @@ public class DeltaImageAnalysisProcessor {
 
     private static boolean DEBUG_REDUCED_COLORMAP = false;
     
-    private static int DEFAULT_GLYPHMRUTABLE_SIZE = 3000;
-    private static int DEFAULT_GLYPH_MAX_WIDTH = 40;
-    private static int DEFAULT_GLYPH_MAX_HEIGHT = 40;
+    private static int DEFAULT_GLYPHMRUTABLE_SIZE = 2000;
+    private static int DEFAULT_GLYPH_MAX_WIDTH = 30;
+    private static int DEFAULT_GLYPH_MAX_HEIGHT = 30;
     private static int DEFAULT_GLYPH_MAX_AREA = DEFAULT_GLYPH_MAX_WIDTH * DEFAULT_GLYPH_MAX_HEIGHT / 2;
     
     private Dim dim;

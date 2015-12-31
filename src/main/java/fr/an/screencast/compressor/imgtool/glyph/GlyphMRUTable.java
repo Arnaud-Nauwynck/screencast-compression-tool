@@ -206,15 +206,15 @@ public class GlyphMRUTable {
 
         @Override
         public int compare(GlyphMRUNode o1, GlyphMRUNode o2) {
-            int res = Integer.compare(o1.useCount, o2.useCount);
+            int res = - Integer.compare(o1.useCount, o2.useCount);
             if (res != 0) {
                 return res;
             }
-            res = - Integer.compare(o1.getData().length, o2.getData().length);
+            res = Integer.compare(o1.getData().length, o2.getData().length);
             if (res != 0) {
                 return res;
             }
-            res = Integer.compare(o1.id, o2.id);
+            res = - Integer.compare(o1.id, o2.id);
             return res;
         }
         

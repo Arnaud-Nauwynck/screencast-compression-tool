@@ -210,7 +210,6 @@ public class DecodeDiffView {
         VideoStreamPlayer videoStreamPlayer;
         DeltaImageAnalysisResult deltaResult;
         FrameDeltaDetailed deltaFrameDetailed;
-        int frameDeltaIndex = 0;
 
         BufferedImage prevImageRGB;
         BufferedImage currImageRGB;
