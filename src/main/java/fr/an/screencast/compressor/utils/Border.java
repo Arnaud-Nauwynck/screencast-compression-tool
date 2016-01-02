@@ -7,10 +7,10 @@ public final class Border implements Serializable {
     /** */
     private static final long serialVersionUID = 1L;
 
-    private final int left;
-    private final int right;
-    private final int top;
-    private final int bottom;
+    public final int left;
+    public final int right;
+    public final int top;
+    public final int bottom;
 
     // ------------------------------------------------------------------------
 

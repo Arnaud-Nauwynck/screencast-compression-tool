@@ -29,6 +29,14 @@ public final class Dim implements Serializable {
         return new java.awt.Point(width, height);
     }
     
+    public boolean isEmpty() {
+        return width <= 0 || height <= 0;
+    }
+
+    public boolean isNotEmpty() {
+        return !isEmpty();
+    }
+
     public int getWidth() {
         return width;
     }

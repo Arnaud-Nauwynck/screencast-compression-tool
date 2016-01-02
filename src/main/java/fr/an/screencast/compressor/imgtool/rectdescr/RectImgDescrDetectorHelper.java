@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
@@ -192,8 +193,7 @@ public final class RectImgDescrDetectorHelper {
         }
 
         // assert same color on border
-        int color = imgData[fromY * W + fromX];
-        
+        // int color = imgData[fromY * W + fromX];
         
         return Rect.newPtDim(fromX, fromY, rectWidth, rectHeight);
     }
@@ -403,11 +403,13 @@ public final class RectImgDescrDetectorHelper {
         }
 
         if (colorsToSplits.size() == 1) {
+            Entry<Integer, List<Segment>> e = colorsToSplits.entrySet().iterator().next();
+            int splitColor = e.getKey(); 
             List<Segment> splitBorders = colorsToSplits.values().iterator().next();
             if (splitBorders.size() == 1) {
                 // only 1 split.. use simpler class instead of ColumnsSplitRectImgDescr
                 Segment splitBorder = splitBorders.get(0);
-                return new VerticalSplitRectImgDescr(rect, null, splitBorder, null);
+                return new VerticalSplitRectImgDescr(rect, null, splitBorder, splitColor, null);
             }
         }
         
@@ -472,11 +474,13 @@ public final class RectImgDescrDetectorHelper {
         }
 
         if (colorsToSplits.size() == 1) {
-            List<Segment> splitBorders = colorsToSplits.values().iterator().next();
+            Entry<Integer, List<Segment>> e = colorsToSplits.entrySet().iterator().next();
+            int splitColor = e.getKey(); 
+            List<Segment> splitBorders = e.getValue();
             if (splitBorders.size() == 1) {
                 // only 1 split.. use simpler class instead of ColumnsSplitRectImgDescr
                 Segment splitBorder = splitBorders.get(0);
-                return new HorizontalSplitRectImgDescr(rect, null, splitBorder, null);
+                return new HorizontalSplitRectImgDescr(rect, null, splitBorder, splitColor, null);
             }
         }
         

@@ -49,7 +49,7 @@ public class ImageRasterUtils {
     }
 
     /**
-     * copy sub rect "Region Of Interest" from src image to corrsponding dest image with same the dimension 
+     * copy sub rect "Region Of Interest" from src image to corresponding dest image with same the dimension 
      * @param dest
      * @param src
      * @param width
@@ -90,7 +90,21 @@ public class ImageRasterUtils {
             System.arraycopy(src, srcIdx, dest, destIdx, copyWidth);
         }
     }
-    
+
+    /**
+     * copy from src image to dest image 
+     */
+    public static void drawRectImg(Dim destDim, final int[] dest, Rect rect, final int[] src) {
+        final int destW = destDim.width;
+        final int srcW = rect.getWidth();
+        final int srcMaxIdx = src.length;
+        int destIdx = rect.fromY * destW + rect.fromX;
+        int srcIdx = 0;
+        for(; srcIdx < srcMaxIdx; destIdx+=destW,srcIdx+=srcW) {
+            System.arraycopy(src, srcIdx, dest, destIdx, srcW);
+        }
+    }
+
     public static int[] getCopyData(Dim srcDim, final int[] src, Rect srcROI) {
         final int W = srcDim.getWidth();
         final int destLen = srcROI.getArea();

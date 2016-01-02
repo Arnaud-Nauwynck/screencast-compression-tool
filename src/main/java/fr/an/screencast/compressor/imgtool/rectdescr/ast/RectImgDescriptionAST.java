@@ -2,6 +2,7 @@ package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
 import java.util.List;
 
+import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
@@ -25,6 +26,10 @@ public class RectImgDescriptionAST {
         
         public abstract void accept(RectImgDescrVisitor visitor);
         
+        public Rect getRect() {
+            return rect;
+        }
+
         @Override
         public String toString() {
             return "RectImgDescr[rect=" + rect + "]";
@@ -190,12 +195,14 @@ public class RectImgDescriptionAST {
         
         private RectImgDescription left;
         private Segment splitBorder;
+        private int splitColor;
         private RectImgDescription right;
         
-        public VerticalSplitRectImgDescr(Rect rect, RectImgDescription left, Segment splitBorder, RectImgDescription right) {
+        public VerticalSplitRectImgDescr(Rect rect, RectImgDescription left, Segment splitBorder, int splitColor, RectImgDescription right) {
             super(rect);
             this.left = left;
             this.splitBorder = splitBorder;
+            this.splitColor = splitColor;
             this.right = right;
         }
 
@@ -219,6 +226,14 @@ public class RectImgDescriptionAST {
             this.splitBorder = splitBorder;
         }
 
+        public int getSplitColor() {
+            return splitColor;
+        }
+
+        public void setSplitColor(int splitColor) {
+            this.splitColor = splitColor;
+        }
+
         public RectImgDescription getRight() {
             return right;
         }
@@ -234,13 +249,15 @@ public class RectImgDescriptionAST {
 
     public static class HorizontalSplitRectImgDescr extends RectImgDescription {
         private RectImgDescription up;
+        private int splitColor;
         private Segment splitBorder;
         private RectImgDescription down;
         
-        public HorizontalSplitRectImgDescr(Rect rect, RectImgDescription up, Segment splitBorder, RectImgDescription down) {
+        public HorizontalSplitRectImgDescr(Rect rect, RectImgDescription up, Segment splitBorder, int splitColor, RectImgDescription down) {
             super(rect);
             this.up = up;
             this.splitBorder = splitBorder;
+            this.splitColor = splitColor;
             this.down = down;
         }
 
@@ -262,6 +279,14 @@ public class RectImgDescriptionAST {
 
         public void setSplitBorder(Segment splitBorder) {
             this.splitBorder = splitBorder;
+        }
+
+        public int getSplitColor() {
+            return splitColor;
+        }
+
+        public void setSplitColor(int splitColor) {
+            this.splitColor = splitColor;
         }
 
         public RectImgDescription getDown() {
@@ -409,27 +434,27 @@ public class RectImgDescriptionAST {
     // ------------------------------------------------------------------------
 
     public static class GlyphRectImgDescr extends RectImgDescription {
-        private int glyphId;
+        private GlyphIndexOrCode glyphIndexOrCode;
 
-        public GlyphRectImgDescr(Rect rect, int glyphId) {
+        public GlyphRectImgDescr(Rect rect, GlyphIndexOrCode glyphIndexOrCode) {
             super(rect);
-            this.glyphId = glyphId;
+            this.glyphIndexOrCode = glyphIndexOrCode;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseGlyphDescr(this);
         }
 
-        public int getGlyphId() {
-            return glyphId;
+        public GlyphIndexOrCode getGlyphIndexOrCode() {
+            return glyphIndexOrCode;
         }
 
-        public void setGlyphId(int glyphId) {
-            this.glyphId = glyphId;
+        public void setGlyphIndexOrCode(GlyphIndexOrCode p) {
+            this.glyphIndexOrCode = p;
         }
         
     }
-    
+     
     // ------------------------------------------------------------------------
 
     public static class RectImgAboveRectImgDescr extends RectImgDescription {

@@ -22,6 +22,6 @@ public abstract class RectImgDescrVisitor {
     public abstract void caseColumnsSplitDescr(ColumnsSplitRectImgDescr node);
     public abstract void caseRawDataDescr(RawDataRectImgDescr node);
     public abstract void caseGlyphDescr(GlyphRectImgDescr node);
-    public abstract void caseDescrAboveDescr(RectImgAboveRectImgDescr nodes);
+    public abstract void caseDescrAboveDescr(RectImgAboveRectImgDescr node);
      
 }
