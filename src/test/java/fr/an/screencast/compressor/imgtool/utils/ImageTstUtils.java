@@ -31,7 +31,15 @@ public class ImageTstUtils {
             BufferedImage img = BufferedImageUtils.convertToType(null, srcImg, BufferedImage.TYPE_INT_RGB);
             return img;
         } catch(IOException ex) {
-            throw new RuntimeException("Failed", ex);
+            throw new RuntimeException("Failed to read file " + file, ex);
+        }
+    }
+
+    public static void saveImg(BufferedImage img, File file) {
+        try {
+            ImageIO.write(img, "png", file);
+        } catch(IOException ex) {
+            throw new RuntimeException("Failed to write png file " + file, ex);
         }
     }
 

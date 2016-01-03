@@ -29,8 +29,22 @@ public class ImageDataAssert {
         }
     }
     
+    public static void assertEqualsMask(int[] expected, int[] actual, int width, int height, int mask) {
+        for(int y = 0, idx_xy = 0; y < height; y++) {
+            for(int x = 0; x < width; x++,idx_xy++) {
+                int actualValue = actual[idx_xy] & mask;
+                int expectedValue = expected[idx_xy] & mask;
+                if (actualValue != expectedValue) {
+                    Assert.fail("expected [" + x + "][" + y + "] : " 
+                            + expectedValue + "=" + RGBUtils.toString(expectedValue) 
+                            + ", got " + actualValue + "=" + RGBUtils.toString(actualValue));
+                }
+            }
+        }
+    }
     
     public static void assertEquals(ImageData expected, ImageData actual) {
         assertEquals(expected.getData(), actual);
     }
+    
 }

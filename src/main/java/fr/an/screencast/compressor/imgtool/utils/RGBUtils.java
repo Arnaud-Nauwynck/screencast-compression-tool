@@ -48,7 +48,7 @@ public final class RGBUtils {
 
     public static String toString(int rgb) {
         return redOf(rgb) + ";" + greenOf(rgb) + ";" + blueOf(rgb)
-            + ((alphaOf(rgb) != 255)? ";" + alphaOf(rgb) : "");  
+            + ((alphaOf(rgb) != 255)? ";" + alphaOf(rgb) : "");
     }
 
     

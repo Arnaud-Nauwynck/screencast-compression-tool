@@ -220,7 +220,7 @@ public class GlyphMRUTable {
         
     }
     
-    public void debugDumpGlyphs(File dir) throws IOException {
+    public void debugDumpGlyphs(File dir) {
         StringBuilder sb = new StringBuilder();
         
         Set<GlyphMRUNode> sortedGlyphs = new TreeSet<GlyphMRUNode>(new GlyphByUseCountComparator());
@@ -241,10 +241,20 @@ public class GlyphMRUTable {
             
             BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             ImageRasterUtils.copyData(img, n.key.data);
-            ImageIO.write(img, "png", new File(dir, glyphFilename));
+            File glyphOutputFile = new File(dir, glyphFilename);
+            try {
+                ImageIO.write(img, "png", glyphOutputFile);
+            } catch(IOException ex) {
+                throw new RuntimeException("Failed to write file " + glyphOutputFile, ex);
+            }
         }
         sb.append("</body></html>");
-        FileUtils.write(new File(dir, "index.html"), sb.toString());
+        File indexOutputFile = new File(dir, "index.html");
+        try {
+            FileUtils.write(indexOutputFile, sb.toString());
+        } catch(IOException ex) {
+            throw new RuntimeException("Failed to write file " + indexOutputFile, ex);
+        }
         
     }
 

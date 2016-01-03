@@ -119,4 +119,12 @@ public class ImageRasterUtils {
         return dest;
     }
     
+    
+    public static void fillAlpha(int[] src) {
+        final int len = src.length;
+        int mask = RGBUtils.rgb2Int(0, 0, 0, 255);
+        for(int i = 0; i < len; i++) {
+            src[i] = src[i] | mask; // 0xFF000000;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import fr.an.screencast.compressor.utils.Dim;
@@ -26,6 +27,16 @@ public class ImageRasterUtilsTest {
         ImageRasterUtils.drawRectImg(destDim, dest, destLocation, srcDim, src, srcROI);
         // Post-check
         ImageDataAssert.assertEquals(new int[] { 2, 3, 3, 4 }, dest, destDim);
+    }
+
+    @Test
+    public void testFillAlpha() {
+        // Prepare
+        int[] data = new int[] { RGBUtils.greyRgb2Int(236) };
+        // Perform
+        ImageRasterUtils.fillAlpha(data);
+        // Post-check
+        Assert.assertEquals(RGBUtils.rgb2Int256(236, 236, 236, 255), data[0]);
     }
 
 }

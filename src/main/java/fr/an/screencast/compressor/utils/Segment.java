@@ -1,6 +1,9 @@
 package fr.an.screencast.compressor.utils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 public final class Segment implements ISegment, Serializable {
 
@@ -63,6 +66,22 @@ public final class Segment implements ISegment, Serializable {
 
     public boolean eq(Segment other) {
         return from == other.from && to == other.to;
+    }
+
+    /**
+     * @param text string to parse, expecting format "(\d+-\d+, )*" 
+     * @return
+     */
+    public static List<Segment> parseSegmentList(String text) {
+        List<Segment> res = new ArrayList<Segment>();
+        for(StringTokenizer tokenizer = new StringTokenizer(text, ", "); tokenizer.hasMoreTokens(); ) {
+            String token = tokenizer.nextToken();
+            String[] split = token.split("-");
+            int from = Integer.parseInt(split[0].trim());
+            int to = Integer.parseInt(split[1].trim());
+            res.add(new Segment(from, to));
+        }
+        return res;
     }
     
 }

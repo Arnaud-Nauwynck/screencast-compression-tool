@@ -6,15 +6,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
+import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
+import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
+import fr.an.screencast.compressor.imgtool.utils.IntsCRC32;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.MutableDim;
@@ -29,15 +36,27 @@ import fr.an.screencast.compressor.utils.Segment;
  */
 public final class RectImgDescrDetectorHelper {
 
+    private static int DEFAULT_GLYPHMRUTABLE_SIZE = 2000;
+    private static int DEFAULT_GLYPH_MAX_WIDTH = 50; // following glyph letters can be glued, example: "AVA", "//", "\\" 
+    private static int DEFAULT_GLYPH_MAX_HEIGHT = 25;
+    private static int DEFAULT_GLYPH_MAX_AREA = DEFAULT_GLYPH_MAX_WIDTH * DEFAULT_GLYPH_MAX_HEIGHT * 3 / 4;
+    
     private final Dim dim;
     private int[] imgData;
     private RightDownSameCountsImg sameCountsImg;
+    
+    private GlyphMRUTable glyphMRUTable;
+
+    private int maxAreaForGlyph = DEFAULT_GLYPH_MAX_AREA;
+    private Dim maxDimForGlyph = new Dim(DEFAULT_GLYPH_MAX_WIDTH, DEFAULT_GLYPH_MAX_HEIGHT);
+
     
     // ------------------------------------------------------------------------
     
     public RectImgDescrDetectorHelper(Dim dim) {
         this.dim = dim;
         this.sameCountsImg = new RightDownSameCountsImg(dim);
+        this.glyphMRUTable = new GlyphMRUTable(DEFAULT_GLYPHMRUTABLE_SIZE); 
     }
 
     // ------------------------------------------------------------------------
@@ -46,8 +65,15 @@ public final class RectImgDescrDetectorHelper {
         this.imgData = imgData;
         sameCountsImg.setComputeFrom(imgData);
     }
-
     
+    public GlyphMRUTable getGlyphMRUTable() {
+        return glyphMRUTable;
+    }
+
+    public Dim getMaxDimForGlyph() {
+        return maxDimForGlyph;
+    }
+
     public FillRectImgDescr detectExactFillRect(Rect rect) {
         final int W = dim.width;
         final int rectWidth = rect.getWidth();
@@ -409,7 +435,22 @@ public final class RectImgDescrDetectorHelper {
             if (splitBorders.size() == 1) {
                 // only 1 split.. use simpler class instead of ColumnsSplitRectImgDescr
                 Segment splitBorder = splitBorders.get(0);
-                return new VerticalSplitRectImgDescr(rect, null, splitBorder, splitColor, null);
+                if (splitBorder.from == rect.fromX && splitBorder.to == rect.toX) {
+                    return new FillRectImgDescr(rect, splitColor); // should not occur
+                } else if (splitBorder.from == rect.fromX) {
+                    int leftBorder = splitBorder.to - rect.fromX;
+                    return new LeftRightBorderRectImgDescr(rect, splitColor, leftBorder, 0, null);
+                } else if (splitBorder.to == rect.toX) {
+                    int rightBorder = rect.toX - splitBorder.from;
+                    return new LeftRightBorderRectImgDescr(rect, splitColor, 0, rightBorder, null);
+                } else {
+                    return new VerticalSplitRectImgDescr(rect, null, splitBorder, splitColor, null);
+                }
+            } else if (splitBorders.size() == 2 
+                    && splitBorders.get(0).from == rect.fromX && splitBorders.get(1).to == rect.toX) {
+                int leftBorder = splitBorders.get(0).to - rect.fromX;
+                int rightBorder = rect.toX - splitBorders.get(1).from;
+                return new LeftRightBorderRectImgDescr(rect, splitColor, leftBorder, rightBorder, null);
             }
         }
         
@@ -426,11 +467,9 @@ public final class RectImgDescrDetectorHelper {
             }
         }
         
-        List<RectImgDescription> columns = new ArrayList<RectImgDescription>();
-        if (colorsToSplits.size() > 1) {
-            // decompose columns with othre colors vertical borders ...
+        List<RectImgDescription> columns = null;
+            // decompose columns with other colors vertical borders ...
             // TODO
-        }
         return new ColumnsSplitRectImgDescr(rect, splitColor, splitBorders, columns);
     }
     
@@ -440,18 +479,15 @@ public final class RectImgDescrDetectorHelper {
         int idx = rect.fromY * dim.width + rect.fromX;
         for(int x = rect.fromX; x < rect.toX; x++,idx++) {
             int lineH = sameCountsImg.getDownSameCount(idx);
-            if (lineH == rectH) {
+            if (lineH >= rectH) {
                 int color = imgData[idx];
                 // find following lines with same height & color
                 int fromX = x;
-                int wSameColor = sameCountsImg.getDownSameCount(idx);
+                int wSameColor = sameCountsImg.getRightSameCount(idx);
                 if (wSameColor > 1) {
-                    final int maxToX = Math.min(rect.toX, x+wSameColor); 
-                    for(; x < maxToX; x++,idx++) {
-                        int lineH2 = sameCountsImg.getDownSameCount(idx);
-                        if (lineH2 != rectH) {
-                            break;
-                        }
+                    final int maxToX = Math.min(rect.toX-1, x+wSameColor); 
+                    while(x < maxToX && sameCountsImg.getDownSameCount(idx) >= rectH) {
+                        x++; idx++;
                     }
                 }
                 List<Segment> splits = colorsToSplits.get(color);
@@ -459,7 +495,7 @@ public final class RectImgDescrDetectorHelper {
                     splits = new ArrayList<Segment>();
                     colorsToSplits.put(color, splits);
                 }
-                splits.add(new Segment(fromX, x));
+                splits.add(new Segment(fromX, x+1));
             }
         }
         return colorsToSplits;
@@ -480,7 +516,22 @@ public final class RectImgDescrDetectorHelper {
             if (splitBorders.size() == 1) {
                 // only 1 split.. use simpler class instead of ColumnsSplitRectImgDescr
                 Segment splitBorder = splitBorders.get(0);
-                return new HorizontalSplitRectImgDescr(rect, null, splitBorder, splitColor, null);
+                if (splitBorder.from == rect.fromY && splitBorder.to == rect.toY) {
+                    return new FillRectImgDescr(rect, splitColor); // should not occur
+                } else if (splitBorder.from == rect.fromY) {
+                    int topBorder = splitBorder.to - splitBorder.from;
+                    return new TopBottomBorderRectImgDescr(rect, splitColor, topBorder, 0, null);
+                } else if (splitBorder.to == rect.toY) {
+                    int bottomBorder = splitBorder.to - splitBorder.from;
+                    return new TopBottomBorderRectImgDescr(rect, splitColor, 0, bottomBorder, null);
+                } else {
+                    return new HorizontalSplitRectImgDescr(rect, null, splitBorder, splitColor, null);
+                }
+            } else if (splitBorders.size() == 2 && 
+                    splitBorders.get(0).from == rect.fromY && splitBorders.get(1).to == rect.toY) {
+                int topBorder = splitBorders.get(0).to - rect.fromY;
+                int bottomBorder = rect.toY - splitBorders.get(0).from;
+                return new TopBottomBorderRectImgDescr(rect, splitColor, topBorder, bottomBorder, null);
             }
         }
         
@@ -497,9 +548,9 @@ public final class RectImgDescrDetectorHelper {
             }
         }
         
-        List<RectImgDescription> rows = new ArrayList<RectImgDescription>();
+        List<RectImgDescription> rows = null; // new ArrayList<RectImgDescription>();
         if (colorsToSplits.size() > 1) {
-            // decompose columns with othre colors vertical borders ...
+            // decompose columns with other colors vertical borders ...
             // TODO
         }
         return new LinesSplitRectImgDescr(rect, splitColor, splitBorders, rows);
@@ -512,18 +563,15 @@ public final class RectImgDescrDetectorHelper {
         int idx = rect.fromY * dim.width + rect.fromX;
         for(int y = rect.fromY; y < rect.toY; y++,idx+=W) {
             int lineW = sameCountsImg.getRightSameCount(idx);
-            if (lineW == rectW) {
+            if (lineW >= rectW) {
                 int color = imgData[idx];
                 // find following lines with same height & color
                 int fromY = y;
-                int hSameColor = sameCountsImg.getRightSameCount(idx);
+                int hSameColor = sameCountsImg.getDownSameCount(idx);
                 if (hSameColor > 1) {
-                    final int maxToY = Math.min(rect.toY, y+hSameColor); 
-                    for(; y < maxToY; y++,idx+=W) {
-                        int lineW2 = sameCountsImg.getRightSameCount(idx);
-                        if (lineW2 != rectW) {
-                            break;
-                        }
+                    final int maxToY = Math.min(rect.toY-1, y+hSameColor);
+                    while(y < maxToY && sameCountsImg.getRightSameCount(idx) >= rectW) {
+                        y++; idx+=W;
                     }
                 }
                 List<Segment> splits = colorsToSplits.get(color);
@@ -531,10 +579,37 @@ public final class RectImgDescrDetectorHelper {
                     splits = new ArrayList<Segment>();
                     colorsToSplits.put(color, splits);
                 }
-                splits.add(new Segment(fromY, y));
+                splits.add(new Segment(fromY, y+1));
             }
         }
         return colorsToSplits;
     }
 
+    public GlyphRectImgDescr detectGlyph(Rect rect) {
+        int crc = IntsCRC32.crc32ImgRect(dim, imgData, rect);
+        GlyphMRUNode glyphNode = glyphMRUTable.findGlyphByCrc(rect.getDim(), crc);
+        if (glyphNode == null) {
+            glyphNode = glyphMRUTable.addGlyph(dim, imgData, rect, crc);
+        } else {
+            glyphMRUTable.incrUseCount(glyphNode);
+        }
+        GlyphIndexOrCode glyphIndexOrCode = glyphNode.getIndexOrCode();
+        return new GlyphRectImgDescr(rect, glyphIndexOrCode);
+    }
+
+    public boolean allowDetectGlyphInRect(Dim dim) {
+        return allowDetectGlyphInRectDim(dim.width, dim.height);
+    }
+
+    public boolean allowDetectGlyphInRect(Rect rect) {
+        return allowDetectGlyphInRectDim(rect.getWidth(), rect.getHeight());
+    }
+
+    public boolean allowDetectGlyphInRectDim(int width, int height) {
+        return width < maxDimForGlyph.width
+                && height < maxDimForGlyph.height
+                && (width*height) < maxAreaForGlyph
+                ;
+    }
+    
 }

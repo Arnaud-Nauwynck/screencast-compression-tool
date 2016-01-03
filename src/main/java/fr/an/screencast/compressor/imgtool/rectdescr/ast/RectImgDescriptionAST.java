@@ -3,6 +3,7 @@ package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
+import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
@@ -18,7 +19,7 @@ public class RectImgDescriptionAST {
      */
     public static abstract class RectImgDescription {
 
-        private final Rect rect;
+        protected final Rect rect;
         
         public RectImgDescription(Rect rect) {
             this.rect = rect;
@@ -59,7 +60,11 @@ public class RectImgDescriptionAST {
         public void setColor(int color) {
             this.color = color;
         }
-    
+
+        @Override
+        public String toString() {
+            return "FillRectImgDescr [rect=" + rect + ", color=" + color + "]";
+        }
         
     }
 
@@ -75,7 +80,7 @@ public class RectImgDescriptionAST {
         private Dim topCornerDim;
         private Dim bottomCornerDim;
         
-        private RectImgDescription insideRect;
+        private RectImgDescription inside;
         
         public RoundBorderRectImgDescr(Rect rect, int cornerBackgroundColor, int borderColor, int borderThick, Dim topCornerDim, Dim bottomCornerDim,
                 RectImgDescription insideRect) {
@@ -85,11 +90,16 @@ public class RectImgDescriptionAST {
             this.borderThick = borderThick;
             this.topCornerDim = topCornerDim;
             this.bottomCornerDim = bottomCornerDim;
-            this.insideRect = insideRect;
+            this.inside = insideRect;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseRoundBorderDescr(this);
+        }
+
+        public Rect getInsideRect() {
+            return Rect.newPtToPt(rect.fromX + borderThick, rect.fromY + borderThick,
+                rect.toX - borderThick, rect.toY - borderThick);
         }
 
         public int getCornerBackgroundColor() {
@@ -132,12 +142,12 @@ public class RectImgDescriptionAST {
             this.bottomCornerDim = bottomCornerDim;
         }
 
-        public RectImgDescription getInsideRect() {
-            return insideRect;
+        public RectImgDescription getInside() {
+            return inside;
         }
 
-        public void setInsideRect(RectImgDescription p) {
-            this.insideRect = p;
+        public void setInside(RectImgDescription p) {
+            this.inside = p;
         }
         
     }
@@ -148,15 +158,15 @@ public class RectImgDescriptionAST {
         
         private int borderColor;
         private Border border;
-        private RectImgDescription insideRect;
+        private RectImgDescription inside;
         
         public BorderRectImgDescr(Rect rect, 
                 int borderColor, Border border,
-                RectImgDescription insideRect) {
+                RectImgDescription inside) {
             super(rect);
             this.borderColor = borderColor;
             this.border = border;
-            this.insideRect = insideRect;
+            this.inside = inside;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
@@ -179,14 +189,156 @@ public class RectImgDescriptionAST {
             this.border = p;
         }
 
-        public RectImgDescription getInsideRect() {
-            return insideRect;
+        public RectImgDescription getInside() {
+            return inside;
         }
 
-        public void setInsideRect(RectImgDescription insideRect) {
-            this.insideRect = insideRect;
+        public void setInside(RectImgDescription p) {
+            this.inside = p;
         }
         
+        public Rect getInsideRect() {
+            return Rect.newPtToPt(rect.fromX + border.left, rect.fromY + border.top, 
+                rect.toX - border.right, rect.toY - border.bottom);
+        }
+        
+    }
+
+    // ------------------------------------------------------------------------
+    
+    /** specialized BorderRectImgDescr, for Top&Bottom border only */ 
+    public static class TopBottomBorderRectImgDescr extends RectImgDescription {
+        private int borderColor;
+        private int topBorder;
+        private int bottomBorder;
+        private RectImgDescription inside;
+        
+        public TopBottomBorderRectImgDescr(Rect rect, int borderColor, int topBorder, int bottomBorder, RectImgDescription inside) {
+            super(rect);
+            this.borderColor = borderColor;
+            this.topBorder = topBorder;
+            this.bottomBorder = bottomBorder;
+            this.inside = inside;
+        }
+
+        public void accept(RectImgDescrVisitor visitor) {
+            visitor.caseTopBottomBorderDescr(this);
+        }
+
+        public int getBorderColor() {
+            return borderColor;
+        }
+
+        public void setBorderColor(int borderColor) {
+            this.borderColor = borderColor;
+        }
+
+        public int getTopBorder() {
+            return topBorder;
+        }
+
+        public void setTopBorder(int topBorder) {
+            this.topBorder = topBorder;
+        }
+
+        public int getBottomBorder() {
+            return bottomBorder;
+        }
+
+        public void setBottomBorder(int bottomBorder) {
+            this.bottomBorder = bottomBorder;
+        }
+
+        public RectImgDescription getInside() {
+            return inside;
+        }
+
+        public void setInside(RectImgDescription p) {
+            this.inside = p;
+        }
+        
+        public Rect getInsideRect() {
+            return Rect.newPtToPt(rect.fromX, rect.fromY + topBorder, 
+                rect.toX, rect.toY - bottomBorder);
+        }
+
+        @Override
+        public String toString() {
+            return "TopBottomBorderRectImgDescr [rect=" + rect 
+                    + ", border color=" + RGBUtils.toString(borderColor) 
+                    + ", bottom=" + bottomBorder 
+                    + ", top=" + topBorder 
+                    + "]";
+        }
+        
+    }
+
+    // ------------------------------------------------------------------------
+    
+    /** specialized BorderRectImgDescr, for Left&Rightborder only */ 
+    public static class LeftRightBorderRectImgDescr extends RectImgDescription {
+        private int borderColor;
+        private int leftBorder;
+        private int rightBorder;
+        private RectImgDescription inside;
+        
+        public LeftRightBorderRectImgDescr(Rect rect, int borderColor, int leftBorder, int rightBorder, RectImgDescription inside) {
+            super(rect);
+            this.borderColor = borderColor;
+            this.leftBorder = leftBorder;
+            this.rightBorder = rightBorder;
+            this.inside = inside;
+        }
+
+        public void accept(RectImgDescrVisitor visitor) {
+            visitor.caseLeftRightBorderDescr(this);
+        }
+
+        public int getBorderColor() {
+            return borderColor;
+        }
+
+        public void setBorderColor(int borderColor) {
+            this.borderColor = borderColor;
+        }
+        
+        public int getLeftBorder() {
+            return leftBorder;
+        }
+
+        public void setLeftBorder(int leftBorder) {
+            this.leftBorder = leftBorder;
+        }
+
+        public int getRightBorder() {
+            return rightBorder;
+        }
+
+        public void setRightBorder(int rightBorder) {
+            this.rightBorder = rightBorder;
+        }
+
+        public RectImgDescription getInside() {
+            return inside;
+        }
+
+        public void setInside(RectImgDescription p) {
+            this.inside = p;
+        }
+        
+        public Rect getInsideRect() {
+            return Rect.newPtToPt(rect.fromX + leftBorder, rect.fromY, 
+                rect.toX - rightBorder, rect.toY);
+        }
+
+        @Override
+        public String toString() {
+            return "LeftRightBorderRectImgDescr [rect=" + rect 
+                    + ", border color=" + RGBUtils.toString(borderColor) 
+                    + ", left=" + leftBorder 
+                    + ", right=" + rightBorder 
+                    + "]";
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -204,10 +356,21 @@ public class RectImgDescriptionAST {
             this.splitBorder = splitBorder;
             this.splitColor = splitColor;
             this.right = right;
+            if (splitBorder.to > rect.toX) {
+                throw new IllegalArgumentException();
+            }
         }
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseVerticalSplitDescr(this);
+        }
+
+        public Rect getLeftRect() {
+            return Rect.newPtToPt(rect.fromX, rect.fromY, splitBorder.from, rect.toY);
+        }
+
+        public Rect getRightRect() {
+            return Rect.newPtToPt(splitBorder.to, rect.fromY, rect.toX, rect.toY);
         }
 
         public RectImgDescription getLeft() {
@@ -259,12 +422,23 @@ public class RectImgDescriptionAST {
             this.splitBorder = splitBorder;
             this.splitColor = splitColor;
             this.down = down;
+            if (splitBorder.to > rect.toY) {
+                throw new IllegalArgumentException();
+            }
         }
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseHorizontalSplitDescr(this);
         }
 
+        public Rect getUpRect() {
+            return Rect.newPtToPt(rect.fromX, rect.fromY, rect.toX, splitBorder.from);
+        }
+
+        public Rect getDownRect() {
+            return Rect.newPtToPt(rect.fromX, splitBorder.to, rect.toX, rect.toY);
+        }
+        
         public RectImgDescription getUp() {
             return up;
         }
@@ -326,6 +500,15 @@ public class RectImgDescriptionAST {
             visitor.caseLinesSplitDescr(this);
         }
 
+        public Rect[] getLineRects() {
+            final Segment[] sb = splitBorders;
+            Rect[] res = new Rect[sb.length - 1]; // -1: in interval
+            for(int i = 0; i < res.length; i++) {
+                res[i] = Rect.newPtToPt(rect.fromX, sb[i].to, rect.toX, sb[i+1].from);
+            }
+            return res;
+        }
+
         public int getBackgroundColor() {
             return backgroundColor;
         }
@@ -378,6 +561,15 @@ public class RectImgDescriptionAST {
         
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseColumnsSplitDescr(this);
+        }
+
+        public Rect[] getColumnRects() {
+            final Segment[] sb = splitBorders;
+            Rect[] res = new Rect[sb.length - 1];
+            for(int i = 0; i < res.length; i++) {
+                res[i] = Rect.newPtToPt(sb[i].to, rect.fromY, sb[i+1].from, rect.toY);
+            }
+            return res;
         }
 
         public int getBackgroundColor() {
@@ -460,16 +652,35 @@ public class RectImgDescriptionAST {
     public static class RectImgAboveRectImgDescr extends RectImgDescription {
 
         private RectImgDescription underlyingRectImgDescr;
+        private Rect aboveRect;
         private RectImgDescription aboveRectImgDescr;
-        
-        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, RectImgDescription aboveRectImgDescr) {
+
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
+                Rect aboveRect) {
             super(rect);
             this.underlyingRectImgDescr = underlyingRectImgDescr;
+            this.aboveRect = aboveRect;
+        }
+
+
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
+                RectImgDescription aboveRectImgDescr) {
+            super(rect);
+            this.underlyingRectImgDescr = underlyingRectImgDescr;
+            this.aboveRect = (aboveRectImgDescr != null)? aboveRectImgDescr.getRect() : null;
             this.aboveRectImgDescr = aboveRectImgDescr;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseDescrAboveDescr(this);
+        }
+        
+        public Rect getAboveRect() {
+            return aboveRect;
+        }
+
+        public void setAboveRect(Rect aboveRect) {
+            this.aboveRect = aboveRect;
         }
 
         public RectImgDescription getUnderlyingRectImgDescr() {

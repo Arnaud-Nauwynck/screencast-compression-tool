@@ -11,11 +11,13 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.C
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Border;
@@ -40,7 +42,7 @@ public class DrawRectImgDescrVisitor extends RectImgDescrVisitor {
 
     public DrawRectImgDescrVisitor(BufferedImage img, GlyphMRUTable glyphMRUTable) {
         this.img = img;
-        this.g2d = (Graphics2D) g2d.create();
+        this.g2d = img.createGraphics();
         this.imgDim = new Dim(img.getWidth(), img.getHeight());
         this.imgData = ImageRasterUtils.toInts(img);
         this.glyphMRUTable = glyphMRUTable;
@@ -73,7 +75,7 @@ public class DrawRectImgDescrVisitor extends RectImgDescrVisitor {
         final Dim bottomCornerDim = node.getBottomCornerDim();
         final int borderColor = node.getBorderColor();
         final int borderThick = node.getBorderThick();
-        final RectImgDescription insideRect = node.getInsideRect();
+        final RectImgDescription insideRect = node.getInside();
         
         g2d.setColor(new Color(cornerBackgroundColor));
         final int tcW = topCornerDim.width;
@@ -112,7 +114,7 @@ public class DrawRectImgDescrVisitor extends RectImgDescrVisitor {
         final Rect rect = node.getRect();
         final int borderColor = node.getBorderColor();
         final Border border = node.getBorder();
-        RectImgDescription insideRect = node.getInsideRect();
+        final RectImgDescription insideRect = node.getInside();
         if (border == null) {
             return;
         }
@@ -130,6 +132,49 @@ public class DrawRectImgDescrVisitor extends RectImgDescrVisitor {
         }
         if (border.bottom > 0) {
             g2d.fillRect(rect.fromX, rect.fromY - border.bottom, rectW, border.bottom);
+        }
+        
+        if (insideRect != null) {
+            insideRect.accept(this);
+        }
+    }
+
+    @Override
+    public void caseTopBottomBorderDescr(TopBottomBorderRectImgDescr node) {
+        final Rect rect = node.getRect();
+        final int borderColor = node.getBorderColor();
+        final int topBorder = node.getTopBorder();
+        final int bottomBorder = node.getBottomBorder();
+        final RectImgDescription insideRect = node.getInside();
+
+        g2d.setColor(new Color(borderColor));
+        final int rectW = rect.getWidth();
+        if (topBorder > 0) {
+            g2d.fillRect(rect.fromX, rect.fromY, rectW, topBorder);
+        }
+        if (bottomBorder > 0) {
+            g2d.fillRect(rect.fromX, rect.toY - bottomBorder, rectW, bottomBorder);
+        }
+        
+        if (insideRect != null) {
+            insideRect.accept(this);
+        }
+    }
+
+    @Override
+    public void caseLeftRightBorderDescr(LeftRightBorderRectImgDescr node) {
+        final Rect rect = node.getRect();
+        final int borderColor = node.getBorderColor();
+        final int leftBorder = node.getLeftBorder();
+        final int rightBorder = node.getRightBorder();
+        final RectImgDescription insideRect = node.getInside();
+        g2d.setColor(new Color(borderColor));
+        final int rectH = rect.getHeight();
+        if (leftBorder > 0) {
+            g2d.fillRect(rect.fromX, rect.fromY, leftBorder, rectH);
+        }
+        if (rightBorder > 0) {
+            g2d.fillRect(rect.toX - rightBorder, rect.fromY, rightBorder, rectH);
         }
         
         if (insideRect != null) {
@@ -219,7 +264,7 @@ public class DrawRectImgDescrVisitor extends RectImgDescrVisitor {
     public void caseRawDataDescr(RawDataRectImgDescr node) {
         final Rect rect = node.getRect();
         final int[] rawData = node.getRawData();
-        ImageRasterUtils.drawRectImg(imgDim, imgData, rect, rawData);        
+        ImageRasterUtils.drawRectImg(imgDim, imgData, rect, rawData);
     }
 
     @Override

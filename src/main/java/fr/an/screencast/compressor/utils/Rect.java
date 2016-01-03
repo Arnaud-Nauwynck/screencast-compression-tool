@@ -197,6 +197,10 @@ public class Rect implements Serializable {
         return "x:[" + fromX + "," + toX + "( . y:[" + fromY + "," + toY + "( dim:" + getWidth() + "x" + getHeight();
     }
 
+    public String toStringPtDim() {
+        return fromX + "," + fromY + "-" + getWidth() + "x" + getHeight();
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
