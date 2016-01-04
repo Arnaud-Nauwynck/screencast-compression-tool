@@ -36,7 +36,7 @@ public final class Segment implements ISegment, Serializable {
 
     @Override
     public String toString() {
-        return from + "-" + to;
+        return "[" + from + "-" + to + "(";
     }
     
     @Override
@@ -74,7 +74,7 @@ public final class Segment implements ISegment, Serializable {
      */
     public static List<Segment> parseSegmentList(String text) {
         List<Segment> res = new ArrayList<Segment>();
-        for(StringTokenizer tokenizer = new StringTokenizer(text, ", "); tokenizer.hasMoreTokens(); ) {
+        for(StringTokenizer tokenizer = new StringTokenizer(text, "[(, "); tokenizer.hasMoreTokens(); ) {
             String token = tokenizer.nextToken();
             String[] split = token.split("-");
             int from = Integer.parseInt(split[0].trim());

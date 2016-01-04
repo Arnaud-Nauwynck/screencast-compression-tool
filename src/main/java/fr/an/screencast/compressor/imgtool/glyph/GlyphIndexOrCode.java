@@ -52,7 +52,10 @@ public final class GlyphIndexOrCode {
             return false;
         return true;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return (youngIndex >= 0)? "tmpIdx:" + youngIndex : "code:" + oldHuffmanCode;
+    }
     
 }

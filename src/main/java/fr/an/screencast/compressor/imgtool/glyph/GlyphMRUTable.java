@@ -123,6 +123,10 @@ public class GlyphMRUTable {
 
     // ------------------------------------------------------------------------
     
+    public int size() {
+        return glyphByIndexOrCode.size();
+    }
+
     public GlyphMRUNode findGlyphByIndexOrCode(GlyphIndexOrCode key) {
         return glyphByIndexOrCode.get(key);
     }

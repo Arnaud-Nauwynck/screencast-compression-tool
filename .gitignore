@@ -8,3 +8,4 @@ test2.*
 eclipse
 compute-cache
 log.txt
+src/test/imgs/check-*

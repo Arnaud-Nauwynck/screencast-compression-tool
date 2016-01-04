@@ -485,17 +485,21 @@ public final class RectImgDescrDetectorHelper {
                 int fromX = x;
                 int wSameColor = sameCountsImg.getRightSameCount(idx);
                 if (wSameColor > 1) {
-                    final int maxToX = Math.min(rect.toX-1, x+wSameColor); 
+                    final int maxToX = Math.min(rect.toX, x+wSameColor); 
+                    x++; idx++;
                     while(x < maxToX && sameCountsImg.getDownSameCount(idx) >= rectH) {
                         x++; idx++;
                     }
+                } else {
+                    x++; idx++;
                 }
                 List<Segment> splits = colorsToSplits.get(color);
                 if (splits == null) {
                     splits = new ArrayList<Segment>();
                     colorsToSplits.put(color, splits);
                 }
-                splits.add(new Segment(fromX, x+1));
+                splits.add(new Segment(fromX, x));
+                x--; idx--;
             }
         }
         return colorsToSplits;
@@ -530,7 +534,7 @@ public final class RectImgDescrDetectorHelper {
             } else if (splitBorders.size() == 2 && 
                     splitBorders.get(0).from == rect.fromY && splitBorders.get(1).to == rect.toY) {
                 int topBorder = splitBorders.get(0).to - rect.fromY;
-                int bottomBorder = rect.toY - splitBorders.get(0).from;
+                int bottomBorder = rect.toY - splitBorders.get(1).from;
                 return new TopBottomBorderRectImgDescr(rect, splitColor, topBorder, bottomBorder, null);
             }
         }
@@ -569,17 +573,21 @@ public final class RectImgDescrDetectorHelper {
                 int fromY = y;
                 int hSameColor = sameCountsImg.getDownSameCount(idx);
                 if (hSameColor > 1) {
-                    final int maxToY = Math.min(rect.toY-1, y+hSameColor);
+                    final int maxToY = Math.min(rect.toY, y+hSameColor);
+                    y++; idx+=W;
                     while(y < maxToY && sameCountsImg.getRightSameCount(idx) >= rectW) {
                         y++; idx+=W;
                     }
+                } else {
+                    y++; idx+=W;
                 }
                 List<Segment> splits = colorsToSplits.get(color);
                 if (splits == null) {
                     splits = new ArrayList<Segment>();
                     colorsToSplits.put(color, splits);
                 }
-                splits.add(new Segment(fromY, y+1));
+                splits.add(new Segment(fromY, y));
+                y--; idx-=W;
             }
         }
         return colorsToSplits;

@@ -215,6 +215,10 @@ public class RectImgDescriptionAST {
         
         public TopBottomBorderRectImgDescr(Rect rect, int borderColor, int topBorder, int bottomBorder, RectImgDescription inside) {
             super(rect);
+            int rectH = rect.getHeight();
+            if ((topBorder == 0 && bottomBorder == 0) || (topBorder + bottomBorder) >= rectH) {
+                throw new IllegalArgumentException();
+            }
             this.borderColor = borderColor;
             this.topBorder = topBorder;
             this.bottomBorder = bottomBorder;
@@ -284,6 +288,10 @@ public class RectImgDescriptionAST {
         
         public LeftRightBorderRectImgDescr(Rect rect, int borderColor, int leftBorder, int rightBorder, RectImgDescription inside) {
             super(rect);
+            int rectW = rect.getWidth();
+            if ((leftBorder == 0 && rightBorder == 0) || (leftBorder + rightBorder) >= rectW) {
+                throw new IllegalArgumentException();
+            }
             this.borderColor = borderColor;
             this.leftBorder = leftBorder;
             this.rightBorder = rightBorder;
@@ -502,9 +510,18 @@ public class RectImgDescriptionAST {
 
         public Rect[] getLineRects() {
             final Segment[] sb = splitBorders;
-            Rect[] res = new Rect[sb.length - 1]; // -1: in interval
-            for(int i = 0; i < res.length; i++) {
-                res[i] = Rect.newPtToPt(rect.fromX, sb[i].to, rect.toX, sb[i+1].from);
+            int len = ((sb[0].from != rect.fromY)?1:0) + sb.length - 1 + ((sb[sb.length-1].to != rect.toY)?1:0);
+            Rect[] res = new Rect[len];
+            int lineIdx = 0;
+            if (sb[0].from != rect.fromY) {
+                res[lineIdx] = Rect.newPtToPt(rect.fromX, rect.fromY, rect.toX, sb[0].from);
+                lineIdx++;
+            }
+            for(int i = 1; i < sb.length; i++,lineIdx++) {
+                res[lineIdx] = Rect.newPtToPt(rect.fromX, sb[i-1].to, rect.toX, sb[i].from);
+            }
+            if (sb[sb.length-1].to != rect.toY) {
+                res[lineIdx] = Rect.newPtToPt(rect.fromX, sb[sb.length-1].to, rect.toX, rect.toY);
             }
             return res;
         }
@@ -565,9 +582,18 @@ public class RectImgDescriptionAST {
 
         public Rect[] getColumnRects() {
             final Segment[] sb = splitBorders;
-            Rect[] res = new Rect[sb.length - 1];
-            for(int i = 0; i < res.length; i++) {
-                res[i] = Rect.newPtToPt(sb[i].to, rect.fromY, sb[i+1].from, rect.toY);
+            int len = ((sb[0].from != rect.fromX)?1:0) + sb.length - 1 + ((sb[sb.length-1].to != rect.toX)?1:0);
+            Rect[] res = new Rect[len];
+            int idx = 0;
+            if (sb[0].from != rect.fromX) {
+                res[idx] = Rect.newPtToPt(rect.fromX, rect.fromY, sb[0].from, rect.toY);
+                idx++;
+            }
+            for(int i = 1; i < sb.length; i++,idx++) {
+                res[idx] = Rect.newPtToPt(sb[i-1].to, rect.fromY, sb[i].from, rect.toY);
+            }
+            if (sb[sb.length-1].to != rect.toX) {
+                res[idx] = Rect.newPtToPt(sb[sb.length-1].to, rect.fromY, rect.toX, rect.toY);
             }
             return res;
         }

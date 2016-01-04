@@ -91,11 +91,18 @@ public class RectImgDescrAnalyzer {
         MutableDim topCornerDim = new MutableDim();
         MutableDim bottomCornerDim = new MutableDim();
         StringBuilder optReason = new StringBuilder();
-        res = helper.detectRoundBorderStartAtULWithCorners(rect.getFromPt(), tmpDim, false, // checkCornerColor .. problem with anti-aliasing!
-            topCornerDim, bottomCornerDim, optReason);
+        // checkCornerColor=false  .. problem with anti-aliasing!
+        res = helper.detectRoundBorderStartAtULWithCorners(rect.getFromPt(), tmpDim, false, topCornerDim, bottomCornerDim, optReason);
         if (res != null) {
             res.accept(recursiveAnalyzer);
             return res;
+        }
+        
+        if (helper.allowDetectGlyphInRect(rect)) {
+            res = helper.detectGlyph(rect);
+            if (res != null) {
+                return res;
+            }
         }
         
         res = helper.detectVertSplit(rect);
@@ -110,13 +117,6 @@ public class RectImgDescrAnalyzer {
             return res;
         }
 
-        if (helper.allowDetectGlyphInRect(rect)) {
-            res = helper.detectGlyph(rect);
-            if (res != null) {
-                return res;
-            }
-        }
-        
         // nothing found => use RawData !
         int[] rawData = ImageRasterUtils.getCopyData(dim, imgData, rect);
         res = new RawDataRectImgDescr(rect, rawData);
