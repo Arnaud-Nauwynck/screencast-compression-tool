@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrCodecConfig;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
@@ -35,8 +36,7 @@ import fr.an.screencast.compressor.utils.Segment;
  *
  */
 public final class RectImgDescrDetectorHelper {
-
-    private static int DEFAULT_GLYPHMRUTABLE_SIZE = 2000;
+    
     private static int DEFAULT_GLYPH_MAX_WIDTH = 50; // following glyph letters can be glued, example: "AVA", "//", "\\" 
     private static int DEFAULT_GLYPH_MAX_HEIGHT = 25;
     private static int DEFAULT_GLYPH_MAX_AREA = DEFAULT_GLYPH_MAX_WIDTH * DEFAULT_GLYPH_MAX_HEIGHT * 3 / 4;
@@ -56,7 +56,7 @@ public final class RectImgDescrDetectorHelper {
     public RectImgDescrDetectorHelper(Dim dim) {
         this.dim = dim;
         this.sameCountsImg = new RightDownSameCountsImg(dim);
-        this.glyphMRUTable = new GlyphMRUTable(DEFAULT_GLYPHMRUTABLE_SIZE); 
+        this.glyphMRUTable = new GlyphMRUTable(RectImgDescrCodecConfig.DEFAULT_GLYPHMRUTABLE_SIZE);
     }
 
     // ------------------------------------------------------------------------
@@ -603,7 +603,7 @@ public final class RectImgDescrDetectorHelper {
             glyphMRUTable.incrUseCount(glyphNode);
         }
         GlyphIndexOrCode glyphIndexOrCode = glyphNode.getIndexOrCode();
-        return new GlyphRectImgDescr(rect, glyphIndexOrCode, isNew);
+        return new GlyphRectImgDescr(rect, glyphIndexOrCode, isNew, glyphNode.getData());
     }
 
     public boolean allowDetectGlyphInRect(Dim dim) {

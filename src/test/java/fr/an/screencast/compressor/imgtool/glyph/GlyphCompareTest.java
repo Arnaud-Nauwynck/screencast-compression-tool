@@ -22,8 +22,8 @@ public class GlyphCompareTest {
         int[] img1Data = ImageRasterUtils.toInts(img1);
         int[] img2Data = ImageRasterUtils.toInts(img2);
         
-        int crc1 = IntsCRC32.crc32(img1Data, 0, img1Data.length);
-        int crc2 = IntsCRC32.crc32(img1Data, 0, img1Data.length);
+        int crc1 = IntsCRC32.crc32(img1Data);
+        int crc2 = IntsCRC32.crc32(img1Data);
         if (crc1 != crc2) {
             System.out.println("CRC " + crc1 + " != " + crc2);
         } else {

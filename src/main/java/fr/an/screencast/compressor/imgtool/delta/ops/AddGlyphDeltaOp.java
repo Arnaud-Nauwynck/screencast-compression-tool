@@ -30,7 +30,7 @@ public class AddGlyphDeltaOp extends DeltaOperation {
 
     public static GlyphMRUNode doApply(DeltaContext context, Dim glyphDim, int[] glyphData) {
         GlyphMRUTable glyphMRUTable = context.getGlyphMRUTable();
-        int crc = IntsCRC32.crc32(glyphData, 0, glyphData.length);
+        int crc = IntsCRC32.crc32(glyphData);
         Rect dimAsRect = Rect.newDim(glyphDim);
         GlyphMRUNode res = glyphMRUTable.addGlyph(glyphDim, glyphData, dimAsRect, crc);
         return res;

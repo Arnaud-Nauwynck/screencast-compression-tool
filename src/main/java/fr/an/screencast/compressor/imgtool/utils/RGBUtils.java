@@ -1,8 +1,10 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import fr.an.util.bits.RuntimeIOException;
 
@@ -135,6 +137,22 @@ public final class RGBUtils {
             throw new RuntimeIOException("should not occur", ex);
         }
         return gzipBytes;
+    }
+
+    public static void gzipBytesToIntRGBs(int[] res, byte[] gzipBytes, int alpha) {
+        ByteArrayInputStream gzipBuffer = new ByteArrayInputStream(gzipBytes);
+        InflaterInputStream gzipIn = new InflaterInputStream(gzipBuffer); 
+        int i = 0;
+        try {
+            while(gzipIn.available() != 0) {
+                int r = gzipIn.read();
+                int g = gzipIn.read();
+                int b = gzipIn.read();
+                res[i++] = RGBUtils.rgb2Int(r, g, b, alpha);
+            }
+        } catch(IOException ex) {
+            throw new RuntimeIOException("should not occur", ex);
+        }
     }
 
 }

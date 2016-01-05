@@ -60,7 +60,7 @@ public class IntsCRC32Test {
         // Prepare
         int[] intValues = generateIntArray(100);
         // Perform
-        int res = IntsCRC32.crc32(intValues, 0, intValues.length);
+        int res = IntsCRC32.crc32(intValues);
         // Post-check
         int expected = IntsCRC32.crc32InMemory(intValues, 0, intValues.length);
         Assert.assertEquals(expected, res);
@@ -90,7 +90,7 @@ public class IntsCRC32Test {
         // Prepare
         int[] intValues = generateIntArray(10000);
         // Perform
-        int res = IntsCRC32.crc32(intValues, 0, intValues.length);
+        int res = IntsCRC32.crc32(intValues);
         // Post-check
         int expected = IntsCRC32.crc32InMemory(intValues, 0, intValues.length);
         Assert.assertEquals(expected, res);
@@ -132,7 +132,7 @@ public class IntsCRC32Test {
         
         long startTime = System.currentTimeMillis();
         for (int nbRepeat = 0; nbRepeat < countRepeat; nbRepeat++) {
-            int res = IntsCRC32.crc32(intValues, 0, intValues.length);
+            int res = IntsCRC32.crc32(intValues);
             Assert.assertEquals(expected, res);
         }
         long time = System.currentTimeMillis() - startTime;
@@ -202,7 +202,7 @@ public class IntsCRC32Test {
         // Post-check
         int[] glyphData = ImageRasterUtils.getCopyData(dim, img, rect);
         ImageDataAssert.assertEquals(new int[] { 2, 3, 4, 3, 4, 5 }, glyphData, roiDim);
-        int checkCrc = IntsCRC32.crc32(glyphData, 0, glyphData.length);
+        int checkCrc = IntsCRC32.crc32(glyphData);
         Assert.assertEquals(checkCrc, crc);
     }
     

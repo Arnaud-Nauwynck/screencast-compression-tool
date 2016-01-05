@@ -67,6 +67,10 @@ public final class IntsCRC32 {
         freeBuffer(bb);
         return (int) crc.getValue();
     }
+
+    public static int crc32(int[] data) { 
+        return crc32(data, 0, data.length);
+    }
     
     public static int crc32(int[] data, int offset, int len) { 
         if (len < BENCHMARK_MAXINTS_DIRECT) {

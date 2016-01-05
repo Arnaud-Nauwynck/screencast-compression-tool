@@ -19,6 +19,10 @@ import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
+import fr.an.util.encoder.huffman.HuffmanBitsCode;
+import fr.an.util.encoder.huffman.HuffmanTable;
+import fr.an.util.encoder.structio.BitStreamStructDataInput;
+import fr.an.util.encoder.structio.BitStreamStructDataOutput;
 
 /**
  * a MRU (Most-Recently-Used) table for glyphs
@@ -115,6 +119,8 @@ public class GlyphMRUTable {
     private int youngGlyphIndexCount;
     private int globalGlyphIdCount;
     
+    private HuffmanTable<GlyphIndexOrCode> huffmanTableIndexOrCode = new HuffmanTable<GlyphIndexOrCode>();
+    
     // ------------------------------------------------------------------------
 
     public GlyphMRUTable(int maxSize) {
@@ -149,6 +155,10 @@ public class GlyphMRUTable {
         return youngGlyphIndexCount;
     }
 
+    public GlyphIndexOrCode readDecodeHuffmanTableIndexOrCode(BitStreamStructDataInput in) {
+        return huffmanTableIndexOrCode.readDecodeSymbol(in);
+    }
+    
     public GlyphMRUNode addGlyph(Dim imgDim, int[] img, Rect rect, int crc) {
         Dim glyphDim = rect.getDim();
         int[] glyphData = ImageRasterUtils.getCopyData(imgDim, img, rect); 
@@ -195,6 +205,41 @@ public class GlyphMRUTable {
         // TODO ... may compute HuffmanTable and re-assign huffman codes to glyphs 
     }
 
+
+    public void writeEncodeReuseGlyphIndexOrCode(BitStreamStructDataOutput out, GlyphIndexOrCode glyphIndexOrCode) {
+        HuffmanBitsCode huffmanCode = glyphIndexOrCode.getOldHuffmanCode();
+        boolean isYoung = huffmanCode == null;
+        out.writeBit(isYoung);
+        if (isYoung) {
+            int youngIndex = glyphIndexOrCode.getYoungIndex();
+            int maxIndex = getYoungGlyphIndexCount();
+            out.writeIntMinMax(0, maxIndex, youngIndex);
+        } else {
+            // TODO ... not supported yet... need sync HuffmanTable (cd decoder)
+            huffmanCode.writeCodeTo(out);
+        }
+    }
+
+    public GlyphIndexOrCode readDecodeReuseGlyphIndexOrCode(BitStreamStructDataInput in) {
+        GlyphIndexOrCode tmpres;
+        boolean isYoung = in.readBit();
+        if (isYoung) {
+            int maxIndex = getYoungGlyphIndexCount();
+            int youngIndex = in.readIntMinMax(0, maxIndex);
+            tmpres = new GlyphIndexOrCode(youngIndex, null);
+        } else {
+            // TODO ... not supported yet... need sync HuffmanTable (cd encoder)
+            tmpres = huffmanTableIndexOrCode.readDecodeSymbol(in);
+        }
+
+        GlyphMRUNode glyphNode = findGlyphByIndexOrCode(tmpres);
+        if (glyphNode == null) {
+            throw new IllegalStateException("glyph not found for " + tmpres);
+        }
+        return glyphNode.indexOrCode; // reuse code
+    }
+    
+    
     public void drawGlyphFindByIndexOrCode(GlyphIndexOrCode glyphIndexOrCode, Dim destDim, int[] destData, Rect rect) {
         GlyphMRUNode glyphNode = findGlyphByIndexOrCode(glyphIndexOrCode);
         if (glyphNode == null) {

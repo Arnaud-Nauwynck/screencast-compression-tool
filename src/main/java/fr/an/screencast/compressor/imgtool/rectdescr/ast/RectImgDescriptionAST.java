@@ -19,7 +19,10 @@ public class RectImgDescriptionAST {
      */
     public static abstract class RectImgDescription {
 
-        protected final Rect rect;
+        protected Rect rect;
+        
+        public RectImgDescription() {
+        }
         
         public RectImgDescription(Rect rect) {
             this.rect = rect;
@@ -44,6 +47,10 @@ public class RectImgDescriptionAST {
 
         private int color;
         
+        public FillRectImgDescr(Rect rect) {
+            super(rect);
+        }
+
         public FillRectImgDescr(Rect rect, int color) {
             super(rect);
             this.color = color;
@@ -81,6 +88,10 @@ public class RectImgDescriptionAST {
         private Dim bottomCornerDim;
         
         private RectImgDescription inside;
+        
+        public RoundBorderRectImgDescr(Rect rect) {
+            super(rect);
+        }
         
         public RoundBorderRectImgDescr(Rect rect, int cornerBackgroundColor, int borderColor, int borderThick, Dim topCornerDim, Dim bottomCornerDim,
                 RectImgDescription insideRect) {
@@ -160,6 +171,10 @@ public class RectImgDescriptionAST {
         private Border border;
         private RectImgDescription inside;
         
+        public BorderRectImgDescr(Rect rect) {
+            super(rect);
+        }
+        
         public BorderRectImgDescr(Rect rect, 
                 int borderColor, Border border,
                 RectImgDescription inside) {
@@ -212,6 +227,10 @@ public class RectImgDescriptionAST {
         private int topBorder;
         private int bottomBorder;
         private RectImgDescription inside;
+        
+        public TopBottomBorderRectImgDescr(Rect rect) {
+            super(rect);
+        }
         
         public TopBottomBorderRectImgDescr(Rect rect, int borderColor, int topBorder, int bottomBorder, RectImgDescription inside) {
             super(rect);
@@ -286,6 +305,10 @@ public class RectImgDescriptionAST {
         private int rightBorder;
         private RectImgDescription inside;
         
+        public LeftRightBorderRectImgDescr(Rect rect) {
+            super(rect);
+        }
+        
         public LeftRightBorderRectImgDescr(Rect rect, int borderColor, int leftBorder, int rightBorder, RectImgDescription inside) {
             super(rect);
             int rectW = rect.getWidth();
@@ -358,6 +381,10 @@ public class RectImgDescriptionAST {
         private int splitColor;
         private RectImgDescription right;
         
+        public VerticalSplitRectImgDescr(Rect rect) {
+            super(rect);
+        }
+        
         public VerticalSplitRectImgDescr(Rect rect, RectImgDescription left, Segment splitBorder, int splitColor, RectImgDescription right) {
             super(rect);
             this.left = left;
@@ -424,6 +451,10 @@ public class RectImgDescriptionAST {
         private Segment splitBorder;
         private RectImgDescription down;
         
+        public HorizontalSplitRectImgDescr(Rect rect) {
+            super(rect);
+        }
+        
         public HorizontalSplitRectImgDescr(Rect rect, RectImgDescription up, Segment splitBorder, int splitColor, RectImgDescription down) {
             super(rect);
             this.up = up;
@@ -488,6 +519,10 @@ public class RectImgDescriptionAST {
         private int backgroundColor;
         private Segment[] splitBorders;
         private RectImgDescription[] lines;
+        
+        public LinesSplitRectImgDescr(Rect rect) {
+            super(rect);
+        }
         
         public LinesSplitRectImgDescr(Rect rect, int backgroundColor, List<Segment> splitBorders, List<RectImgDescription> lines) {
             this(rect, backgroundColor, 
@@ -561,6 +596,10 @@ public class RectImgDescriptionAST {
         private Segment[] splitBorders;
         private RectImgDescription[] columns;
 
+        public ColumnsSplitRectImgDescr(Rect rect) {
+            super(rect);
+        }
+        
         public ColumnsSplitRectImgDescr(Rect rect, int backgroundColor, List<Segment> splitBorders, 
                 List<RectImgDescription> columns) {
             this(rect, backgroundColor,
@@ -630,6 +669,10 @@ public class RectImgDescriptionAST {
         
         private int[] rawData;
 
+        public RawDataRectImgDescr(Rect rect) {
+            super(rect);
+        }
+        
         public RawDataRectImgDescr(Rect rect, int[] rawData) {
             super(rect);
             this.rawData = rawData;
@@ -654,11 +697,17 @@ public class RectImgDescriptionAST {
     public static class GlyphRectImgDescr extends RectImgDescription {
         private GlyphIndexOrCode glyphIndexOrCode;
         private boolean isNewGlyph; // should be implicit with glyphMRUTable + indexOrCode... 
+        private int[] newGlyphData; // TODO??
         
-        public GlyphRectImgDescr(Rect rect, GlyphIndexOrCode glyphIndexOrCode, boolean isNewGlyph) {
+        public GlyphRectImgDescr(Rect rect) {
+            super(rect);
+        }
+        
+        public GlyphRectImgDescr(Rect rect, GlyphIndexOrCode glyphIndexOrCode, boolean isNewGlyph, int[] newGlyphData) {
             super(rect);
             this.glyphIndexOrCode = glyphIndexOrCode;
             this.isNewGlyph = isNewGlyph;
+            this.newGlyphData = newGlyphData;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
@@ -671,6 +720,14 @@ public class RectImgDescriptionAST {
 
         public void setNewGlyph(boolean isNewGlyph) {
             this.isNewGlyph = isNewGlyph;
+        }
+        
+        public int[] getNewGlyphData() {
+            return newGlyphData;
+        }
+
+        public void setNewGlyphData(int[] newGlyphData) {
+            this.newGlyphData = newGlyphData;
         }
 
         public GlyphIndexOrCode getGlyphIndexOrCode() {
@@ -691,6 +748,10 @@ public class RectImgDescriptionAST {
         private Rect aboveRect;
         private RectImgDescription aboveRectImgDescr;
 
+        public RectImgAboveRectImgDescr(Rect rect) {
+            super(rect);
+        }
+        
         public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
                 Rect aboveRect) {
             super(rect);

@@ -19,65 +19,52 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.R
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.utils.IntsCRC32;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
-import fr.an.util.encoder.huffman.HuffmanBitsCode;
 import fr.an.util.encoder.huffman.HuffmanTable;
 import fr.an.util.encoder.structio.BitStreamStructDataOutput;
 
 /**
- * RectImgDescrVisitor implementation for recursive dumping RectImgDescr as bitstream
+ * RectImgDescrVisitor implementation for recursive encoding RectImgDescr as bitstream
  */
 public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
 
+    private RectImgDescrCodecConfig codecConfig;
+    
     private BitStreamStructDataOutput out;
 
+    private HuffmanTable<Class<? extends RectImgDescription>> huffmanTableRectImgDescriptionClass;
     private GlyphMRUTable glyphMRUTable;
-    
-    private HuffmanTable<Class<? extends RectImgDescription>> huffmanTableRectImgDescriptionClass = defaultHuffmanTableRectImgDescriptionClass();
-
     // TODO ... private Map<String,HuffmanTable<Integer>> field2huffmanTableColor;
 
     private List<Rect> currRectStack = new ArrayList<Rect>();
     
     // ------------------------------------------------------------------------
 
-    public BitStreamOutputRectImgDescrVisitor(BitStreamStructDataOutput out, GlyphMRUTable glyphMRUTable) {
+    public BitStreamOutputRectImgDescrVisitor(RectImgDescrCodecConfig codecConfig, BitStreamStructDataOutput out) {
+        this.codecConfig = codecConfig;
         this.out = out;
-        this.glyphMRUTable = glyphMRUTable;
+        this.huffmanTableRectImgDescriptionClass = codecConfig.createHuffmanTableForClass2Frequency();
+        this.glyphMRUTable = codecConfig.createGlyphMRUTable();
     }
 
     // ------------------------------------------------------------------------
     
-    private static HuffmanTable<Class<? extends RectImgDescription>> defaultHuffmanTableRectImgDescriptionClass() {
-        HuffmanTable<Class<? extends RectImgDescription>> res = new HuffmanTable<Class<? extends RectImgDescription>>();
-        
-        res.addSymbol(FillRectImgDescr.class, 3);
-        res.addSymbol(RoundBorderRectImgDescr.class, 1);
-        res.addSymbol(BorderRectImgDescr.class, 2);
-        res.addSymbol(TopBottomBorderRectImgDescr.class, 5);
-        res.addSymbol(LeftRightBorderRectImgDescr.class, 5);
-        res.addSymbol(VerticalSplitRectImgDescr.class, 1);
-        res.addSymbol(HorizontalSplitRectImgDescr.class, 1);
-        res.addSymbol(LinesSplitRectImgDescr.class, 10);
-        res.addSymbol(ColumnsSplitRectImgDescr.class, 10);
-        res.addSymbol(RawDataRectImgDescr.class, 1);
-        res.addSymbol(GlyphRectImgDescr.class, 20);
-        res.addSymbol(RectImgAboveRectImgDescr.class, 1);
-         
-        res.compute();
-        return res;
+    public RectImgDescrCodecConfig getCodecConfig() {
+        return codecConfig;
     }
     
-    public static void dumpTo(BitStreamStructDataOutput out, GlyphMRUTable glyphMRUTable, RectImgDescription node) {
-        BitStreamOutputRectImgDescrVisitor visitor = new BitStreamOutputRectImgDescrVisitor(out, glyphMRUTable);
-        visitor.recursiveWriteTo(node);
+    public static void writeTopLevelTo(RectImgDescrCodecConfig codecConfig, BitStreamStructDataOutput out, 
+            RectImgDescription node) {
+        BitStreamOutputRectImgDescrVisitor visitor = new BitStreamOutputRectImgDescrVisitor(codecConfig, out);
+        visitor.writeTopLevel(node);
     }
 
-    public void recursiveWriteTo(RectImgDescription node) {
+    public void writeTopLevel(RectImgDescription node) {
         Rect rect = node.getRect();
         out.writeUInt0ElseMax(Short.MAX_VALUE, rect.fromX);
         out.writeUIntLt2048ElseMax(Short.MAX_VALUE, rect.toX - rect.fromX);
@@ -332,25 +319,28 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         
         out.writeBit(isNew);
         if (isNew) {
+            Dim glyphDim = node.getRect().getDim();
+            int[] glyphData = node.getNewGlyphData();
+            int crc = IntsCRC32.crc32(glyphData);
+
+            GlyphMRUNode glyphNode = glyphMRUTable.findGlyphByCrc(glyphDim, crc);
+            if (glyphNode == null) {
+                glyphNode = glyphMRUTable.addGlyph(glyphDim, glyphData, Rect.newDim(glyphDim), crc);
+            } else {
+                // should not occur??
+                glyphMRUTable.incrUseCount(glyphNode);
+            }
+            
             // int youngIndex = glyphIndexOrCode.getYoungIndex();
-            // implicit .. out.writeIntMinMax();
-            GlyphMRUNode glyphNode = glyphMRUTable.findGlyphByIndexOrCode(glyphIndexOrCode);
-            int[] glyphData = glyphNode.getData();
+            // implicit .. out.writeInt(1 + glyphMRUTable.getYoungGlyphIndexCount());
             
             // encode as GZip .. write encoded len + bytes
             byte[] gzipBytes = RGBUtils.intRGBsToGzipBytes(glyphData);
             
             out.writeIntMinMax(0, glyphData.length, gzipBytes.length);
             out.writeBytes(gzipBytes, gzipBytes.length);
-        } else {            
-            HuffmanBitsCode huffmanCode = glyphIndexOrCode.getOldHuffmanCode();
-            if (huffmanCode == null) {
-                int youngIndex = glyphIndexOrCode.getYoungIndex();
-                int maxIndex = glyphMRUTable.getYoungGlyphIndexCount();
-                out.writeIntMinMax(0, maxIndex, youngIndex);
-            } else {
-                huffmanCode.writeCodeTo(out);
-            }
+        } else {
+            glyphMRUTable.writeEncodeReuseGlyphIndexOrCode(out, glyphIndexOrCode);
         }
     }
 
