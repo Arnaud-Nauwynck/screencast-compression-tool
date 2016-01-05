@@ -1,0 +1,646 @@
+LinesSplit [0,1920(x[0,1080(,dim:1920x1080 backgroundColor:237;237;237;0 splitBorders:[33-42(, [56-74(, [89-93(, 
+lines:
+line[0]
+  LinesSplit [0,1920(x[0,33(,dim:1920x33 backgroundColor:0;0;1;0 splitBorders:[0-1(, [4-5(, [20-27(, 
+  lines:
+  line[0]
+    VerticalSplit [0,1920(x[1,4(,dim:1920x3 splitBorder:[1-233( color:0;0;0;0
+    left
+      Glyph [0,1(x[1,4(,dim:1x3 tmpIdx:0
+    right
+      LinesSplit [233,1920(x[1,4(,dim:1687x3 backgroundColor:0;0;0;0 splitBorders:[1-3(, 
+      lines:
+      line[0]
+        Fill [233,1920(x[3,4(,dim:1687x1 color:0;0;1;0
+  line[1]
+    ColumnsSplit [0,1920(x[5,20(,dim:1920x15 backgroundColor:0;0;1;0 splitBorders:[0-12(, [22-23(, [35-36(, [38-39(, [47-48(, [50-51(, [57-58(, [60-61(, [68-70(, [76-924(, [933-934(, [940-942(, [948-954(, [962-964(, [972-974(, [976-977(, [986-988(, [996-1752(, [1764-1771(, [1781-1814(, [1828-1841(, [1847-1848(, [1856-1870(, [1884-1895(, [1905-1920(, 
+    columns:
+    col[0]
+      Glyph [12,22(x[5,20(,dim:10x15 tmpIdx:1
+    col[1]
+      Glyph [23,35(x[5,20(,dim:12x15 tmpIdx:2
+    col[2]
+      Glyph [36,38(x[5,20(,dim:2x15 tmpIdx:3
+    col[3]
+      Glyph [39,47(x[5,20(,dim:8x15 tmpIdx:4
+    col[4]
+      Glyph [48,50(x[5,20(,dim:2x15 tmpIdx:3
+    col[5]
+      Glyph [51,57(x[5,20(,dim:6x15 tmpIdx:5
+    col[6]
+      Glyph [58,60(x[5,20(,dim:2x15 tmpIdx:3
+    col[7]
+      Glyph [61,68(x[5,20(,dim:7x15 tmpIdx:6
+    col[8]
+      Glyph [70,76(x[5,20(,dim:6x15 tmpIdx:7
+    col[9]
+      Glyph [924,933(x[5,20(,dim:9x15 tmpIdx:8
+    col[10]
+      Glyph [934,940(x[5,20(,dim:6x15 tmpIdx:9
+    col[11]
+      Glyph [942,948(x[5,20(,dim:6x15 tmpIdx:10
+    col[12]
+      Glyph [954,962(x[5,20(,dim:8x15 tmpIdx:11
+    col[13]
+      Glyph [964,972(x[5,20(,dim:8x15 tmpIdx:12
+    col[14]
+      Glyph [974,976(x[5,20(,dim:2x15 tmpIdx:13
+    col[15]
+      Glyph [977,986(x[5,20(,dim:9x15 tmpIdx:14
+    col[16]
+      Glyph [988,996(x[5,20(,dim:8x15 tmpIdx:15
+    col[17]
+      Glyph [1752,1764(x[5,20(,dim:12x15 tmpIdx:16
+    col[18]
+      Glyph [1771,1781(x[5,20(,dim:10x15 tmpIdx:17
+    col[19]
+      Glyph [1814,1828(x[5,20(,dim:14x15 tmpIdx:18
+    col[20]
+      Glyph [1841,1847(x[5,20(,dim:6x15 tmpIdx:19
+    col[21]
+      Glyph [1848,1856(x[5,20(,dim:8x15 tmpIdx:20
+    col[22]
+      Glyph [1870,1884(x[5,20(,dim:14x15 tmpIdx:21
+    col[23]
+      Glyph [1895,1905(x[5,20(,dim:10x15 tmpIdx:17
+  line[2]
+    RawData [0,1920(x[27,33(,dim:1920x6 => data.length:11520
+line[1]
+  ColumnsSplit [0,1920(x[42,56(,dim:1920x14 backgroundColor:237;237;237;0 splitBorders:[0-912(, [918-919(, [941-945(, [953-958(, [965-967(, [980-982(, [989-990(, [1003-1895(, [1904-1920(, 
+  columns:
+  col[0]
+    Glyph [912,918(x[42,56(,dim:6x14 tmpIdx:22
+  col[1]
+    Glyph [919,941(x[42,56(,dim:22x14 tmpIdx:23
+  col[2]
+    Glyph [945,953(x[42,56(,dim:8x14 tmpIdx:24
+  col[3]
+    Glyph [958,965(x[42,56(,dim:7x14 tmpIdx:25
+  col[4]
+    Glyph [967,980(x[42,56(,dim:13x14 tmpIdx:26
+  col[5]
+    Glyph [982,989(x[42,56(,dim:7x14 tmpIdx:27
+  col[6]
+    Glyph [990,1003(x[42,56(,dim:13x14 tmpIdx:28
+  col[7]
+    Glyph [1895,1904(x[42,56(,dim:9x14 tmpIdx:29
+line[2]
+  ColumnsSplit [0,1920(x[74,89(,dim:1920x15 backgroundColor:237;237;237;0 splitBorders:[0-8(, [14-16(, [18-19(, [29-45(, [51-52(, [60-61(, [69-84(, [91-92(, [100-101(, [107-109(, [127-143(, [158-159(, [192-193(, [197-212(, [221-222(, [236-237(, [246-247(, [267-283(, [290-291(, [298-299(, [306-307(, [318-319(, [325-341(, [348-350(, [372-373(, [386-401(, [409-410(, [416-418(, [424-439(, [453-454(, [456-457(, [463-464(, [492-507(, [516-517(, [524-526(, [529-530(, [537-1920(, 
+  columns:
+  col[0]
+    Glyph [8,14(x[74,89(,dim:6x15 tmpIdx:30
+  col[1]
+    Glyph [16,18(x[74,89(,dim:2x15 tmpIdx:31
+  col[2]
+    Glyph [19,29(x[74,89(,dim:10x15 tmpIdx:32
+  col[3]
+    Glyph [45,51(x[74,89(,dim:6x15 tmpIdx:33
+  col[4]
+    Glyph [52,60(x[74,89(,dim:8x15 tmpIdx:34
+  col[5]
+    Glyph [61,69(x[74,89(,dim:8x15 tmpIdx:35
+  col[6]
+    Glyph [84,91(x[74,89(,dim:7x15 tmpIdx:36
+  col[7]
+    Glyph [92,100(x[74,89(,dim:8x15 tmpIdx:37
+  col[8]
+    Glyph [101,107(x[74,89(,dim:6x15 tmpIdx:38
+  col[9]
+    Glyph [109,127(x[74,89(,dim:18x15 tmpIdx:39
+  col[10]
+    Glyph [143,158(x[74,89(,dim:15x15 tmpIdx:40
+  col[11]
+    Glyph [159,192(x[74,89(,dim:33x15 tmpIdx:41
+  col[12]
+    Glyph [193,197(x[74,89(,dim:4x15 tmpIdx:42
+  col[13]
+    Glyph [212,221(x[74,89(,dim:9x15 tmpIdx:43
+  col[14]
+    Glyph [222,236(x[74,89(,dim:14x15 tmpIdx:44
+  col[15]
+    Glyph [237,246(x[74,89(,dim:9x15 tmpIdx:45
+  col[16]
+    Glyph [247,267(x[74,89(,dim:20x15 tmpIdx:46
+  col[17]
+    Glyph [283,290(x[74,89(,dim:7x15 tmpIdx:36
+  col[18]
+    Glyph [291,298(x[74,89(,dim:7x15 tmpIdx:47
+  col[19]
+    Glyph [299,306(x[74,89(,dim:7x15 tmpIdx:48
+  col[20]
+    Glyph [307,318(x[74,89(,dim:11x15 tmpIdx:49
+  col[21]
+    Glyph [319,325(x[74,89(,dim:6x15 tmpIdx:50
+  col[22]
+    Glyph [341,348(x[74,89(,dim:7x15 tmpIdx:51
+  col[23]
+    Glyph [350,372(x[74,89(,dim:22x15 tmpIdx:52
+  col[24]
+    Glyph [373,386(x[74,89(,dim:13x15 tmpIdx:53
+  col[25]
+    Glyph [401,409(x[74,89(,dim:8x15 tmpIdx:54
+  col[26]
+    Glyph [410,416(x[74,89(,dim:6x15 tmpIdx:38
+  col[27]
+    Glyph [418,424(x[74,89(,dim:6x15 tmpIdx:55
+  col[28]
+    Glyph [439,453(x[74,89(,dim:14x15 tmpIdx:56
+  col[29]
+    Glyph [454,456(x[74,89(,dim:2x15 tmpIdx:31
+  col[30]
+    Glyph [457,463(x[74,89(,dim:6x15 tmpIdx:55
+  col[31]
+    Glyph [464,492(x[74,89(,dim:28x15 tmpIdx:57
+  col[32]
+    Glyph [507,516(x[74,89(,dim:9x15 tmpIdx:58
+  col[33]
+    Glyph [517,524(x[74,89(,dim:7x15 tmpIdx:47
+  col[34]
+    Glyph [526,529(x[74,89(,dim:3x15 tmpIdx:59
+  col[35]
+    Glyph [530,537(x[74,89(,dim:7x15 tmpIdx:60
+line[3]
+  HorizontalSplit [0,1920(x[93,1080(,dim:1920x987 splitBorder:[144-147( color:226;226;226;0
+  up
+    RawData [0,1920(x[93,144(,dim:1920x51 => data.length:97920
+  down
+    ColumnsSplit [0,1920(x[147,1080(,dim:1920x933 backgroundColor:226;226;226;0 splitBorders:[0-1(, [413-417(, [1917-1919(, 
+    columns:
+    col[0]
+      TopBottomBorder [1,413(x[147,1080(,dim:412x933 border top:0 bottom:6 borderColor:226;226;226;0
+      inside
+        RawData [1,413(x[147,1074(,dim:412x927 => data.length:381924
+    col[1]
+      LinesSplit [417,1917(x[147,1080(,dim:1500x933 backgroundColor:255;255;255;0 splitBorders:[846-854(, [864-870(, [899-1025(, 
+      lines:
+      line[0]
+        HorizontalSplit [417,1917(x[147,846(,dim:1500x699 splitBorder:[803-807( color:226;226;226;0
+        up
+          ColumnsSplit [417,1917(x[147,803(,dim:1500x656 backgroundColor:255;255;255;0 splitBorders:[422-1401(, [1411-1429(, [1439-1455(, [1573-1577(, [1598-1599(, [1601-1602(, [1612-1613(, [1620-1621(, [1631-1633(, [1635-1782(, [1795-1824(, [1835-1858(, [1868-1886(, [1896-1912(, 
+          columns:
+          col[0]
+            HorizontalSplit [417,422(x[147,803(,dim:5x656 splitBorder:[152-798( color:255;255;255;0
+            up
+              Glyph [417,422(x[147,152(,dim:5x5 tmpIdx:61
+            down
+              Glyph [417,422(x[798,803(,dim:5x5 tmpIdx:62
+          col[1]
+            LinesSplit [1401,1411(x[147,803(,dim:10x656 backgroundColor:255;255;255;0 splitBorders:[147-162(, [166-803(, 
+            lines:
+            line[0]
+              Border [1401,1411(x[162,166(,dim:10x4 border:Border [left=1, right=1, top=1, bottom=1] borderColor:0;0;1;0
+              inside
+                Fill [1402,1410(x[163,165(,dim:8x2 color:255;255;255;0
+          col[2]
+            LinesSplit [1429,1439(x[147,803(,dim:10x656 backgroundColor:255;255;255;0 splitBorders:[147-162(, [172-803(, 
+            lines:
+            line[0]
+              Border [1429,1439(x[162,172(,dim:10x10 border:Border [left=1, right=1, top=1, bottom=1] borderColor:0;0;1;0
+              inside
+                Glyph [1430,1438(x[163,171(,dim:8x8 tmpIdx:63
+          col[3]
+            VerticalSplit [1455,1573(x[147,803(,dim:118x656 splitBorder:[1460-1464( color:226;226;226;0
+            left
+              HorizontalSplit [1455,1460(x[147,803(,dim:5x656 splitBorder:[152-798( color:255;255;255;0
+              up
+                Glyph [1455,1460(x[147,152(,dim:5x5 tmpIdx:64
+              down
+                Glyph [1455,1460(x[798,803(,dim:5x5 tmpIdx:65
+            right
+              LinesSplit [1464,1573(x[147,803(,dim:109x656 backgroundColor:255;255;255;0 splitBorders:[186-194(, [204-798(, 
+              lines:
+              line[0]
+                LeftRightBorder [1464,1573(x[147,186(,dim:109x39 border left:0 right:11 borderColor:255;255;255;0
+                inside
+                  RawData [1464,1562(x[147,186(,dim:98x39 => data.length:3822
+              line[1]
+                ColumnsSplit [1464,1573(x[194,204(,dim:109x10 backgroundColor:255;255;255;0 splitBorders:[1464-1467(, [1476-1477(, [1483-1488(, [1496-1497(, [1503-1504(, [1510-1511(, [1514-1515(, [1517-1518(, [1524-1525(, [1532-1538(, [1546-1552(, [1558-1559(, 
+                columns:
+                col[0]
+                  Glyph [1467,1476(x[194,204(,dim:9x10 tmpIdx:66
+                col[1]
+                  Glyph [1477,1483(x[194,204(,dim:6x10 tmpIdx:67
+                col[2]
+                  Glyph [1488,1496(x[194,204(,dim:8x10 tmpIdx:68
+                col[3]
+                  Glyph [1497,1503(x[194,204(,dim:6x10 tmpIdx:69
+                col[4]
+                  Glyph [1504,1510(x[194,204(,dim:6x10 tmpIdx:70
+                col[5]
+                  Glyph [1511,1514(x[194,204(,dim:3x10 tmpIdx:71
+                col[6]
+                  Glyph [1515,1517(x[194,204(,dim:2x10 tmpIdx:72
+                col[7]
+                  Glyph [1518,1524(x[194,204(,dim:6x10 tmpIdx:67
+                col[8]
+                  Glyph [1525,1532(x[194,204(,dim:7x10 tmpIdx:73
+                col[9]
+                  Glyph [1538,1546(x[194,204(,dim:8x10 tmpIdx:74
+                col[10]
+                  Glyph [1552,1558(x[194,204(,dim:6x10 tmpIdx:67
+                col[11]
+                  Glyph [1559,1573(x[194,204(,dim:14x10 tmpIdx:75
+              line[2]
+                LeftRightBorder [1464,1573(x[798,803(,dim:109x5 border left:0 right:104 borderColor:255;255;255;0
+                inside
+                  Glyph [1464,1469(x[798,803(,dim:5x5 tmpIdx:62
+          col[4]
+            TopBottomBorder [1577,1598(x[147,803(,dim:21x656 border top:50 bottom:599 borderColor:255;255;255;0
+            inside
+              Glyph [1577,1598(x[197,204(,dim:21x7 tmpIdx:76
+          col[5]
+            LinesSplit [1599,1601(x[147,803(,dim:2x656 backgroundColor:255;255;255;0 splitBorders:[147-194(, [196-197(, [204-803(, 
+            lines:
+            line[0]
+              Glyph [1599,1601(x[194,196(,dim:2x2 tmpIdx:77
+            line[1]
+              Glyph [1599,1601(x[197,204(,dim:2x7 tmpIdx:78
+          col[6]
+            TopBottomBorder [1602,1612(x[147,803(,dim:10x656 border top:47 bottom:599 borderColor:255;255;255;0
+            inside
+              Glyph [1602,1612(x[194,204(,dim:10x10 tmpIdx:79
+          col[7]
+            TopBottomBorder [1613,1620(x[147,803(,dim:7x656 border top:46 bottom:599 borderColor:255;255;255;0
+            inside
+              Glyph [1613,1620(x[193,204(,dim:7x11 tmpIdx:80
+          col[8]
+            TopBottomBorder [1621,1631(x[147,803(,dim:10x656 border top:47 bottom:599 borderColor:255;255;255;0
+            inside
+              Glyph [1621,1631(x[194,204(,dim:10x10 tmpIdx:81
+          col[9]
+            TopBottomBorder [1633,1635(x[147,803(,dim:2x656 border top:55 bottom:599 borderColor:255;255;255;0
+            inside
+              Glyph [1633,1635(x[202,204(,dim:2x2 tmpIdx:82
+          col[10]
+            TopBottomBorder [1782,1795(x[147,803(,dim:13x656 border top:14 bottom:629 borderColor:255;255;255;0
+            inside
+              Glyph [1782,1795(x[161,174(,dim:13x13 tmpIdx:83
+          col[11]
+            TopBottomBorder [1824,1835(x[147,803(,dim:11x656 border top:15 bottom:636 borderColor:255;255;255;0
+            inside
+              Glyph [1824,1835(x[162,167(,dim:11x5 tmpIdx:84
+          col[12]
+            LinesSplit [1858,1868(x[147,803(,dim:10x656 backgroundColor:255;255;255;0 splitBorders:[147-162(, [166-803(, 
+            lines:
+            line[0]
+              Border [1858,1868(x[162,166(,dim:10x4 border:Border [left=1, right=1, top=1, bottom=1] borderColor:0;0;1;0
+              inside
+                Fill [1859,1867(x[163,165(,dim:8x2 color:255;255;255;0
+          col[13]
+            LinesSplit [1886,1896(x[147,803(,dim:10x656 backgroundColor:255;255;255;0 splitBorders:[147-162(, [172-803(, 
+            lines:
+            line[0]
+              Border [1886,1896(x[162,172(,dim:10x10 border:Border [left=1, right=1, top=1, bottom=1] borderColor:0;0;1;0
+              inside
+                Glyph [1887,1895(x[163,171(,dim:8x8 tmpIdx:63
+          col[14]
+            HorizontalSplit [1912,1917(x[147,803(,dim:5x656 splitBorder:[152-798( color:255;255;255;0
+            up
+              Glyph [1912,1917(x[147,152(,dim:5x5 tmpIdx:64
+            down
+              Glyph [1912,1917(x[798,803(,dim:5x5 tmpIdx:65
+        down
+          ColumnsSplit [417,1917(x[807,846(,dim:1500x39 backgroundColor:255;255;255;0 splitBorders:[528-534(, [547-553(, [562-563(, [570-571(, [577-579(, [585-586(, [593-594(, [604-614(, [630-634(, [639-641(, [649-651(, [657-659(, [667-677(, [692-697(, [713-714(, [721-722(, [732-733(, [750-751(, [761-762(, [768-778(, [794-799(, [806-807(, [814-815(, [822-823(, [834-835(, [841-853(, [867-872(, [879-881(, [900-902(, [913-914(, [920-921(, [927-937(, [953-957(, [966-967(, [974-975(, [978-979(, [982-987(, [996-998(, [1007-1009(, [1020-1021(, [1032-1033(, [1039-1040(, [1047-1782(, [1795-1824(, [1835-1858(, [1868-1886(, [1896-1912(, 
+          columns:
+          col[0]
+            RawData [417,528(x[807,846(,dim:111x39 => data.length:4329
+          col[1]
+            TopBottomBorder [534,547(x[807,846(,dim:13x39 border top:13 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [534,547(x[820,833(,dim:13x13 tmpIdx:85
+          col[2]
+            TopBottomBorder [553,562(x[807,846(,dim:9x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [553,562(x[823,833(,dim:9x10 tmpIdx:86
+          col[3]
+            TopBottomBorder [563,570(x[807,846(,dim:7x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [563,570(x[826,833(,dim:7x7 tmpIdx:87
+          col[4]
+            TopBottomBorder [571,577(x[807,846(,dim:6x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [571,577(x[826,833(,dim:6x7 tmpIdx:88
+          col[5]
+            TopBottomBorder [579,585(x[807,846(,dim:6x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [579,585(x[826,833(,dim:6x7 tmpIdx:89
+          col[6]
+            TopBottomBorder [586,593(x[807,846(,dim:7x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [586,593(x[826,833(,dim:7x7 tmpIdx:87
+          col[7]
+            TopBottomBorder [594,604(x[807,846(,dim:10x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [594,604(x[823,833(,dim:10x10 tmpIdx:90
+          col[8]
+            TopBottomBorder [614,630(x[807,846(,dim:16x39 border top:12 bottom:11 borderColor:255;255;255;0
+            inside
+              Glyph [614,630(x[819,835(,dim:16x16 tmpIdx:91
+          col[9]
+            TopBottomBorder [634,639(x[807,846(,dim:5x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [634,639(x[823,833(,dim:5x10 tmpIdx:92
+          col[10]
+            TopBottomBorder [641,649(x[807,846(,dim:8x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [641,649(x[823,833(,dim:8x10 tmpIdx:93
+          col[11]
+            TopBottomBorder [651,657(x[807,846(,dim:6x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [651,657(x[826,833(,dim:6x7 tmpIdx:94
+          col[12]
+            TopBottomBorder [659,667(x[807,846(,dim:8x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [659,667(x[823,833(,dim:8x10 tmpIdx:95
+          col[13]
+            TopBottomBorder [677,692(x[807,846(,dim:15x39 border top:12 bottom:11 borderColor:255;255;255;0
+            inside
+              Glyph [677,692(x[819,835(,dim:15x16 tmpIdx:96
+          col[14]
+            TopBottomBorder [697,713(x[807,846(,dim:16x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [697,713(x[823,833(,dim:16x10 tmpIdx:97
+          col[15]
+            TopBottomBorder [714,721(x[807,846(,dim:7x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [714,721(x[826,833(,dim:7x7 tmpIdx:98
+          col[16]
+            TopBottomBorder [722,732(x[807,846(,dim:10x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [722,732(x[823,833(,dim:10x10 tmpIdx:99
+          col[17]
+            TopBottomBorder [733,750(x[807,846(,dim:17x39 border top:17 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [733,750(x[824,833(,dim:17x9 tmpIdx:100
+          col[18]
+            LinesSplit [751,761(x[807,846(,dim:10x39 backgroundColor:255;255;255;0 splitBorders:[807-823(, [825-826(, [833-846(, 
+            lines:
+            line[0]
+              Glyph [751,761(x[823,825(,dim:10x2 tmpIdx:101
+            line[1]
+              Glyph [751,761(x[826,833(,dim:10x7 tmpIdx:102
+          col[19]
+            TopBottomBorder [762,768(x[807,846(,dim:6x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [762,768(x[826,833(,dim:6x7 tmpIdx:94
+          col[20]
+            TopBottomBorder [778,794(x[807,846(,dim:16x39 border top:13 bottom:12 borderColor:255;255;255;0
+            inside
+              Glyph [778,794(x[820,834(,dim:16x14 tmpIdx:103
+          col[21]
+            TopBottomBorder [799,806(x[807,846(,dim:7x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [799,806(x[823,833(,dim:7x10 tmpIdx:104
+          col[22]
+            TopBottomBorder [807,814(x[807,846(,dim:7x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [807,814(x[826,833(,dim:7x7 tmpIdx:105
+          col[23]
+            TopBottomBorder [815,822(x[807,846(,dim:7x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [815,822(x[826,833(,dim:7x7 tmpIdx:106
+          col[24]
+            TopBottomBorder [823,834(x[807,846(,dim:11x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [823,834(x[826,833(,dim:11x7 tmpIdx:107
+          col[25]
+            TopBottomBorder [835,841(x[807,846(,dim:6x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [835,841(x[823,833(,dim:6x10 tmpIdx:108
+          col[26]
+            TopBottomBorder [853,867(x[807,846(,dim:14x39 border top:16 bottom:11 borderColor:255;255;255;0
+            inside
+              Glyph [853,867(x[823,835(,dim:14x12 tmpIdx:109
+          col[27]
+            TopBottomBorder [872,879(x[807,846(,dim:7x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [872,879(x[823,833(,dim:7x10 tmpIdx:110
+          col[28]
+            TopBottomBorder [881,900(x[807,846(,dim:19x39 border top:19 bottom:9 borderColor:255;255;255;0
+            inside
+              Glyph [881,900(x[826,837(,dim:19x11 tmpIdx:111
+          col[29]
+            TopBottomBorder [902,913(x[807,846(,dim:11x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [902,913(x[826,833(,dim:11x7 tmpIdx:112
+          col[30]
+            TopBottomBorder [914,920(x[807,846(,dim:6x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [914,920(x[826,833(,dim:6x7 tmpIdx:113
+          col[31]
+            TopBottomBorder [921,927(x[807,846(,dim:6x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [921,927(x[826,833(,dim:6x7 tmpIdx:113
+          col[32]
+            TopBottomBorder [937,953(x[807,846(,dim:16x39 border top:12 bottom:11 borderColor:255;255;255;0
+            inside
+              Glyph [937,953(x[819,835(,dim:16x16 tmpIdx:114
+          col[33]
+            TopBottomBorder [957,966(x[807,846(,dim:9x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [957,966(x[823,833(,dim:9x10 tmpIdx:115
+          col[34]
+            TopBottomBorder [967,974(x[807,846(,dim:7x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [967,974(x[826,833(,dim:7x7 tmpIdx:106
+          col[35]
+            TopBottomBorder [975,978(x[807,846(,dim:3x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [975,978(x[823,833(,dim:3x10 tmpIdx:116
+          col[36]
+            TopBottomBorder [979,982(x[807,846(,dim:3x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [979,982(x[823,833(,dim:3x10 tmpIdx:116
+          col[37]
+            TopBottomBorder [987,996(x[807,846(,dim:9x39 border top:15 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [987,996(x[822,833(,dim:9x11 tmpIdx:117
+          col[38]
+            LinesSplit [998,1007(x[807,846(,dim:9x39 backgroundColor:255;255;255;0 splitBorders:[807-823(, [825-826(, [833-846(, 
+            lines:
+            line[0]
+              Glyph [998,1007(x[823,825(,dim:9x2 tmpIdx:118
+            line[1]
+              Glyph [998,1007(x[826,833(,dim:9x7 tmpIdx:119
+          col[39]
+            TopBottomBorder [1009,1020(x[807,846(,dim:11x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [1009,1020(x[826,833(,dim:11x7 tmpIdx:120
+          col[40]
+            TopBottomBorder [1021,1032(x[807,846(,dim:11x39 border top:19 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [1021,1032(x[826,833(,dim:11x7 tmpIdx:107
+          col[41]
+            TopBottomBorder [1033,1039(x[807,846(,dim:6x39 border top:16 bottom:13 borderColor:255;255;255;0
+            inside
+              Glyph [1033,1039(x[823,833(,dim:6x10 tmpIdx:108
+          col[42]
+            TopBottomBorder [1040,1047(x[807,846(,dim:7x39 border top:19 bottom:9 borderColor:255;255;255;0
+            inside
+              Glyph [1040,1047(x[826,837(,dim:7x11 tmpIdx:121
+          col[43]
+            TopBottomBorder [1782,1795(x[807,846(,dim:13x39 border top:14 bottom:16 borderColor:255;255;255;0
+            inside
+              Glyph [1782,1795(x[821,830(,dim:13x9 tmpIdx:122
+          col[44]
+            TopBottomBorder [1824,1835(x[807,846(,dim:11x39 border top:15 bottom:19 borderColor:255;255;255;0
+            inside
+              Glyph [1824,1835(x[822,827(,dim:11x5 tmpIdx:84
+          col[45]
+            LinesSplit [1858,1868(x[807,846(,dim:10x39 backgroundColor:255;255;255;0 splitBorders:[807-822(, [826-846(, 
+            lines:
+            line[0]
+              Border [1858,1868(x[822,826(,dim:10x4 border:Border [left=1, right=1, top=1, bottom=1] borderColor:0;0;1;0
+              inside
+                Fill [1859,1867(x[823,825(,dim:8x2 color:255;255;255;0
+          col[46]
+            LinesSplit [1886,1896(x[807,846(,dim:10x39 backgroundColor:255;255;255;0 splitBorders:[807-822(, [830-846(, 
+            lines:
+            line[0]
+              Glyph [1886,1896(x[822,830(,dim:10x8 tmpIdx:123
+          col[47]
+            TopBottomBorder [1912,1917(x[807,846(,dim:5x39 border top:0 bottom:34 borderColor:255;255;255;0
+            inside
+              Glyph [1912,1917(x[807,812(,dim:5x5 tmpIdx:64
+      line[1]
+        ColumnsSplit [417,1917(x[854,864(,dim:1500x10 backgroundColor:255;255;255;0 splitBorders:[417-420(, [429-434(, [449-451(, [461-462(, [468-1917(, 
+        columns:
+        col[0]
+          Glyph [420,429(x[854,864(,dim:9x10 tmpIdx:124
+        col[1]
+          Glyph [434,449(x[854,864(,dim:15x10 tmpIdx:125
+        col[2]
+          Glyph [451,461(x[854,864(,dim:10x10 tmpIdx:126
+        col[3]
+          Glyph [462,468(x[854,864(,dim:6x10 tmpIdx:127
+      line[2]
+        LeftRightBorder [417,1917(x[870,899(,dim:1500x29 border left:3 right:3 borderColor:255;255;255;0
+        inside
+          TopBottomBorder [420,1914(x[870,899(,dim:1494x29 border top:0 bottom:1 borderColor:211;213;211;0
+          inside
+            ColumnsSplit [420,1914(x[870,898(,dim:1494x28 backgroundColor:255;255;255;0 splitBorders:[420-427(, [436-437(, [444-446(, [452-453(, [465-466(, [468-470(, [483-484(, [486-488(, [495-496(, [502-1502(, [1503-1510(, [1525-1527(, [1533-1534(, [1541-1542(, [1548-1550(, [1555-1556(, [1569-1636(, [1637-1644(, [1665-1666(, [1672-1914(, 
+            columns:
+            col[0]
+              TopBottomBorder [427,436(x[870,898(,dim:9x28 border top:10 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [427,436(x[880,890(,dim:9x10 tmpIdx:128
+            col[1]
+              TopBottomBorder [437,444(x[870,898(,dim:7x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [437,444(x[883,890(,dim:7x7 tmpIdx:129
+            col[2]
+              TopBottomBorder [446,452(x[870,898(,dim:6x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [446,452(x[883,890(,dim:6x7 tmpIdx:130
+            col[3]
+              TopBottomBorder [453,465(x[870,898(,dim:12x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [453,465(x[883,890(,dim:12x7 tmpIdx:131
+            col[4]
+              LinesSplit [466,468(x[870,898(,dim:2x28 backgroundColor:255;255;255;0 splitBorders:[870-880(, [882-883(, [890-898(, 
+              lines:
+              line[0]
+                Glyph [466,468(x[880,882(,dim:2x2 tmpIdx:132
+              line[1]
+                Glyph [466,468(x[883,890(,dim:2x7 tmpIdx:133
+            col[5]
+              TopBottomBorder [470,483(x[870,898(,dim:13x28 border top:10 bottom:4 borderColor:255;255;255;0
+              inside
+                Glyph [470,483(x[880,894(,dim:13x14 tmpIdx:134
+            col[6]
+              LinesSplit [484,486(x[870,898(,dim:2x28 backgroundColor:255;255;255;0 splitBorders:[870-880(, [882-883(, [890-898(, 
+              lines:
+              line[0]
+                Glyph [484,486(x[880,882(,dim:2x2 tmpIdx:132
+              line[1]
+                Glyph [484,486(x[883,890(,dim:2x7 tmpIdx:133
+            col[7]
+              TopBottomBorder [488,495(x[870,898(,dim:7x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [488,495(x[883,890(,dim:7x7 tmpIdx:135
+            col[8]
+              TopBottomBorder [496,502(x[870,898(,dim:6x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [496,502(x[883,890(,dim:6x7 tmpIdx:136
+            col[9]
+              LinesSplit [1502,1503(x[870,898(,dim:1x28 backgroundColor:243;243;243;0 splitBorders:[877-878(, 
+              lines:
+              line[0]
+                Glyph [1502,1503(x[870,877(,dim:1x7 tmpIdx:137
+              line[1]
+                Glyph [1502,1503(x[878,898(,dim:1x20 tmpIdx:138
+            col[10]
+              TopBottomBorder [1510,1525(x[870,898(,dim:15x28 border top:10 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [1510,1525(x[880,890(,dim:15x10 tmpIdx:139
+            col[11]
+              TopBottomBorder [1527,1533(x[870,898(,dim:6x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [1527,1533(x[883,890(,dim:6x7 tmpIdx:130
+            col[12]
+              TopBottomBorder [1534,1541(x[870,898(,dim:7x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [1534,1541(x[883,890(,dim:7x7 tmpIdx:135
+            col[13]
+              TopBottomBorder [1542,1548(x[870,898(,dim:6x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [1542,1548(x[883,890(,dim:6x7 tmpIdx:140
+            col[14]
+              TopBottomBorder [1550,1555(x[870,898(,dim:5x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [1550,1555(x[883,890(,dim:5x7 tmpIdx:141
+            col[15]
+              TopBottomBorder [1556,1569(x[870,898(,dim:13x28 border top:13 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [1556,1569(x[883,890(,dim:13x7 tmpIdx:142
+            col[16]
+              LinesSplit [1636,1637(x[870,898(,dim:1x28 backgroundColor:243;243;243;0 splitBorders:[877-878(, 
+              lines:
+              line[0]
+                Glyph [1636,1637(x[870,877(,dim:1x7 tmpIdx:137
+              line[1]
+                Glyph [1636,1637(x[878,898(,dim:1x20 tmpIdx:138
+            col[17]
+              TopBottomBorder [1644,1665(x[870,898(,dim:21x28 border top:10 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [1644,1665(x[880,890(,dim:21x10 tmpIdx:143
+            col[18]
+              TopBottomBorder [1666,1672(x[870,898(,dim:6x28 border top:10 bottom:8 borderColor:255;255;255;0
+              inside
+                Glyph [1666,1672(x[880,890(,dim:6x10 tmpIdx:144
+      line[3]
+        HorizontalSplit [417,1917(x[1025,1080(,dim:1500x55 splitBorder:[1041-1044( color:226;226;226;0
+        up
+          RawData [417,1917(x[1025,1041(,dim:1500x16 => data.length:24000
+        down
+          ColumnsSplit [417,1917(x[1044,1080(,dim:1500x36 backgroundColor:226;226;226;0 splitBorders:[417-1435(, [1437-1439(, [1598-1599(, [1601-1917(, 
+          columns:
+          col[0]
+            LinesSplit [1435,1437(x[1044,1080(,dim:2x36 backgroundColor:226;226;226;0 splitBorders:[1044-1049(, [1054-1056(, [1061-1063(, [1068-1070(, [1075-1080(, 
+            lines:
+            line[0]
+              Glyph [1435,1437(x[1049,1054(,dim:2x5 tmpIdx:145
+            line[1]
+              Glyph [1435,1437(x[1056,1061(,dim:2x5 tmpIdx:146
+            line[2]
+              Glyph [1435,1437(x[1063,1068(,dim:2x5 tmpIdx:147
+            line[3]
+              Glyph [1435,1437(x[1070,1075(,dim:2x5 tmpIdx:148
+          col[1]
+            RawData [1439,1598(x[1044,1080(,dim:159x36 => data.length:5724
+          col[2]
+            LinesSplit [1599,1601(x[1044,1080(,dim:2x36 backgroundColor:226;226;226;0 splitBorders:[1044-1049(, [1054-1056(, [1061-1063(, [1068-1070(, [1075-1080(, 
+            lines:
+            line[0]
+              Glyph [1599,1601(x[1049,1054(,dim:2x5 tmpIdx:145
+            line[1]
+              Glyph [1599,1601(x[1056,1061(,dim:2x5 tmpIdx:146
+            line[2]
+              Glyph [1599,1601(x[1063,1068(,dim:2x5 tmpIdx:147
+            line[3]
+              Glyph [1599,1601(x[1070,1075(,dim:2x5 tmpIdx:148
+    col[2]
+      LinesSplit [1919,1920(x[147,1080(,dim:1x933 backgroundColor:226;226;226;0 splitBorders:[147-1079(, 
+      lines:
+      line[0]
+        Fill [1919,1920(x[1079,1080(,dim:1x1 color:0;0;0;0

@@ -19,6 +19,8 @@ import fr.an.util.encoder.structio.BitStreamStructDataOutput;
 
 public class BitStreamOutputRectImgDescrVisitorTest {
 
+    private static final boolean DEBUG = false;
+    
     @Test
     public void testWriteTopLevel_screen_eclipse_1920x1080() {
         // Prepare
@@ -45,6 +47,16 @@ public class BitStreamOutputRectImgDescrVisitorTest {
             FileUtils.writeByteArrayToFile(outputFile, resultBytes);
         } catch (IOException e) {
             throw new RuntimeException("Failed to write file " + outputFile, e);
+        }
+        
+        if (DEBUG) {
+            File dumpFile = new File("target/test/rectimg-" + imageFileName + "-dump.txt");
+            try {
+                String dumpText = DumpRectImgDescrVisitor.dumpToString(imgRectDescr);
+                FileUtils.write(dumpFile, dumpText);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to write file " + outputFile, e);
+            }
         }
     }
 

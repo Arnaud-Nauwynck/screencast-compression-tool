@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
@@ -36,7 +39,9 @@ import fr.an.util.encoder.structio.BitStreamStructDataInput;
  * RectImgDescrVisitor implementation for recursive decoding RectImgDescr as bitstream
  */
 public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
-
+    
+    private static final Logger LOG = LoggerFactory.getLogger(BitStreamInputRectImgDescrVisitor.class);
+    
     private RectImgDescrCodecConfig codecConfig;
     
     private BitStreamStructDataInput in;
@@ -74,9 +79,22 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         rect.fromY = in.readUInt0ElseMax(Short.MAX_VALUE);
         rect.toY = rect.fromY + in.readUIntLt2048ElseMax(Short.MAX_VALUE);
         pushRect(rect);
-        RectImgDescription res = doRead();
+
+        // RectImgDescription res = doRead();
+        Class<? extends RectImgDescription> nodeClass = huffmanTableRectImgDescriptionClass.readDecodeSymbol(in);
+        // introspection code equivalent to <code>switch(nodeClass.getName()) { case XX: return new XX(rect);... }</code>
+        RectImgDescription node = newInstance(nodeClass, rect);
+        try {
+            node.accept(this);
+        } catch(Exception ex) {
+            LOG.error("Failed to read img descr", ex);
+            String dumpText = DumpRectImgDescrVisitor.dumpToString(node);
+            LOG.info("partially read img descr:\n" + dumpText);
+            throw new RuntimeException("Failed", ex);
+        }
+        
         popRect();
-        return res;
+        return node;
     }
 
     protected RectImgDescription doRead() {
