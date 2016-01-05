@@ -128,10 +128,10 @@ public class DrawRectImgDescrVisitor extends RectImgDescrVisitor {
             g2d.fillRect(rect.fromX, rect.fromY + border.top, border.left, rectHeightMid);
         }
         if (border.right > 0) {
-            g2d.fillRect(rect.fromX - border.right, rect.fromY + border.top, border.right, rectHeightMid);
+            g2d.fillRect(rect.toX - border.right, rect.fromY + border.top, border.right, rectHeightMid);
         }
         if (border.bottom > 0) {
-            g2d.fillRect(rect.fromX, rect.fromY - border.bottom, rectW, border.bottom);
+            g2d.fillRect(rect.fromX, rect.toY - border.bottom, rectW, border.bottom);
         }
         
         if (insideRect != null) {

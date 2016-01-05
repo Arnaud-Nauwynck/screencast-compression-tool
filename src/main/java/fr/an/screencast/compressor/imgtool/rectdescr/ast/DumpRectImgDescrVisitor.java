@@ -32,24 +32,35 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
 
     private int indentLevel;
     
+    private Rect roi;
+    
     // ------------------------------------------------------------------------
 
-    public DumpRectImgDescrVisitor(PrintStream out) {
+    public DumpRectImgDescrVisitor(PrintStream out, Rect roi) {
         this.out = out;
+        this.roi = roi;
     }
 
     // ------------------------------------------------------------------------
 
     public static String dumpToString(RectImgDescription node) {
+        return dumpToString(node, null);
+    }
+    
+    public static String dumpToString(RectImgDescription node, Rect roi) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(buffer);
-        dumpTo(out, node);
+        dumpTo(out, node, roi);
         out.flush();
         return buffer.toString();
     }
 
     public static void dumpTo(PrintStream out, RectImgDescription node) {
-        DumpRectImgDescrVisitor visitor = new DumpRectImgDescrVisitor(out);
+        dumpTo(out, node, null);
+    }
+    
+    public static void dumpTo(PrintStream out, RectImgDescription node, Rect roi) {
+        DumpRectImgDescrVisitor visitor = new DumpRectImgDescrVisitor(out, roi);
         node.accept(visitor);
     }
 
@@ -69,10 +80,12 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
     
     protected void printlnIndent(String name, RectImgDescription node) {
         if (node != null) {
-            printlnIndent(name);
-            incrIndent();
-            node.accept(this);
-            decrIndent();
+            if (roi == null || node.getRect().isIntersect(roi)) {
+                printlnIndent(name);
+                incrIndent();
+                node.accept(this);
+                decrIndent();
+            }
         }
     }
 
@@ -174,7 +187,7 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
         final RectImgDescription right = node.getRight();
 
         printlnIndent("VerticalSplit " + rect 
-            + " splitBorder:" + splitBorder + " color:" + splitColor);
+            + " splitBorder:" + splitBorder + " color:" + RGBUtils.toString(splitColor));
         printlnIndent("left", left);
         printlnIndent("right", right);
     }
@@ -188,7 +201,7 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
         final RectImgDescription up = node.getUp();
 
         printlnIndent("HorizontalSplit " + rect 
-            + " splitBorder:" + splitBorder + " color:" + splitColor);
+            + " splitBorder:" + splitBorder + " color:" + RGBUtils.toString(splitColor));
         printlnIndent("up", up);
         printlnIndent("down", down);
     }
@@ -205,7 +218,7 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
             + " backgroundColor:" + RGBUtils.toString(backgroundColor) + " splitBorders:");
         if (splitBorders != null) {
             for(Segment b : splitBorders) {
-                print(b + " ");
+                print(b + ", ");
             }
         } else {
             print("null");
@@ -232,10 +245,10 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
         final RectImgDescription[] columns = node.getColumns();
         
         printIndent("ColumnsSplit " + rect 
-            + " backgroundColor:" + backgroundColor + " splitBorders:");
+            + " backgroundColor:" + RGBUtils.toString(backgroundColor) + " splitBorders:");
         if (splitBorders != null) {
             for(Segment b : splitBorders) {
-                print(b + " ");
+                print(b + ", ");
             }
         } else {
             print("null");

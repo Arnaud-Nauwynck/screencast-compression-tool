@@ -144,10 +144,23 @@ public class Rect implements Serializable {
 
     // ------------------------------------------------------------------------
     
-    public boolean containsPt(Pt pt) {
-        return fromX <= pt.x && pt.x < toX && fromY <= pt.y && pt.y < toY;
+    public boolean containsPt(int x, int y) {
+        return fromX <= x && x < toX && fromY <= y && y < toY;
     }
-    
+
+    public boolean containsPt(Pt pt) {
+        return containsPt(pt.x, pt.y);
+    }
+
+    public boolean isSeparate(Rect other) {
+        return toX <= other.fromX || fromX >= other.toX
+                || toY <= other.fromY || fromY >= other.toY;
+    }
+
+    public boolean isIntersect(Rect other) {
+        return ! isSeparate(other);
+    }
+
     public Pt findFirstContainedPt(List<Pt> pts) {
         Pt res = null;
         for(Pt pt : pts) {
@@ -194,7 +207,7 @@ public class Rect implements Serializable {
 
     @Override
     public String toString() {
-        return "x:[" + fromX + "," + toX + "( . y:[" + fromY + "," + toY + "( dim:" + getWidth() + "x" + getHeight();
+        return "[" + fromX + "," + toX + "(x[" + fromY + "," + toY + "(,dim:" + getWidth() + "x" + getHeight();
     }
 
     public String toStringPtDim() {

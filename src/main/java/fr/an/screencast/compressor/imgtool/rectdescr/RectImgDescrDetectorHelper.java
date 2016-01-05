@@ -243,7 +243,7 @@ public final class RectImgDescrDetectorHelper {
         if (w_01 < rectDim.width) {
             return null;
         }
-        final int idxPt1 = idx + rectDim.width;
+        final int idxPt1 = idx + rectDim.width-1;
         
         // Pt2
         final int h_02 = sameCountsImg.getDownSameCount(idx);

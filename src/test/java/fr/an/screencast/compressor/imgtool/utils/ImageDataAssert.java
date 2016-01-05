@@ -3,6 +3,7 @@ package fr.an.screencast.compressor.imgtool.utils;
 import org.junit.Assert;
 
 import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Pt;
 
 public class ImageDataAssert {
 
@@ -42,7 +43,20 @@ public class ImageDataAssert {
             }
         }
     }
-    
+
+    public static Pt findFirstPtDiffMask(int[] expected, int[] actual, int width, int height, int mask) {
+        for(int y = 0, idx_xy = 0; y < height; y++) {
+            for(int x = 0; x < width; x++,idx_xy++) {
+                int actualValue = actual[idx_xy] & mask;
+                int expectedValue = expected[idx_xy] & mask;
+                if (actualValue != expectedValue) {
+                    return new Pt(x, y);
+                }
+            }
+        }
+        return null;
+    }
+
     public static void assertEquals(ImageData expected, ImageData actual) {
         assertEquals(expected.getData(), actual);
     }
