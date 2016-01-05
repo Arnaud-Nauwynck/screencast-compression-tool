@@ -1,5 +1,11 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.DeflaterOutputStream;
+
+import fr.an.util.bits.RuntimeIOException;
+
 public final class RGBUtils {
 
     public static final int CMAX_255 = 255; 
@@ -109,6 +115,26 @@ public final class RGBUtils {
 
     public static int max(int a, int b, int c) {
         return Math.max(a, Math.max(b, c));
+    }
+
+    public static byte[] intRGBsToGzipBytes(int[] imgData) {
+        byte[] gzipBytes;
+        try {
+            ByteArrayOutputStream gzipBuffer = new ByteArrayOutputStream(imgData.length >> 1);
+            DeflaterOutputStream gzipOut = new DeflaterOutputStream(gzipBuffer); 
+            for(int i = 0; i < imgData.length; i++) {
+                int rgba = imgData[i];
+                int r = RGBUtils.redOf(rgba), g = RGBUtils.greenOf(rgba), b = RGBUtils.blueOf(rgba); 
+                gzipOut.write(r);
+                gzipOut.write(g);
+                gzipOut.write(b);
+            }
+            gzipOut.flush();
+            gzipBytes = gzipBuffer.toByteArray();
+        } catch(IOException ex) {
+            throw new RuntimeIOException("should not occur", ex);
+        }
+        return gzipBytes;
     }
 
 }

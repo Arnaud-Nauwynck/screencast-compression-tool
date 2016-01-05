@@ -596,13 +596,14 @@ public final class RectImgDescrDetectorHelper {
     public GlyphRectImgDescr detectGlyph(Rect rect) {
         int crc = IntsCRC32.crc32ImgRect(dim, imgData, rect);
         GlyphMRUNode glyphNode = glyphMRUTable.findGlyphByCrc(rect.getDim(), crc);
+        boolean isNew = (glyphNode == null);
         if (glyphNode == null) {
             glyphNode = glyphMRUTable.addGlyph(dim, imgData, rect, crc);
         } else {
             glyphMRUTable.incrUseCount(glyphNode);
         }
         GlyphIndexOrCode glyphIndexOrCode = glyphNode.getIndexOrCode();
-        return new GlyphRectImgDescr(rect, glyphIndexOrCode);
+        return new GlyphRectImgDescr(rect, glyphIndexOrCode, isNew);
     }
 
     public boolean allowDetectGlyphInRect(Dim dim) {

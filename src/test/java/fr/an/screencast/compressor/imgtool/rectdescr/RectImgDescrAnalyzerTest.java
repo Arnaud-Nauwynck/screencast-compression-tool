@@ -224,7 +224,7 @@ public class RectImgDescrAnalyzerTest {
         ImageDataAssert.assertEqualsMask(checkImgData, sut.getImgData(), dim.getWidth(), dim.getHeight(), alphaMask);
     }
     
-    private static RectImgDescrAnalyzer prepareAnalyzeImage(String imageFileName) {
+    public static RectImgDescrAnalyzer prepareAnalyzeImage(String imageFileName) {
         BufferedImage img = ImageTstUtils.loadImg(new File("src/test/imgs/" + imageFileName));
         Dim dim = new Dim(img.getWidth(), img.getHeight());
         RectImgDescrAnalyzer sut = new RectImgDescrAnalyzer(dim);

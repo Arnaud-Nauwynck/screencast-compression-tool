@@ -258,26 +258,12 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
     }
 
     private void writeEncodeImgData(int[] rectImg) {
-        byte[] gzipBytes;
-        try {
-            ByteArrayOutputStream gzipBuffer = new ByteArrayOutputStream(rectImg.length >> 1);
-            DeflaterOutputStream gzipOut = new DeflaterOutputStream(gzipBuffer); 
-            for(int i = 0; i < rectImg.length; i++) {
-                int rgba = rectImg[i];
-                int r = RGBUtils.redOf(rgba), g = RGBUtils.greenOf(rgba), b = RGBUtils.blueOf(rgba); 
-                gzipOut.write(r);
-                gzipOut.write(g);
-                gzipOut.write(b);
-            }
-            gzipOut.flush();
-            gzipBytes = gzipBuffer.toByteArray();
-        } catch(IOException ex) {
-            throw new RuntimeIOException("should not occur", ex);
-        }
+        byte[] gzipBytes = RGBUtils.intRGBsToGzipBytes(rectImg);
         
         bitsStructOutput.writeIntMinMax(0, rectImg.length, gzipBytes.length);
         bitsStructOutput.writeBytes(gzipBytes, gzipBytes.length);
     }
+
 
     private void writeRestorePrevImageRectDeltaOp(RestorePrevImageRectDeltaOp op, 
             FrameDeltaDetailed frameDeltaDetailed,     

@@ -139,6 +139,14 @@ public class GlyphMRUTable {
 
     public void incrUseCount(GlyphMRUNode glyphNode) {
         glyphNode.useCount++;
+        if (glyphNode.getIndexOrCode().getOldHuffmanCode() == null) {
+            // recompute huffman table?! TOCHECK
+            
+        }
+    }
+    
+    public int getYoungGlyphIndexCount() {
+        return youngGlyphIndexCount;
     }
 
     public GlyphMRUNode addGlyph(Dim imgDim, int[] img, Rect rect, int crc) {

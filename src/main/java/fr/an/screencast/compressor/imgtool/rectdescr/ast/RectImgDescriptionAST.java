@@ -653,14 +653,24 @@ public class RectImgDescriptionAST {
 
     public static class GlyphRectImgDescr extends RectImgDescription {
         private GlyphIndexOrCode glyphIndexOrCode;
-
-        public GlyphRectImgDescr(Rect rect, GlyphIndexOrCode glyphIndexOrCode) {
+        private boolean isNewGlyph; // should be implicit with glyphMRUTable + indexOrCode... 
+        
+        public GlyphRectImgDescr(Rect rect, GlyphIndexOrCode glyphIndexOrCode, boolean isNewGlyph) {
             super(rect);
             this.glyphIndexOrCode = glyphIndexOrCode;
+            this.isNewGlyph = isNewGlyph;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseGlyphDescr(this);
+        }
+        
+        public boolean isNewGlyph() {
+            return isNewGlyph;
+        }
+
+        public void setNewGlyph(boolean isNewGlyph) {
+            this.isNewGlyph = isNewGlyph;
         }
 
         public GlyphIndexOrCode getGlyphIndexOrCode() {
