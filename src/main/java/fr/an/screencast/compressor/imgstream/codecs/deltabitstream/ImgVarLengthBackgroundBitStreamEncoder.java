@@ -1,17 +1,17 @@
 package fr.an.screencast.compressor.imgstream.codecs.deltabitstream;
 
 import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.BitStreamStructDataOutput;
+import fr.an.util.encoder.structio.StructDataOutput;
 
 public class ImgVarLengthBackgroundBitStreamEncoder {
 
-    private BitStreamStructDataOutput bitsStructOutput;
+    private StructDataOutput bitsStructOutput;
     
     private ColorBgSegmentArray allocatedSegmentArray = new ColorBgSegmentArray();
     
     // ------------------------------------------------------------------------
 
-    public ImgVarLengthBackgroundBitStreamEncoder(BitStreamStructDataOutput bitsStructOutput) {
+    public ImgVarLengthBackgroundBitStreamEncoder(StructDataOutput bitsStructOutput) {
         this.bitsStructOutput = bitsStructOutput;
     }
 

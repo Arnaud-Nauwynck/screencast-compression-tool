@@ -27,15 +27,18 @@ import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
 import fr.an.util.encoder.huffman.HuffmanTable;
 import fr.an.util.encoder.structio.BitStreamStructDataOutput;
+import fr.an.util.encoder.structio.StructDataOutput;
 
 /**
  * RectImgDescrVisitor implementation for recursive encoding RectImgDescr as bitstream
  */
 public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
 
+    /*pp*/ static final boolean DEBUG_MARK = true;
+    
     private RectImgDescrCodecConfig codecConfig;
     
-    private BitStreamStructDataOutput out;
+    private StructDataOutput out;
 
     private HuffmanTable<Class<? extends RectImgDescription>> huffmanTableRectImgDescriptionClass;
     private GlyphMRUTable glyphMRUTable;
@@ -45,7 +48,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     
     // ------------------------------------------------------------------------
 
-    public BitStreamOutputRectImgDescrVisitor(RectImgDescrCodecConfig codecConfig, BitStreamStructDataOutput out) {
+    public BitStreamOutputRectImgDescrVisitor(RectImgDescrCodecConfig codecConfig, StructDataOutput out) {
         this.codecConfig = codecConfig;
         this.out = out;
         this.huffmanTableRectImgDescriptionClass = codecConfig.createHuffmanTableForClass2Frequency();
@@ -71,7 +74,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         out.writeUInt0ElseMax(Short.MAX_VALUE, rect.fromY);
         out.writeUIntLt2048ElseMax(Short.MAX_VALUE, rect.toY - rect.fromY);
         pushRect(rect);
-        node.accept(this);
+        doWrite(node);
         popRect();
     }
 
@@ -80,7 +83,15 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         Class<? extends RectImgDescription> nodeClass = node.getClass();
         huffmanTableRectImgDescriptionClass.writeEncodeSymbol(out, nodeClass);
         
+        if (DEBUG_MARK && codecConfig.isDebugAddMarkers()) {
+            out.writeUTF("DEBUG_MARK node: {" + nodeClass.getSimpleName() + " " + node.getRect());
+        }
+        
         node.accept(this);
+
+        if (DEBUG_MARK && codecConfig.isDebugAddMarkers()) {
+            out.writeUTF("DEBUG_MARK } node:" + nodeClass.getSimpleName() + " " + node.getRect());
+        }
     }
 
     protected void writeCheckRect(RectImgDescription node, Rect rect) {

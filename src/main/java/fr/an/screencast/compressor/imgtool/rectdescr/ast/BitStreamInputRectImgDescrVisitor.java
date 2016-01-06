@@ -33,7 +33,7 @@ import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
 import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.BitStreamStructDataInput;
+import fr.an.util.encoder.structio.StructDataInput;
 
 /**
  * RectImgDescrVisitor implementation for recursive decoding RectImgDescr as bitstream
@@ -41,10 +41,12 @@ import fr.an.util.encoder.structio.BitStreamStructDataInput;
 public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     
     private static final Logger LOG = LoggerFactory.getLogger(BitStreamInputRectImgDescrVisitor.class);
+
+    private static final boolean DEBUG_MARK = BitStreamOutputRectImgDescrVisitor.DEBUG_MARK;
     
     private RectImgDescrCodecConfig codecConfig;
     
-    private BitStreamStructDataInput in;
+    private StructDataInput in;
 
     private HuffmanTable<Class<? extends RectImgDescription>> huffmanTableRectImgDescriptionClass;
     private GlyphMRUTable glyphMRUTable;
@@ -54,7 +56,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     
     // ------------------------------------------------------------------------
 
-    public BitStreamInputRectImgDescrVisitor(RectImgDescrCodecConfig codecConfig, BitStreamStructDataInput in) {
+    public BitStreamInputRectImgDescrVisitor(RectImgDescrCodecConfig codecConfig, StructDataInput in) {
         this.codecConfig = codecConfig;
         this.in = in;
         this.huffmanTableRectImgDescriptionClass = codecConfig.createHuffmanTableForClass2Frequency();
@@ -67,7 +69,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         return codecConfig;
     }
     
-    public static RectImgDescription readTopLevelFrom(RectImgDescrCodecConfig codecConfig, BitStreamStructDataInput in) {
+    public static RectImgDescription readTopLevelFrom(RectImgDescrCodecConfig codecConfig, StructDataInput in) {
         BitStreamInputRectImgDescrVisitor visitor = new BitStreamInputRectImgDescrVisitor(codecConfig, in);
         return visitor.readTopLevel();
     }
@@ -81,11 +83,11 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         pushRect(rect);
 
         // RectImgDescription res = doRead();
-        Class<? extends RectImgDescription> nodeClass = huffmanTableRectImgDescriptionClass.readDecodeSymbol(in);
+        Class<? extends RectImgDescription> nodeClass = in.readDecodeHuffmanCode(huffmanTableRectImgDescriptionClass);
         // introspection code equivalent to <code>switch(nodeClass.getName()) { case XX: return new XX(rect);... }</code>
         RectImgDescription node = newInstance(nodeClass, rect);
         try {
-            node.accept(this);
+            doReadNode(node);
         } catch(Exception ex) {
             LOG.error("Failed to read img descr", ex);
             String dumpText = DumpRectImgDescrVisitor.dumpToString(node);
@@ -99,14 +101,33 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
 
     protected RectImgDescription doRead() {
         // TOOPTIM: if small rect => use different HuffmanTable for "mostly" glyph 
-        Class<? extends RectImgDescription> nodeClass = huffmanTableRectImgDescriptionClass.readDecodeSymbol(in);
+        Class<? extends RectImgDescription> nodeClass = in.readDecodeHuffmanCode(huffmanTableRectImgDescriptionClass);
         Rect rect = getCurrRect();
         // introspection code equivalent to <code>switch(nodeClass.getName()) { case XX: return new XX(rect);... }</code>
         RectImgDescription node = newInstance(nodeClass, rect);
         
-        node.accept(this);
-        
+        doReadNode(node);
+
         return node;
+    }
+    
+    protected void doReadNode(RectImgDescription node) {
+        if (DEBUG_MARK && codecConfig.isDebugAddMarkers()) {
+            debugReadCheckMarker("DEBUG_MARK node: {" + node.getClass().getSimpleName() + " " + node.getRect());
+        }
+        
+        node.accept(this);
+
+        if (DEBUG_MARK && codecConfig.isDebugAddMarkers()) {
+            debugReadCheckMarker("DEBUG_MARK } node:" + node.getClass().getSimpleName() + " " + node.getRect());
+        }
+    }
+
+    private void debugReadCheckMarker(String expectedMarker) {
+        String checkDebugMark = in.readUTF();
+        if (!checkDebugMark.equals(expectedMarker)) {
+            throw new RuntimeException("expecting readUTF marker '" + expectedMarker + "' .. got '" + checkDebugMark + "'");
+        };
     }
     
     private static RectImgDescription newInstance(Class<? extends RectImgDescription> clss, Rect rect) {

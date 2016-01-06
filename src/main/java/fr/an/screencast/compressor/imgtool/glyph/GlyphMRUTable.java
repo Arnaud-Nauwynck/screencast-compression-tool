@@ -21,8 +21,8 @@ import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.util.encoder.huffman.HuffmanBitsCode;
 import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.BitStreamStructDataInput;
-import fr.an.util.encoder.structio.BitStreamStructDataOutput;
+import fr.an.util.encoder.structio.StructDataInput;
+import fr.an.util.encoder.structio.StructDataOutput;
 
 /**
  * a MRU (Most-Recently-Used) table for glyphs
@@ -155,8 +155,8 @@ public class GlyphMRUTable {
         return youngGlyphIndexCount;
     }
 
-    public GlyphIndexOrCode readDecodeHuffmanTableIndexOrCode(BitStreamStructDataInput in) {
-        return huffmanTableIndexOrCode.readDecodeSymbol(in);
+    public GlyphIndexOrCode readDecodeHuffmanTableIndexOrCode(StructDataInput in) {
+        return in.readDecodeHuffmanCode(huffmanTableIndexOrCode);
     }
     
     public GlyphMRUNode addGlyph(Dim imgDim, int[] img, Rect rect, int crc) {
@@ -206,7 +206,7 @@ public class GlyphMRUTable {
     }
 
 
-    public void writeEncodeReuseGlyphIndexOrCode(BitStreamStructDataOutput out, GlyphIndexOrCode glyphIndexOrCode) {
+    public void writeEncodeReuseGlyphIndexOrCode(StructDataOutput out, GlyphIndexOrCode glyphIndexOrCode) {
         HuffmanBitsCode huffmanCode = glyphIndexOrCode.getOldHuffmanCode();
         boolean isYoung = huffmanCode == null;
         out.writeBit(isYoung);
@@ -220,7 +220,7 @@ public class GlyphMRUTable {
         }
     }
 
-    public GlyphIndexOrCode readDecodeReuseGlyphIndexOrCode(BitStreamStructDataInput in) {
+    public GlyphIndexOrCode readDecodeReuseGlyphIndexOrCode(StructDataInput in) {
         GlyphIndexOrCode tmpres;
         boolean isYoung = in.readBit();
         if (isYoung) {
@@ -229,7 +229,7 @@ public class GlyphMRUTable {
             tmpres = new GlyphIndexOrCode(youngIndex, null);
         } else {
             // TODO ... not supported yet... need sync HuffmanTable (cd encoder)
-            tmpres = huffmanTableIndexOrCode.readDecodeSymbol(in);
+            tmpres = in.readDecodeHuffmanCode(huffmanTableIndexOrCode);
         }
 
         GlyphMRUNode glyphNode = findGlyphByIndexOrCode(tmpres);

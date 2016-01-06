@@ -2,14 +2,11 @@ package fr.an.screencast.compressor.imgstream.codecs.deltabitstream;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.zip.DeflaterOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +32,7 @@ import fr.an.util.bits.RuntimeIOException;
 import fr.an.util.encoder.huffman.HuffmanBitsCode;
 import fr.an.util.encoder.huffman.HuffmanTable;
 import fr.an.util.encoder.structio.BitStreamStructDataOutput;
+import fr.an.util.encoder.structio.StructDataOutput;
 
 public class DeltaOpFrame2BitStreamStructDataEncoder {
     
@@ -44,7 +42,7 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
     private File outputFile;
     
     private OutputStreamToBitOutputStream bitStreamOutput;
-    private BitStreamStructDataOutput bitsStructOutput;
+    private StructDataOutput bitsStructOutput;
     
     private Dim dim;
     private Pt dimPt;

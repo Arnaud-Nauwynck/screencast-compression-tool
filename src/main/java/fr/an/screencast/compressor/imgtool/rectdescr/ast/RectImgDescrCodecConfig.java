@@ -27,6 +27,8 @@ public class RectImgDescrCodecConfig {
     
     private Map<Class<? extends RectImgDescription>,Integer> class2frequency = defaultClass2FrequencyMap();
     
+    private boolean debugAddMarkers;
+    
     // ------------------------------------------------------------------------
 
     public RectImgDescrCodecConfig() {
@@ -66,6 +68,14 @@ public class RectImgDescrCodecConfig {
 
     public void setClass2frequency(Map<Class<? extends RectImgDescription>, Integer> class2frequency) {
         this.class2frequency = class2frequency;
+    }
+    
+    public boolean isDebugAddMarkers() {
+        return debugAddMarkers;
+    }
+
+    public void setDebugAddMarkers(boolean debugAddMarkers) {
+        this.debugAddMarkers = debugAddMarkers;
     }
 
     public HuffmanTable<Class<? extends RectImgDescription>> createHuffmanTableForClass2Frequency() {
