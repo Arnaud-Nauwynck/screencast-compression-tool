@@ -8,9 +8,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SerializationUtils;
-import org.junit.Assert;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +98,18 @@ public class BitStreamOutputRectImgDescrVisitorTest {
             SerializationUtils.serialize(imgRectDescr, serOut);
         }
 
+        // serialize to json to compare naive encoding (but quite efficient!!)
+        // pb => should not repeat glyph data
+        // pb => raw data not gzip encoded
+        ObjectMapper jsonMapper = new ObjectMapper();
+        String imgRectDescrJson = jsonMapper.writeValueAsString(imgRectDescr);
+        File imgRectDescrJsonFile = new File("target/test/rectimg-" + inputImageFileName + ".json");
+        try {
+            FileUtils.write(imgRectDescrJsonFile, imgRectDescrJson);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write file " + imgRectDescrJsonFile, e);
+        }
+        
     }
 
 }
