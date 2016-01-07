@@ -27,6 +27,8 @@ public class RectImgDescrCodecConfig {
     
     private Map<Class<? extends RectImgDescription>,Integer> class2frequency = defaultClass2FrequencyMap();
     
+    private boolean debugAddBeginEndMarker = true;
+
     private boolean debugAddMarkers;
     
     // ------------------------------------------------------------------------
@@ -76,6 +78,14 @@ public class RectImgDescrCodecConfig {
 
     public void setDebugAddMarkers(boolean debugAddMarkers) {
         this.debugAddMarkers = debugAddMarkers;
+    }
+
+    public boolean isDebugAddBeginEndMarker() {
+        return debugAddBeginEndMarker;
+    }
+
+    public void setDebugAddBeginEndMarker(boolean debugAddBeginEndMarker) {
+        this.debugAddBeginEndMarker = debugAddBeginEndMarker;
     }
 
     public HuffmanTable<Class<? extends RectImgDescription>> createHuffmanTableForClass2Frequency() {

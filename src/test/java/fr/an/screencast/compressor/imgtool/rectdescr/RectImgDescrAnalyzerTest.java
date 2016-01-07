@@ -10,10 +10,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.DebugDrawDecoratorRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.DrawRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.DumpRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageDataAssert;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
@@ -23,12 +25,18 @@ import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
+import fr.an.screencast.ui.ImageViewUtils;
 
 public class RectImgDescrAnalyzerTest {
 
     private static final boolean DEBUG = 
 //            true;
             false;
+    
+    private static final boolean DEBUG_UI = 
+//            true;
+            false;
+    
     
     protected static ImageData img_screen1920x1080;
     
@@ -221,6 +229,12 @@ public class RectImgDescrAnalyzerTest {
             sut.getGlyphMRUTable().debugDumpGlyphs(glyphsDir);
         }
 
+        if (DEBUG_UI) {
+            BufferedImage debugImage = BufferedImageUtils.copyImage(checkImg);
+            res.accept(new DebugDrawDecoratorRectImgDescrVisitor(debugImage));
+            
+            ImageViewUtils.openImageFrame(debugImage);
+        }
         ImageDataAssert.assertEqualsMask(checkImgData, sut.getImgData(), dim.getWidth(), dim.getHeight(), alphaMask);
     }
     

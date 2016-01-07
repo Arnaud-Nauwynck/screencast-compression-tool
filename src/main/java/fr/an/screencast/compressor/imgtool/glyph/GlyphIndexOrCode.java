@@ -1,8 +1,13 @@
 package fr.an.screencast.compressor.imgtool.glyph;
 
+import java.io.Serializable;
+
 import fr.an.util.encoder.huffman.HuffmanBitsCode;
 
-public final class GlyphIndexOrCode {
+public final class GlyphIndexOrCode implements Serializable {
+    
+    /** */
+    private static final long serialVersionUID = 1L;
     
     private final int youngIndex;
     private final HuffmanBitsCode oldHuffmanCode;

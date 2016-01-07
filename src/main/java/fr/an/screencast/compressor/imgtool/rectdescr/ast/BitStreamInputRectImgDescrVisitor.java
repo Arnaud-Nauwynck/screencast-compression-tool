@@ -75,6 +75,10 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     public RectImgDescription readTopLevel() {
+        if (codecConfig.isDebugAddBeginEndMarker()) {
+            debugReadCheckMarker("RectImgDecr{{{");
+        }
+        
         Rect rect = new Rect();
         rect.fromX = in.readUInt0ElseMax(Short.MAX_VALUE);
         rect.toX = rect.fromX + in.readUIntLt2048ElseMax(Short.MAX_VALUE);
@@ -96,6 +100,10 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         }
         
         popRect();
+        
+        if (codecConfig.isDebugAddBeginEndMarker()) {
+            debugReadCheckMarker("}}}RectImgDecr");
+        }
         return node;
     }
 
@@ -333,11 +341,12 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         int len = in.readUIntLtMinElseMax(32, max/2);
         Segment[] res = new Segment[len];
         int prev = min;
-        int remainSplitCount = len;
+        int remainSplitCount = len - 1;
+        int maxInc = max + 1;
         for(int i = 0; i < len; i++) {
-            int bFrom = in.readIntMinMax(prev, max-2*remainSplitCount);
+            int bFrom = in.readIntMinMax(prev, maxInc-remainSplitCount);
+            int bTo = in.readIntMinMax(bFrom, maxInc-remainSplitCount);
             remainSplitCount--;
-            int bTo = in.readIntMinMax(bFrom, max-2*remainSplitCount);
             prev = bTo;
             res[i] = new Segment(bFrom, bTo);
         }

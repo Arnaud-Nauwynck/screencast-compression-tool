@@ -69,6 +69,11 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
 
     public void writeTopLevel(RectImgDescription node) {
         Rect rect = node.getRect();
+
+        if (codecConfig.isDebugAddBeginEndMarker()) {
+            out.writeUTF("RectImgDecr{{{");
+        }
+        
         out.writeUInt0ElseMax(Short.MAX_VALUE, rect.fromX);
         out.writeUIntLt2048ElseMax(Short.MAX_VALUE, rect.toX - rect.fromX);
         out.writeUInt0ElseMax(Short.MAX_VALUE, rect.fromY);
@@ -76,6 +81,10 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         pushRect(rect);
         doWrite(node);
         popRect();
+
+        if (codecConfig.isDebugAddBeginEndMarker()) {
+            out.writeUTF("}}}RectImgDecr");
+        }
     }
 
     protected void doWrite(RectImgDescription node) {
@@ -276,15 +285,16 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         }
     }
 
-    // TODO move as utility method
+    // TODO move as utility method + use divide&conquer (mid pivot => recursive encode left points, right points)
     private void writeSegmentsOrderedMinMax(int min, final int max, final Segment[] segments) {
         out.writeUIntLtMinElseMax(32, max/2, segments.length);
         int prev = min;
-        int remainSplitCount = segments.length;
+        int remainSplitCount = segments.length - 1;
+        int maxInc = max + 1;
         for(Segment b : segments) {
+            out.writeIntMinMax(prev, maxInc-remainSplitCount, b.from); // , b.from); // TODO TOCHECK
+            out.writeIntMinMax(b.from, maxInc-remainSplitCount, b.to); // -remainSplitCount, b.to);
             remainSplitCount--;
-            out.writeIntMinMax(prev, max-2*remainSplitCount, b.from); // TODO TOCHECK
-            out.writeIntMinMax(b.from, max-2*remainSplitCount, b.to);
             prev = b.to;
         }
     }
@@ -329,6 +339,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
             int[] glyphData = node.getNewGlyphData();
             int crc = IntsCRC32.crc32(glyphData);
 
+            // int youngIndex = glyphIndexOrCode.getYoungIndex();
             GlyphMRUNode glyphNode = glyphMRUTable.findGlyphByCrc(glyphDim, crc);
             if (glyphNode == null) {
                 glyphNode = glyphMRUTable.addGlyph(glyphDim, glyphData, Rect.newDim(glyphDim), crc);

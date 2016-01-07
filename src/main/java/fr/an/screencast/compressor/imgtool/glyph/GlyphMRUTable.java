@@ -116,8 +116,8 @@ public class GlyphMRUTable {
     private Map<GlyphKey,GlyphMRUNode> glyphByCrcKey = new HashMap<GlyphKey,GlyphMRUNode>();
     private Map<GlyphIndexOrCode,GlyphMRUNode> glyphByIndexOrCode = new HashMap<GlyphIndexOrCode,GlyphMRUNode>();
     
-    private int youngGlyphIndexCount;
-    private int globalGlyphIdCount;
+    private int youngGlyphIndexCount = 0;
+    private int globalGlyphIdCount = 0;
     
     private HuffmanTable<GlyphIndexOrCode> huffmanTableIndexOrCode = new HuffmanTable<GlyphIndexOrCode>();
     
@@ -167,8 +167,8 @@ public class GlyphMRUTable {
         GlyphKey crcKey = new GlyphKey(glyphDim, crc, glyphData);
         GlyphMRUNode glyph = glyphByCrcKey.get(crcKey);
         if (glyph == null) {
-            GlyphIndexOrCode indexOrCode = new GlyphIndexOrCode(youngGlyphIndexCount++, null);
-            glyph = new GlyphMRUNode(crcKey, globalGlyphIdCount++, indexOrCode);
+            GlyphIndexOrCode indexOrCode = new GlyphIndexOrCode(++youngGlyphIndexCount, null);
+            glyph = new GlyphMRUNode(crcKey, ++globalGlyphIdCount, indexOrCode);
             glyph.priorityKeep = glyphData.length >>> 4;
 
             if (glyphByCrcKey.size() + 1 > maxSize) {
@@ -212,7 +212,7 @@ public class GlyphMRUTable {
         out.writeBit(isYoung);
         if (isYoung) {
             int youngIndex = glyphIndexOrCode.getYoungIndex();
-            int maxIndex = getYoungGlyphIndexCount();
+            int maxIndex = getYoungGlyphIndexCount() + 1; // 0 not a valid index
             out.writeIntMinMax(0, maxIndex, youngIndex);
         } else {
             // TODO ... not supported yet... need sync HuffmanTable (cd decoder)
@@ -224,7 +224,7 @@ public class GlyphMRUTable {
         GlyphIndexOrCode tmpres;
         boolean isYoung = in.readBit();
         if (isYoung) {
-            int maxIndex = getYoungGlyphIndexCount();
+            int maxIndex = getYoungGlyphIndexCount() + 1; // 0 not a valid index
             int youngIndex = in.readIntMinMax(0, maxIndex);
             tmpres = new GlyphIndexOrCode(youngIndex, null);
         } else {

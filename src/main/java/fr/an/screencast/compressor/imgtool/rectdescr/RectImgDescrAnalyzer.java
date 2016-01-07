@@ -24,6 +24,7 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.R
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.MutableDim;
@@ -57,6 +58,10 @@ public class RectImgDescrAnalyzer {
 
     public int[] getImgData() {
         return imgData;
+    }
+
+    public ImageData getImageData() {
+        return new ImageData(dim, imgData);
     }
 
     public Dim getDim() {

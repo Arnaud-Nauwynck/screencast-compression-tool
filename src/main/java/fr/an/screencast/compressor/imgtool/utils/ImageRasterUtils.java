@@ -17,7 +17,7 @@ public class ImageRasterUtils {
         int[] destData = toInts(dest);
         System.arraycopy(src, 0, destData, 0, src.length);
     }
-    
+
     public static final boolean CHECK = true;
     
     public static void checkIdx(int idx, int x, int y, int width) {

@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
+import java.io.Serializable;
 import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
@@ -17,7 +18,7 @@ public class RectImgDescriptionAST {
     /**
      * abstract root class of AST for describing a rectangular area of an image 
      */
-    public static abstract class RectImgDescription {
+    public static abstract class RectImgDescription implements Serializable {
 
         protected Rect rect;
         

@@ -4,10 +4,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,6 +31,7 @@ public class BitStreamInputRectImgDescrVisitorTest {
         // Prepare
         String inputImageFileName = ImageTstUtils.FILENAME_screen_eclipse_1920x1080;
         File inputFile = new File("target/test/rectimg-" + inputImageFileName + ".dat");
+        // File inputSerializedFile = new File("target/test/rectimg-" + inputImageFileName + ".ser");
         File debugInputFile = null;
         if (DEBUG) {
             debugInputFile = new File("target/test/rectimg-DEBUG-" + inputImageFileName + ".txt");
@@ -48,6 +50,7 @@ public class BitStreamInputRectImgDescrVisitorTest {
             codecConfig.setDebugAddMarkers(true);
         }
 
+        RectImgDescription res;
         StructDataInput bitStructInput = null;
         try {
             InputStream fileInput = new BufferedInputStream(new FileInputStream(inputFile));
@@ -62,13 +65,38 @@ public class BitStreamInputRectImgDescrVisitorTest {
     
             BitStreamInputRectImgDescrVisitor sut = new BitStreamInputRectImgDescrVisitor(codecConfig, bitStructInput);
             // Perform
-            RectImgDescription res = sut.readTopLevel();
-            // Post-check
-            Assert.assertNotNull(res);
-            // System.out.println("decoded img descr " + imageFileName + " ");
+            res = sut.readTopLevel();
         } finally {
             bitStructInput.close();
         }
+
+        // Post-check
+        Assert.assertNotNull(res);
+
+        // read checkRes from serialized file, then deep compare object tree 
+//        RectImgDescription checkRes;
+//        try (InputStream serIn = new BufferedInputStream(new FileInputStream(inputSerializedFile))) {
+//            checkRes = (RectImgDescription) SerializationUtils.deserialize(serIn);
+//        }
+//        // deep compare equals...
+//        // TODO?
+        
+        // dump again to debug text file...  compare debug text
+        File decodeDumpFile = new File("target/test/rectimg-" + inputImageFileName + "-encodedecode-dump.txt");
+        try {
+            String dumpText = DumpRectImgDescrVisitor.dumpToString(res);
+            FileUtils.write(decodeDumpFile, dumpText);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write file " + decodeDumpFile, e);
+        }
+
+        File checkDumpFile = new File("target/test/rectimg-" + inputImageFileName + "-dump.txt");
+        Assert.assertTrue(FileUtils.contentEquals(checkDumpFile, decodeDumpFile));
+        
+        // inversely... re-serialize res and compare serialisation bytes with check file  (no clue on assert error...)
+        // byte[] serializedRes = SerializationUtils.serialize(res);
+        // byte[] checkSerializedRes = FileUtils.readFileToByteArray(inputSerializedFile);
+        // Assert.assertTrue(Arrays.equals(checkSerializedRes, serializedRes)); // TODO does not work??
     }
 
     

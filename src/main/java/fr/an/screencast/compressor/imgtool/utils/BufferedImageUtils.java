@@ -3,12 +3,25 @@ package fr.an.screencast.compressor.imgtool.utils;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
+import fr.an.screencast.compressor.utils.Dim;
+
 public final class BufferedImageUtils {
 
     /* private to force all static */
     private BufferedImageUtils() {
     }
 
+    public static BufferedImage copyImage(ImageData src) {
+        Dim dim = src.getDim(); 
+        BufferedImage img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB); 
+        ImageRasterUtils.copyData(img, src.getData());
+        return img;
+    }
+
+    public static BufferedImage copyImage(BufferedImage source) {
+        return copyOrReallocImage(null, source);
+    }
+    
     public static BufferedImage copyOrReallocImage(BufferedImage cache, BufferedImage source) {
         int height = source.getHeight();
         int width = source.getWidth();
@@ -19,6 +32,10 @@ public final class BufferedImageUtils {
         return cache;
     }
 
+    public static BufferedImage copyConvertToRGB(BufferedImage source) {
+        return convertToType(null, source, BufferedImage.TYPE_INT_RGB);
+    }
+    
     /**
      * convert sourceImage to destImage
      * 
