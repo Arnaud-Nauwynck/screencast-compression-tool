@@ -34,7 +34,7 @@ import fr.an.util.encoder.structio.StructDataOutput;
  */
 public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
 
-    /*pp*/ static final boolean DEBUG_MARK = true;
+    /*pp*/ static final boolean DEBUG_MARK = false;
     
     private RectImgDescrCodecConfig codecConfig;
     

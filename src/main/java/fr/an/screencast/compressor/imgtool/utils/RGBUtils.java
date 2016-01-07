@@ -131,7 +131,9 @@ public final class RGBUtils {
                 gzipOut.write(g);
                 gzipOut.write(b);
             }
-            gzipOut.flush();
+            // gzipOut.flush();
+            gzipOut.finish();
+            gzipOut.close();
             gzipBytes = gzipBuffer.toByteArray();
         } catch(IOException ex) {
             throw new RuntimeIOException("should not occur", ex);
@@ -144,7 +146,7 @@ public final class RGBUtils {
         InflaterInputStream gzipIn = new InflaterInputStream(gzipBuffer); 
         int i = 0;
         try {
-            while(gzipIn.available() != 0) {
+            while(i < res.length) {
                 int r = gzipIn.read();
                 int g = gzipIn.read();
                 int b = gzipIn.read();

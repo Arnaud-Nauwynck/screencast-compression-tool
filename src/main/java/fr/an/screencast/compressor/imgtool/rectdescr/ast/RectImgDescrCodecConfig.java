@@ -1,6 +1,6 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
@@ -35,15 +35,15 @@ public class RectImgDescrCodecConfig {
     }
 
     public static Map<Class<? extends RectImgDescription>, Integer> defaultClass2FrequencyMap() {
-        Map<Class<? extends RectImgDescription>, Integer> res = new HashMap<Class<? extends RectImgDescription>, Integer>(); 
+        Map<Class<? extends RectImgDescription>, Integer> res = new LinkedHashMap<Class<? extends RectImgDescription>, Integer>(); 
         res.put(FillRectImgDescr.class, 3);
         res.put(RoundBorderRectImgDescr.class, 1);
         res.put(BorderRectImgDescr.class, 2);
-        res.put(TopBottomBorderRectImgDescr.class, 5);
+        res.put(TopBottomBorderRectImgDescr.class, 6);
         res.put(LeftRightBorderRectImgDescr.class, 5);
-        res.put(VerticalSplitRectImgDescr.class, 1);
+        res.put(VerticalSplitRectImgDescr.class, 2);
         res.put(HorizontalSplitRectImgDescr.class, 1);
-        res.put(LinesSplitRectImgDescr.class, 10);
+        res.put(LinesSplitRectImgDescr.class, 11);
         res.put(ColumnsSplitRectImgDescr.class, 10);
         res.put(RawDataRectImgDescr.class, 1);
         res.put(GlyphRectImgDescr.class, 20);
