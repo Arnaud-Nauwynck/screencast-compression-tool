@@ -282,8 +282,8 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         int prev = min;
         int remainSplitCount = segments.length;
         for(Segment b : segments) {
-            out.writeIntMinMax(prev, max-2*remainSplitCount, b.from);
             remainSplitCount--;
+            out.writeIntMinMax(prev, max-2*remainSplitCount, b.from); // TODO TOCHECK
             out.writeIntMinMax(b.from, max-2*remainSplitCount, b.to);
             prev = b.to;
         }
@@ -315,12 +315,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseRawDataDescr(RawDataRectImgDescr node) {
         final int[] rawData = node.getRawData();
-        
-        // encode as GZip .. write encoded len + bytes
-        byte[] gzipBytes = RGBUtils.intRGBsToGzipBytes(rawData);
-        
-        out.writeIntMinMax(0, rawData.length, gzipBytes.length);
-        out.writeBytes(gzipBytes, gzipBytes.length);
+        writeRGBData(rawData);
     }
 
     @Override
@@ -345,13 +340,21 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
             // int youngIndex = glyphIndexOrCode.getYoungIndex();
             // implicit .. out.writeInt(1 + glyphMRUTable.getYoungGlyphIndexCount());
             
-            // encode as GZip .. write encoded len + bytes
-            byte[] gzipBytes = RGBUtils.intRGBsToGzipBytes(glyphData);
-            
-            out.writeIntMinMax(0, glyphData.length, gzipBytes.length);
-            out.writeBytes(gzipBytes, gzipBytes.length);
+            writeRGBData(glyphData);
         } else {
             glyphMRUTable.writeEncodeReuseGlyphIndexOrCode(out, glyphIndexOrCode);
+        }
+    }
+
+    private void writeRGBData(int[] data) {
+        byte[] gzipBytes = RGBUtils.intRGBsToGzipBytes(data);
+        boolean isGzipEfficient = gzipBytes.length < data.length;
+        out.writeBit(isGzipEfficient);
+        if (isGzipEfficient) {
+            out.writeIntMinMax(0, data.length, gzipBytes.length);
+            out.writeBytes(gzipBytes, gzipBytes.length);
+        } else {
+            out.writeInts(data, 0, data.length);
         }
     }
 

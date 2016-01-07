@@ -366,20 +366,25 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseRawDataDescr(RawDataRectImgDescr node) {
         int rawDataLen = node.getRect().getArea();
-        int[] rawData = doReadGzipData(rawDataLen);
+        int[] rawData = doReadRGBData(rawDataLen);
         node.setRawData(rawData);
     }
 
-    private int[] doReadGzipData(int rawDataLen) {
-        int gzipBytesLength = in.readIntMinMax(0, rawDataLen);
-        byte[] gzipBytes = new byte[gzipBytesLength];
-        in.readBytes(gzipBytes, gzipBytesLength);
-        
-        // decode RGB from GZip
-        int alpha = 255;
-        int[] rawData = new int[rawDataLen];
-        RGBUtils.gzipBytesToIntRGBs(rawData, gzipBytes, alpha);
-        return rawData;
+    private int[] doReadRGBData(int dataLen) {
+        int[] res = new int[dataLen]; 
+        boolean isGzipEfficient = in.readBit();
+        if (isGzipEfficient) {
+            int gzipBytesLength = in.readIntMinMax(0, dataLen);
+            byte[] gzipBytes = new byte[gzipBytesLength];
+            in.readBytes(gzipBytes, gzipBytesLength);
+            
+            // decode RGB from GZip
+            int alpha = 255;
+            RGBUtils.gzipBytesToIntRGBs(res, gzipBytes, alpha);
+        } else {
+            in.readInts(res, 0, dataLen);
+        }
+        return res;
     }
 
     @Override
@@ -394,7 +399,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
             
             Dim glyphDim = getCurrRect().getDim();
             int glyphDataLen = glyphDim.getArea(); 
-            int[] glyphRawData = doReadGzipData(glyphDataLen);
+            int[] glyphRawData = doReadRGBData(glyphDataLen);
             GlyphMRUNode glyphNode = glyphMRUTable.findGlyphByIndexOrCode(glyphIndexOrCode);
             if (glyphNode == null) {
                 int crc = IntsCRC32.crc32(glyphRawData);
