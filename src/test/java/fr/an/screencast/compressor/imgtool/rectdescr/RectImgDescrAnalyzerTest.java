@@ -34,8 +34,8 @@ public class RectImgDescrAnalyzerTest {
             false;
     
     private static final boolean DEBUG_UI = 
-//            true;
-            false;
+            true;
+//            false;
     
     
     protected static ImageData img_screen1920x1080;

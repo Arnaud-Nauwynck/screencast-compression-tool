@@ -12,10 +12,22 @@ public final class BufferedImageUtils {
     }
 
     public static BufferedImage copyImage(ImageData src) {
-        Dim dim = src.getDim(); 
-        BufferedImage img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB); 
-        ImageRasterUtils.copyData(img, src.getData());
+        return copyImage(src.getDim(), src.getData());
+    }
+
+    public static BufferedImage copyImage(Dim dim, int[] data) {
+        return copyImage(dim.width, dim.height, data); 
+    }
+    
+    public  static BufferedImage copyImage(int width, int height, int[] data) {
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB); 
+        ImageRasterUtils.copyData(img, data);
         return img;
+    }
+
+    public static void copyImage(int[] dest, BufferedImage src) {
+        int[] srcData = ImageRasterUtils.toInts(src);
+        System.arraycopy(srcData, 0, dest, 0, dest.length);
     }
 
     public static BufferedImage copyImage(BufferedImage source) {
@@ -67,5 +79,5 @@ public final class BufferedImageUtils {
     public static boolean compatible(BufferedImage i1, BufferedImage i2) {
         return i1.getWidth() == i2.getWidth() && i1.getHeight() == i2.getHeight() && i1.getType() == i2.getType();
     }
-
+    
 }

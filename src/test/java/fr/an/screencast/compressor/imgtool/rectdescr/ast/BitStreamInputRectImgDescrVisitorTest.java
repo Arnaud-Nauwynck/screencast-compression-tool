@@ -34,7 +34,7 @@ public class BitStreamInputRectImgDescrVisitorTest {
         // File inputSerializedFile = new File("target/test/rectimg-" + inputImageFileName + ".ser");
         File debugInputFile = null;
         if (DEBUG) {
-            debugInputFile = new File("target/test/rectimg-DEBUG-" + inputImageFileName + ".txt");
+            debugInputFile = new File("target/test/rectimg-" + inputImageFileName + "-dat-debug.txt");
         }
         
         boolean forceRewrite = false;

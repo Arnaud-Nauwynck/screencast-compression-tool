@@ -1,8 +1,8 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -119,11 +119,9 @@ public final class RGBUtils {
         return Math.max(a, Math.max(b, c));
     }
 
-    public static byte[] intRGBsToGzipBytes(int[] imgData) {
-        byte[] gzipBytes;
+    public static void intRGBsToGzipBytes(int[] imgData, OutputStream out) {
         try {
-            ByteArrayOutputStream gzipBuffer = new ByteArrayOutputStream(imgData.length >> 1);
-            DeflaterOutputStream gzipOut = new DeflaterOutputStream(gzipBuffer); 
+            DeflaterOutputStream gzipOut = new DeflaterOutputStream(out); 
             for(int i = 0; i < imgData.length; i++) {
                 int rgba = imgData[i];
                 int r = RGBUtils.redOf(rgba), g = RGBUtils.greenOf(rgba), b = RGBUtils.blueOf(rgba); 
@@ -134,16 +132,13 @@ public final class RGBUtils {
             // gzipOut.flush();
             gzipOut.finish();
             gzipOut.close();
-            gzipBytes = gzipBuffer.toByteArray();
         } catch(IOException ex) {
             throw new RuntimeIOException("should not occur", ex);
         }
-        return gzipBytes;
     }
 
-    public static void gzipBytesToIntRGBs(int[] res, byte[] gzipBytes, int alpha) {
-        ByteArrayInputStream gzipBuffer = new ByteArrayInputStream(gzipBytes);
-        InflaterInputStream gzipIn = new InflaterInputStream(gzipBuffer); 
+    public static void gzipBytesToIntRGBs(int[] res, InputStream in, int alpha) {
+        InflaterInputStream gzipIn = new InflaterInputStream(in); 
         int i = 0;
         try {
             while(i < res.length) {
@@ -157,4 +152,32 @@ public final class RGBUtils {
         }
     }
 
+    public static void intRGBsToBytes(byte[] dest, int[] src) {
+        int destIdx = 0;
+        for(int i = 0; i < src.length; i++) {
+            int rgba = src[i];
+            int r = RGBUtils.redOf(rgba), g = RGBUtils.greenOf(rgba), b = RGBUtils.blueOf(rgba);
+            dest[destIdx++] = (byte) r;
+            dest[destIdx++] = (byte) g;
+            dest[destIdx++] = (byte) b;
+        }
+    }
+
+    public static void intRGBsTo(OutputStream dest, int[] src) throws IOException {
+        for(int i = 0; i < src.length; i++) {
+            int rgba = src[i];
+            int r = RGBUtils.redOf(rgba), g = RGBUtils.greenOf(rgba), b = RGBUtils.blueOf(rgba);
+            dest.write(r);
+            dest.write(g);
+            dest.write(b);
+        }
+    }
+
+    public static void bytesToIntRGBs(int[] dest, byte[] src, int alpha) {
+        int destIdx = 0;
+        for(int i = 0; i < src.length; i+=3) {
+            dest[destIdx++] = rgb2Int(src[i], src[i+1], src[i+2], alpha);
+        }
+    }
+    
 }

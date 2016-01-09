@@ -6,6 +6,7 @@ import java.util.List;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
+import fr.an.screencast.compressor.imgtool.rectdescr.ExternalFormatRawDataHelper;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
@@ -20,13 +21,13 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.R
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.utils.IntsCRC32;
-import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
 import fr.an.util.encoder.huffman.HuffmanTable;
 import fr.an.util.encoder.structio.BitStreamStructDataOutput;
+import fr.an.util.encoder.structio.IStreamMultiplexerSupport.StreamPopper;
 import fr.an.util.encoder.structio.StructDataOutput;
 
 /**
@@ -44,6 +45,8 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     private GlyphMRUTable glyphMRUTable;
     // TODO ... private Map<String,HuffmanTable<Integer>> field2huffmanTableColor;
 
+    private ExternalFormatRawDataHelper externalFormatHelper = new ExternalFormatRawDataHelper();
+    
     private List<Rect> currRectStack = new ArrayList<Rect>();
     
     // ------------------------------------------------------------------------
@@ -324,8 +327,11 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
 
     @Override
     public void caseRawDataDescr(RawDataRectImgDescr node) {
+        Dim dim = node.getDim();
         final int[] rawData = node.getRawData();
-        writeRGBData(rawData);
+        try (StreamPopper topPop = out.pushSetCurrStream("rawData")) {
+            externalFormatHelper.writeRGBData(out, dim, rawData);
+        }
     }
 
     @Override
@@ -350,22 +356,12 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
             
             // int youngIndex = glyphIndexOrCode.getYoungIndex();
             // implicit .. out.writeInt(1 + glyphMRUTable.getYoungGlyphIndexCount());
-            
-            writeRGBData(glyphData);
+
+            try (StreamPopper topPop = out.pushSetCurrStream("glyph")) {
+                externalFormatHelper.writeRGBData(out, glyphDim, glyphData);
+            }
         } else {
             glyphMRUTable.writeEncodeReuseGlyphIndexOrCode(out, glyphIndexOrCode);
-        }
-    }
-
-    private void writeRGBData(int[] data) {
-        byte[] gzipBytes = RGBUtils.intRGBsToGzipBytes(data);
-        boolean isGzipEfficient = gzipBytes.length < data.length;
-        out.writeBit(isGzipEfficient);
-        if (isGzipEfficient) {
-            out.writeIntMinMax(0, data.length, gzipBytes.length);
-            out.writeBytes(gzipBytes, gzipBytes.length);
-        } else {
-            out.writeInts(data, 0, data.length);
         }
     }
 

@@ -38,10 +38,7 @@ public class BitStreamOutputRectImgDescrVisitorTest {
         String inputImageFileName = ImageTstUtils.FILENAME_screen_eclipse_1920x1080;
         File outputFile = new File("target/test/rectimg-" + inputImageFileName + ".dat");
         File outputSerializedFile = new File("target/test/rectimg-" + inputImageFileName + ".ser");
-        File debugOutputFile = null; 
-        if (DEBUG) {
-            debugOutputFile = new File("target/test/rectimg-DEBUG-" + inputImageFileName + ".txt");
-        }
+        File debugOutputFile = new File("target/test/rectimg-" + inputImageFileName + "-dat-debug.txt");
 
         RectImgDescrAnalyzer analyzer = RectImgDescrAnalyzerTest.prepareAnalyzeImage(inputImageFileName);
         Rect imgRect = Rect.newDim(analyzer.getDim());
@@ -54,16 +51,22 @@ public class BitStreamOutputRectImgDescrVisitorTest {
 
         OutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
         BitOutputStream bitOut = new OutputStreamToBitOutputStream(fileOutputStream);
-        StructDataOutput structOut = new BitStreamStructDataOutput(bitOut);
-        if (DEBUG) {
-            OutputStream debugFileOutputStream = new BufferedOutputStream(new FileOutputStream(debugOutputFile));
-            DebugStructDataOutput debugStructOutput = new DebugStructDataOutput(new PrintStream(debugFileOutputStream));
-            structOut = new DebugTeeStructDataOutput(debugStructOutput, structOut); 
-        }
+        StructDataOutput fileStructOut = new BitStreamStructDataOutput(bitOut);
+        
+        OutputStream debugFileOutputStream = new BufferedOutputStream(new FileOutputStream(debugOutputFile));
+        DebugStructDataOutput debugStructOutput = new DebugStructDataOutput(new PrintStream(debugFileOutputStream));
+        StructDataOutput structOut = new DebugTeeStructDataOutput(debugStructOutput, fileStructOut); 
+        
         try {
             BitStreamOutputRectImgDescrVisitor sut = new BitStreamOutputRectImgDescrVisitor(codecConfig, structOut);
             // Perform
             sut.writeTopLevel(imgRectDescr);
+            
+            String debugCountersText = debugStructOutput.getCounters().toStringAllCounters();
+            if (DEBUG) {
+                System.out.println("counters:" + debugCountersText);
+            }
+            debugStructOutput.debugComment(debugCountersText);
         } finally {
             structOut.close();
         }
@@ -77,12 +80,6 @@ public class BitStreamOutputRectImgDescrVisitorTest {
         
         LOG.info("encoded rect im descr for image " + inputImageFileName + " as compressed binary => " + outputFileLen + " bytes = " + (outputFileLen/1024) + " ko");
         // System.out.println("encoding img " + imageFileName + " " + analyzer.getDim() + " => rect descr bytes: " + resultLen);
-        if (!DEBUG) {
-//            Assert.assertTrue(resultLen <= 60646); // amazing compressions for 1920x1080 rgb image !!
-        } else {
-            // big file for debug dump text 
-            // Assert.assertTrue(100000 < resultLen && resultLen <= 150000);
-        }
         
         if (DEBUG) {
             File dumpFile = new File("target/test/rectimg-" + inputImageFileName + "-dump.txt");

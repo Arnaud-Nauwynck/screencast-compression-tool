@@ -35,6 +35,10 @@ public class RectImgDescriptionAST {
             return rect;
         }
 
+        public Dim getDim() {
+            return rect.getDim();
+        }
+
         @Override
         public String toString() {
             return "RectImgDescr[rect=" + rect + "]";
