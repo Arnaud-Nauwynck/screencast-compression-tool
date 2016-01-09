@@ -44,7 +44,8 @@ public class ImgToRectImgDescrConverterMain {
     private String outputFilename;
     
     private boolean inputFilesListFromStdin = false;
-    private int parallelCount = 5;
+    private int parallelCount = 6;
+    private long skipFileSmallerThan = 1024*5;
     
     private boolean verboseMode = false;
     private boolean dryRun = false;
@@ -180,6 +181,10 @@ public class ImgToRectImgDescrConverterMain {
             remainCount.incrementAndGet();
             while((line = stdinReader.readLine()) != null) {
                 File inputFile = new File(line);
+                if (!inputFile.exists() || !inputFile.canRead() 
+                        || inputFile.length() < skipFileSmallerThan) {
+                    continue;
+                }
                 File outputFile = new File(inputFile.getParentFile(), toFilenameSuffixRectImgDescr(inputFile.getName()));
                 remainCount.incrementAndGet();
                 Runnable runnable = () -> {
