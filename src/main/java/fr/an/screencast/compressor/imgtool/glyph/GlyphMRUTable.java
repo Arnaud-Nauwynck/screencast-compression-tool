@@ -15,14 +15,14 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.bitwise4j.encoder.huffman.HuffmanBitsCode;
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
+import fr.an.bitwise4j.encoder.structio.StructDataInput;
+import fr.an.bitwise4j.encoder.structio.StructDataOutput;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
-import fr.an.util.encoder.huffman.HuffmanBitsCode;
-import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.StructDataInput;
-import fr.an.util.encoder.structio.StructDataOutput;
 
 /**
  * a MRU (Most-Recently-Used) table for glyphs

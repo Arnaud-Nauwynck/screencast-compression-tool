@@ -14,17 +14,17 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.bitwise4j.bits.BitOutputStream;
+import fr.an.bitwise4j.bits.OutputStreamToBitOutputStream;
+import fr.an.bitwise4j.encoder.structio.BitStreamStructDataOutput;
+import fr.an.bitwise4j.encoder.structio.StructDataOutput;
+import fr.an.bitwise4j.encoder.structio.helpers.DebugStructDataOutput;
+import fr.an.bitwise4j.encoder.structio.helpers.DebugTeeStructDataOutput;
 import fr.an.screencast.compressor.imgtool.rectdescr.RectImgDescrAnalyzer;
 import fr.an.screencast.compressor.imgtool.rectdescr.RectImgDescrAnalyzerTest;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
 import fr.an.screencast.compressor.utils.Rect;
-import fr.an.util.bits.BitOutputStream;
-import fr.an.util.bits.OutputStreamToBitOutputStream;
-import fr.an.util.encoder.structio.BitStreamStructDataOutput;
-import fr.an.util.encoder.structio.StructDataOutput;
-import fr.an.util.encoder.structio.helpers.DebugStructDataOutput;
-import fr.an.util.encoder.structio.helpers.DebugTeeStructDataOutput;
 
 public class BitStreamOutputRectImgDescrVisitorTest {
 

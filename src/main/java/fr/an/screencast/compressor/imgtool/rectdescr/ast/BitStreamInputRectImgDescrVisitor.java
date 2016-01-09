@@ -10,6 +10,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
+import fr.an.bitwise4j.encoder.structio.StructDataInput;
+import fr.an.bitwise4j.encoder.structio.IStreamMultiplexerSupport.StreamPopper;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
@@ -32,9 +35,6 @@ import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
-import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.IStreamMultiplexerSupport.StreamPopper;
-import fr.an.util.encoder.structio.StructDataInput;
 
 /**
  * RectImgDescrVisitor implementation for recursive decoding RectImgDescr as bitstream

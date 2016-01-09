@@ -2,6 +2,7 @@ package fr.an.screencast.compressor.imgstream.codecs.deltabitstream;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -11,6 +12,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.bitwise4j.bits.OutputStreamToBitOutputStream;
+import fr.an.bitwise4j.encoder.huffman.HuffmanBitsCode;
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
+import fr.an.bitwise4j.encoder.structio.BitStreamStructDataOutput;
+import fr.an.bitwise4j.encoder.structio.StructDataOutput;
+import fr.an.bitwise4j.util.RuntimeIOException;
 import fr.an.screencast.compressor.imgtool.delta.DeltaOperation;
 import fr.an.screencast.compressor.imgtool.delta.FrameDeltaDetailed;
 import fr.an.screencast.compressor.imgtool.delta.FrameRectDelta;
@@ -27,12 +34,6 @@ import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
-import fr.an.util.bits.OutputStreamToBitOutputStream;
-import fr.an.util.bits.RuntimeIOException;
-import fr.an.util.encoder.huffman.HuffmanBitsCode;
-import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.BitStreamStructDataOutput;
-import fr.an.util.encoder.structio.StructDataOutput;
 
 public class DeltaOpFrame2BitStreamStructDataEncoder {
     
@@ -256,7 +257,9 @@ public class DeltaOpFrame2BitStreamStructDataEncoder {
     }
 
     private void writeEncodeImgData(int[] rectImg) {
-        byte[] gzipBytes = RGBUtils.intRGBsToGzipBytes(rectImg);
+        ByteArrayOutputStream bout = new ByteArrayOutputStream(); 
+        RGBUtils.intRGBsToGzipBytes(rectImg, bout);
+        byte[] gzipBytes = bout.toByteArray();
         
         bitsStructOutput.writeIntMinMax(0, rectImg.length, gzipBytes.length);
         bitsStructOutput.writeBytes(gzipBytes, gzipBytes.length);

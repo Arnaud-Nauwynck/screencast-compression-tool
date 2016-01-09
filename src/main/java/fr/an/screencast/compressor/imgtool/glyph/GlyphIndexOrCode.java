@@ -2,7 +2,7 @@ package fr.an.screencast.compressor.imgtool.glyph;
 
 import java.io.Serializable;
 
-import fr.an.util.encoder.huffman.HuffmanBitsCode;
+import fr.an.bitwise4j.encoder.huffman.HuffmanBitsCode;
 
 public final class GlyphIndexOrCode implements Serializable {
     

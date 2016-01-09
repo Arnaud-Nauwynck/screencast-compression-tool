@@ -3,6 +3,7 @@ package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
@@ -17,7 +18,6 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.R
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
-import fr.an.util.encoder.huffman.HuffmanTable;
 
 public class RectImgDescrCodecConfig {
 

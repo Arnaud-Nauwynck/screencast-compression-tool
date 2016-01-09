@@ -3,6 +3,10 @@ package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
+import fr.an.bitwise4j.encoder.structio.BitStreamStructDataOutput;
+import fr.an.bitwise4j.encoder.structio.StructDataOutput;
+import fr.an.bitwise4j.encoder.structio.IStreamMultiplexerSupport.StreamPopper;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
@@ -25,10 +29,6 @@ import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
-import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.BitStreamStructDataOutput;
-import fr.an.util.encoder.structio.IStreamMultiplexerSupport.StreamPopper;
-import fr.an.util.encoder.structio.StructDataOutput;
 
 /**
  * RectImgDescrVisitor implementation for recursive encoding RectImgDescr as bitstream

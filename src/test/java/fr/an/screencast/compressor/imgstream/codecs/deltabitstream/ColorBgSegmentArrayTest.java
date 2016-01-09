@@ -5,10 +5,10 @@ import java.awt.image.BufferedImage;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
-import fr.an.util.encoder.huffman.HuffmanTable;
 
 public class ColorBgSegmentArrayTest {
 

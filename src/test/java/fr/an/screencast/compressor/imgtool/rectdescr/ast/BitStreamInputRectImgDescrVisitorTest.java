@@ -12,14 +12,14 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.an.bitwise4j.bits.BitInputStream;
+import fr.an.bitwise4j.bits.InputStreamToBitInputStream;
+import fr.an.bitwise4j.encoder.structio.BitStreamStructDataInput;
+import fr.an.bitwise4j.encoder.structio.StructDataInput;
+import fr.an.bitwise4j.encoder.structio.helpers.DebugStructDataInput;
+import fr.an.bitwise4j.encoder.structio.helpers.DebugTeeStructDataInput;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
-import fr.an.util.bits.BitInputStream;
-import fr.an.util.bits.InputStreamToBitInputStream;
-import fr.an.util.encoder.structio.BitStreamStructDataInput;
-import fr.an.util.encoder.structio.StructDataInput;
-import fr.an.util.encoder.structio.helpers.DebugStructDataInput;
-import fr.an.util.encoder.structio.helpers.DebugTeeStructDataInput;
 
 public class BitStreamInputRectImgDescrVisitorTest {
 

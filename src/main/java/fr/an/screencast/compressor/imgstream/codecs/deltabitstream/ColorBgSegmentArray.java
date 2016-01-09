@@ -1,7 +1,7 @@
 package fr.an.screencast.compressor.imgstream.codecs.deltabitstream;
 
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
-import fr.an.util.encoder.huffman.HuffmanTable;
 
 /** 
  * data struct equivalent to "ColorBgSegment[]" with big size (typical: ~1M for img 1920x1080) 

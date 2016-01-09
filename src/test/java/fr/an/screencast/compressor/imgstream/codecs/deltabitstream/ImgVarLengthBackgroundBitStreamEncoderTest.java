@@ -5,12 +5,12 @@ import java.io.ByteArrayOutputStream;
 
 import org.junit.Test;
 
+import fr.an.bitwise4j.bits.BitOutputStream;
+import fr.an.bitwise4j.bits.OutputStreamToBitOutputStream;
+import fr.an.bitwise4j.encoder.structio.BitStreamStructDataOutput;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
-import fr.an.util.bits.BitOutputStream;
-import fr.an.util.bits.OutputStreamToBitOutputStream;
-import fr.an.util.encoder.structio.BitStreamStructDataOutput;
 
 public class ImgVarLengthBackgroundBitStreamEncoderTest {
 

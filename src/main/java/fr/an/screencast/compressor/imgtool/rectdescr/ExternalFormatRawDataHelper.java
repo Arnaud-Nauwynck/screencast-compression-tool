@@ -5,14 +5,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import fr.an.bitwise4j.encoder.huffman.HuffmanBitsCode;
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
+import fr.an.bitwise4j.encoder.structio.StructDataInput;
+import fr.an.bitwise4j.encoder.structio.StructDataOutput;
 import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageIOUtils;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Dim;
-import fr.an.util.encoder.huffman.HuffmanBitsCode;
-import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.StructDataInput;
-import fr.an.util.encoder.structio.StructDataOutput;
 
 /**
  * External Format Raw data helper class, for gzip, png, jpeg, ... 
@@ -114,11 +114,10 @@ public class ExternalFormatRawDataHelper {
             RGBUtils.gzipBytesToIntRGBs(res, encodedInput, alpha);
             break;
         case "png":
-            BufferedImage img = ImageIOUtils.read(null, "png", encodedInput);
+            BufferedImage img = ImageIOUtils.read(null, encodedInput);
             BufferedImageUtils.copyImage(res, img);
             break;
         }
     }
-
     
 }

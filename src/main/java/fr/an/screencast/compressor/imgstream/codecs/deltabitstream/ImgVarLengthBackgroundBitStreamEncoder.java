@@ -1,7 +1,7 @@
 package fr.an.screencast.compressor.imgstream.codecs.deltabitstream;
 
-import fr.an.util.encoder.huffman.HuffmanTable;
-import fr.an.util.encoder.structio.StructDataOutput;
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
+import fr.an.bitwise4j.encoder.structio.StructDataOutput;
 
 public class ImgVarLengthBackgroundBitStreamEncoder {
 
