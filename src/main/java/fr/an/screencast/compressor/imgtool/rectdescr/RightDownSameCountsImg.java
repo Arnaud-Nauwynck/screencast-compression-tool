@@ -87,4 +87,13 @@ public final class RightDownSameCountsImg {
     public int[] getDownSameCounts() {
         return downSameCounts;
     }
+
+    public int getLeftSameCount(int x, int y, int idx) {
+        int toX = x;
+        int len = 1;
+        for(; toX >= 0 && rightSameCounts[idx] >= len; toX--,idx--,len++) {
+        }
+        return len;
+    }
+
 }

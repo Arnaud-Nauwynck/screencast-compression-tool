@@ -422,13 +422,16 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         RectImgDescription underlying = readWithRect(rect);
         node.setUnderlyingRectImgDescr(underlying);
 
-        Rect aboveRect = readCurrNestedRect();
-        node.setAboveRect(aboveRect);
-        
-        pushRect(aboveRect);
-        RectImgDescription above = readWithRect(aboveRect);
-        node.setAboveRectImgDescr(above);
-        popRect();
+        int aboveCount = in.readIntMinMax(0, rect.getArea()+1);
+        RectImgDescription[] aboves = new RectImgDescription[aboveCount]; 
+        for (int i = 0; i < aboveCount; i++) {
+            Rect aboveRect = readCurrNestedRect();
+            
+            pushRect(aboveRect);
+            aboves[i] = readWithRect(aboveRect);
+            popRect();
+        }
+        node.setAboveRectImgDescrs(aboves);
     }
 
 }

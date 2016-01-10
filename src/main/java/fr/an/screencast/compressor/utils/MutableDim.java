@@ -44,6 +44,11 @@ public final class MutableDim implements Serializable {
         this.height = height;
     }
 
+    public void set(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+
     public int getArea() {
         return width * height;
     }

@@ -369,15 +369,20 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
         final Rect rect = node.getRect();
         final RectImgDescription underlying = node.getUnderlyingRectImgDescr();
-        final RectImgDescription above = node.getAboveRectImgDescr();
-        final Rect aboveRect = node.getAboveRect();
+        final RectImgDescription[] aboves = node.getAboveRectImgDescrs();
+        // final Rect aboveRect = node.getAboveRect();
 
         writeCheckRect(underlying, rect);
-
-        writeCurrNestedRect(aboveRect);
-        pushRect(aboveRect);
-        writeCheckRect(above, aboveRect);
-        popRect();
+        final int aboveCount = (aboves != null)? aboves.length : 0;
+        out.writeIntMinMax(0, rect.getArea()+1, aboveCount);
+        for (int i = 0; i < aboveCount; i++) {
+            RectImgDescription above = aboves[i];
+            Rect aboveRect =  above.getRect();
+            writeCurrNestedRect(aboveRect);
+            pushRect(aboveRect);
+            writeCheckRect(above, aboveRect);
+            popRect();
+        }
     }
 
 }

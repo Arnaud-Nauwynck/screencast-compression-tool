@@ -284,13 +284,17 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
 
     @Override
     public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
-        final Rect rect = node.getRect();
         final RectImgDescription underlying = node.getUnderlyingRectImgDescr();
-        final RectImgDescription above = node.getAboveRectImgDescr();
-        final Rect aboveRect = node.getAboveRect();
-        printlnIndent("Above " + rect + ((above != null)? " aboveRect:" + aboveRect : ""));
+        final RectImgDescription[] aboves = node.getAboveRectImgDescrs();
         printlnIndent("underlying", underlying);
-        printlnIndent("above", above);
+        final int aboveCount = (aboves != null)? aboves.length : 0;
+        printlnIndent("aboveCount:" + aboveCount);
+        for (int i= 0; i < aboveCount; i++) {
+            RectImgDescription above = aboves[i];
+            // final Rect aboveRect = above.getRect();
+            // printlnIndent("Above " + rect + ((above != null)? " aboveRect:" + aboveRect : ""));
+            printlnIndent("above", above);
+        }
     }
 
 }

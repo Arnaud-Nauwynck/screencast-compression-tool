@@ -189,6 +189,22 @@ public class RectImgDescrAnalyzerTest {
         repaintAndCheckImg(imageFileName, sut, res);
     }
 
+    @Test
+    public void testAnalyze_screen_egit_merge() {
+        // Prepare
+        String imageFileName = "screen-egit-merge.png";
+        RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
+        Rect imgRect = Rect.newDim(sut.getDim());
+        // Perform
+        RectImgDescription res = sut.analyze(imgRect);
+        // Post-check
+        Assert.assertNotNull(res);
+        repaintAndCheckImg(imageFileName, sut, res);
+    }
+
+    
+    // ------------------------------------------------------------------------
+    
     private void repaintAndCheckImg(String imageFileName, RectImgDescrAnalyzer sut, RectImgDescription res) {
         Dim dim = sut.getDim();
         BufferedImage checkImg = new BufferedImage(dim.getWidth(), dim.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -234,6 +250,10 @@ public class RectImgDescrAnalyzerTest {
             res.accept(new DebugDrawDecoratorRectImgDescrVisitor(debugImage));
             
             ImageViewUtils.openImageFrame(debugImage);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+            }
         }
         ImageDataAssert.assertEqualsMask(checkImgData, sut.getImgData(), dim.getWidth(), dim.getHeight(), alphaMask);
     }

@@ -269,15 +269,16 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
         final RectImgDescription underlying = node.getUnderlyingRectImgDescr();
-        final RectImgDescription above = node.getAboveRectImgDescr();
+        final RectImgDescription[] aboves = node.getAboveRectImgDescrs();
         if (underlying != null) {
             underlying.accept(this);
         }
-        if (above != null) {
-            above.accept(this);
-
-            g2d.setStroke(debugAboveStroke);
-            g2d.setColor(debugAboveColor);
+        if (aboves != null) {
+            int aboveCount = (aboves != null)? aboves.length : 0;
+            for (int i = 0; i < aboveCount; i++) {
+                aboves[i].accept(this);
+                drawRect(aboves[i].getRect(), debugAboveColor, debugAboveStroke);
+            }
         }
     }
 

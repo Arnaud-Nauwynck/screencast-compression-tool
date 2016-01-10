@@ -1,6 +1,7 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
@@ -33,6 +34,14 @@ public class RectImgDescriptionAST {
         
         public Rect getRect() {
             return rect;
+        }
+
+        public static Rect[] arrayToRectArray(RectImgDescription[] src) {
+            Rect[] res = new Rect[src.length];
+            for(int i = 0; i < src.length; i++) {
+                res[i] = src[i].getRect();
+            }
+            return res;
         }
 
         public Dim getDim() {
@@ -750,39 +759,40 @@ public class RectImgDescriptionAST {
     public static class RectImgAboveRectImgDescr extends RectImgDescription {
 
         private RectImgDescription underlyingRectImgDescr;
-        private Rect aboveRect;
-        private RectImgDescription aboveRectImgDescr;
+        private Rect[] aboveRects;
+        private RectImgDescription[] aboveRectImgDescrs;
 
         public RectImgAboveRectImgDescr(Rect rect) {
             super(rect);
         }
         
         public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
-                Rect aboveRect) {
+                Rect[] aboveRects) {
             super(rect);
             this.underlyingRectImgDescr = underlyingRectImgDescr;
-            this.aboveRect = aboveRect;
+            this.aboveRects = aboveRects;
         }
 
 
         public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
-                RectImgDescription aboveRectImgDescr) {
+                RectImgDescription[] aboveRectImgDescrs) {
             super(rect);
             this.underlyingRectImgDescr = underlyingRectImgDescr;
-            this.aboveRect = (aboveRectImgDescr != null)? aboveRectImgDescr.getRect() : null;
-            this.aboveRectImgDescr = aboveRectImgDescr;
+            this.aboveRects = (aboveRectImgDescrs != null)? arrayToRectArray(aboveRectImgDescrs) : null;
+            this.aboveRectImgDescrs = aboveRectImgDescrs;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseDescrAboveDescr(this);
         }
         
-        public Rect getAboveRect() {
-            return aboveRect;
+        public Rect[] getAboveRects() {
+            return aboveRects;
         }
 
-        public void setAboveRect(Rect aboveRect) {
-            this.aboveRect = aboveRect;
+        public void setAboveRects(Rect[] aboveRects) {
+            this.aboveRects = aboveRects;
+            this.aboveRectImgDescrs = null;
         }
 
         public RectImgDescription getUnderlyingRectImgDescr() {
@@ -793,12 +803,13 @@ public class RectImgDescriptionAST {
             this.underlyingRectImgDescr = underlyingRectImgDescr;
         }
 
-        public RectImgDescription getAboveRectImgDescr() {
-            return aboveRectImgDescr;
+        public RectImgDescription[] getAboveRectImgDescrs() {
+            return aboveRectImgDescrs;
         }
 
-        public void setAboveRectImgDescr(RectImgDescription aboveRectImgDescr) {
-            this.aboveRectImgDescr = aboveRectImgDescr;
+        public void setAboveRectImgDescrs(RectImgDescription[] aboveRectImgDescrs) {
+            this.aboveRectImgDescrs = aboveRectImgDescrs;
+            this.aboveRects = (aboveRectImgDescrs != null)? arrayToRectArray(aboveRectImgDescrs) : null;;
         }
         
     }

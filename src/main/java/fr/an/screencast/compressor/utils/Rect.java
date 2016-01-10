@@ -42,6 +42,10 @@ public class Rect implements Serializable {
         return new Rect(from.x, from.y, from.x + dim.width, from.y + dim.height);
     }
 
+    public static Rect newPtDim(Pt from, MutableDim dim) {
+        return new Rect(from.x, from.y, from.x + dim.width, from.y + dim.height);
+    }
+
     public static Rect newPtDim(Pt from, int width, int height) {
         return new Rect(from.x, from.y, from.x + width, from.y + height);
     }

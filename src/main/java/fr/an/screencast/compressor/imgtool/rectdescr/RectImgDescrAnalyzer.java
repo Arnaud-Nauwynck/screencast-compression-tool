@@ -3,6 +3,8 @@ package fr.an.screencast.compressor.imgtool.rectdescr;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -28,6 +30,7 @@ import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.MutableDim;
+import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 
 public class RectImgDescrAnalyzer {
@@ -80,14 +83,15 @@ public class RectImgDescrAnalyzer {
             return res;
         }
         
+        Pt rectFromPt = rect.getFromPt();
         MutableDim tmpDim = new MutableDim(rect.getWidth(), rect.getHeight());
-        res  = helper.detectBorder1AtUL(rect.getFromPt(), tmpDim);
+        res  = helper.detectBorder1AtUL(rectFromPt, tmpDim);
         if (res != null) {
             res.accept(recursiveAnalyzer);
             return res;
         }
         
-        res = helper.detectRoundBorderStartAtUL(rect.getFromPt());
+        res = helper.detectRoundBorderStartAtUL(rectFromPt);
         if (res != null) {
             res.accept(recursiveAnalyzer);
             return res;
@@ -97,7 +101,7 @@ public class RectImgDescrAnalyzer {
         MutableDim bottomCornerDim = new MutableDim();
         StringBuilder optReason = new StringBuilder();
         // checkCornerColor=false  .. problem with anti-aliasing!
-        res = helper.detectRoundBorderStartAtULWithCorners(rect.getFromPt(), tmpDim, false, topCornerDim, bottomCornerDim, optReason);
+        res = helper.detectRoundBorderStartAtULWithCorners(rectFromPt, tmpDim, false, topCornerDim, bottomCornerDim, optReason);
         if (res != null) {
             res.accept(recursiveAnalyzer);
             return res;
@@ -142,8 +146,11 @@ public class RectImgDescrAnalyzer {
     }
     
     
+    
+    
+    
     /**
-     * Vistior for recursive analysis of RectImgDescr AST
+     * Visitor for recursive analysis of RectImgDescr AST
      */
     public class RectImgDescrAnalyzerVisitor extends RectImgDescrVisitor {
 
@@ -305,17 +312,24 @@ public class RectImgDescrAnalyzer {
         @Override
         public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
             RectImgDescription underlying = node.getUnderlyingRectImgDescr();
-            RectImgDescription above = node.getAboveRectImgDescr();
-            if (above == null) {
-                Rect aboveRect = node.getAboveRect();
-                above = analyze(aboveRect);
-                node.setAboveRectImgDescr(above);
+            RectImgDescription[] aboves = node.getAboveRectImgDescrs();
+            if (aboves == null) {
+                Rect[] aboveRects = node.getAboveRects();
+                int abovesCount = aboveRects != null? aboveRects.length : 0;
+                aboves = new RectImgDescription[abovesCount]; 
+                for(int i = 0; i < abovesCount; i++) {
+                    aboves[i] = analyze(aboveRects[i]);
+                }
+                node.setAboveRectImgDescrs(aboves);
             }
             if (underlying != null) {
                 underlying.accept(this);
             }
-            if (above != null) {
-                above.accept(this);
+            if (aboves != null) {
+                int abovesCount = aboves != null? aboves.length : 0;
+                for(int i = 0; i < abovesCount; i++) {
+                    aboves[i].accept(this);
+                }
             }
         }
 

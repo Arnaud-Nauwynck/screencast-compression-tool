@@ -204,5 +204,37 @@ public class RectImgDescrDetectorHelperTest {
         Assert.assertEquals(1, grey2SplitBorders.size());
         Assert.assertEquals(new Segment(144, 147), grey2SplitBorders.get(0));
     }
+
+    @Test
+    public void testScanListLargestBorderRightThenDown() {
+        // Prepare
+        Dim dim = new Dim(10, 3);
+        int[] imgData = new int[] {
+            // 1  2  3  4  5  6  7  8  9  10
+            1, 1, 1, 0, 2, 2, 2, 2, 3, 3, //   
+            1, 1, 1, 0, 2, 2, 2, 2, 4, 4, //
+            1, 1, 0, 0, 2, 0, 0, 2, 4, 4, //
+        };
+        RectImgDescrDetectorHelper sut = new RectImgDescrDetectorHelper(dim);
+        sut.setImg(imgData);
+        // Perform
+        List<Rect> res = sut.scanListLargestBorderRightThenDown(Rect.newDim(dim));
+        // Post-check
+        Assert.assertNotNull(res);
+        int i = 0;
+        // line 0
+        Assert.assertEquals(Rect.newPtDim(0, 0, 3, 2), res.get(i++));    // 1 1 1 
+        Assert.assertEquals(Rect.newPtDim(3, 0, 1, 3), res.get(i++));    //       0
+        Assert.assertEquals(Rect.newPtDim(4, 0, 4, 2), res.get(i++));    //         2 2 2 2 
+        Assert.assertEquals(Rect.newPtDim(8, 0, 2, 1), res.get(i++));    //                 3 3
+        // line 1
+        Assert.assertEquals(Rect.newPtDim(8, 2, 2, 1), res.get(i++));    //                 4 4
+        // line 2
+        Assert.assertEquals(Rect.newPtDim(0, 2, 2, 1), res.get(i++));    // 1 1 
+        Assert.assertEquals(Rect.newPtDim(2, 2, 2, 1), res.get(i++));    //     0 0  
+        Assert.assertEquals(Rect.newPtDim(4, 2, 1, 1), res.get(i++));    //         2  
+        Assert.assertEquals(Rect.newPtDim(5, 2, 2, 1), res.get(i++));    //           0 0   
+        Assert.assertEquals(Rect.newPtDim(7, 2, 1, 1), res.get(i++));    //               2   
+    }
     
 }

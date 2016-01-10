@@ -277,12 +277,15 @@ public class DrawRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
         final RectImgDescription underlying = node.getUnderlyingRectImgDescr();
-        final RectImgDescription above = node.getAboveRectImgDescr();
+        final RectImgDescription[] aboves = node.getAboveRectImgDescrs();
         if (underlying != null) {
             underlying.accept(this);
         }
-        if (above != null) {
-            above.accept(this);
+        if (aboves != null) {
+            int aboveCount = (aboves != null)? aboves.length : 0;
+            for (int i = 0; i < aboveCount; i++) {
+                aboves[i].accept(this);
+            }
         }
     }
 

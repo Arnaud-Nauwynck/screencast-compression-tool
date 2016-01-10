@@ -74,6 +74,97 @@ public final class RectImgDescrDetectorHelper {
         return maxDimForGlyph;
     }
 
+
+    public List<Rect> scanListLargestBorderRightThenDown(Rect rect) {
+        List<Rect> res = new ArrayList<Rect>();
+        List<Rect> currOpenedBorders = new ArrayList<Rect>();
+        List<Rect> tmpBorders = new ArrayList<Rect>();
+        final int W = dim.width;
+        int x = rect.fromX;
+        int idx = rect.fromY * W + rect.fromX;
+        final int incrIdxY = W + rect.fromX - rect.toX;
+        Pt pt = new Pt(rect.fromX, rect.fromY);
+        int[] nextX = new int[rect.toX - rect.fromX];
+        for (int i = rect.fromX; i < rect.toX; i++) {
+            nextX[i] = i;
+        }
+        
+        for (int y = rect.fromY; y < rect.toY; y++,x = rect.fromX,idx+=incrIdxY) {
+            pt.y = y;
+            ImageRasterUtils.checkIdx(idx, x, y, W);
+            
+            // recompute nextX[x] for currently opened borders
+            tmpBorders.clear();
+            for(Rect r : currOpenedBorders) {
+                if (r.toY >= y) {
+                    tmpBorders.add(r);
+                    nextX[r.fromX] = r.toX;
+                } else {
+                    for (int i = r.fromX; i < r.toX; i++) {
+                        nextX[i] = i;
+                    }
+                }
+            }
+            List<Rect> swap = currOpenedBorders;
+            currOpenedBorders = tmpBorders;
+            tmpBorders = swap;
+            tmpBorders.clear();
+            
+            for(x = rect.fromX; x < rect.toX; x++,idx++) {
+                if (nextX[x] != x) {
+                    int prevX = x;
+                    x = nextX[x] - 1;
+                    idx += x - prevX;
+                    continue;
+                }
+                pt.x = x;
+                Rect foundBorder = findLargestBorderRightThenDown(pt, rect);
+                if (foundBorder != null && (foundBorder.getWidth() > 1 || foundBorder.getHeight() > 1)) {
+                    res.add(foundBorder);
+                    currOpenedBorders.add(foundBorder);
+                    for (int i = foundBorder.fromX; i < foundBorder.toX; i++) {
+                        nextX[i] = foundBorder.toX;
+                    }
+                    int prevX = x;
+                    x = nextX[x] - 1;
+                    idx += x - prevX;
+                }
+            }
+        }
+        return res;
+    }
+    
+    public Rect findLargestBorderRightThenDown(Pt pt, Rect maxWithinRect) {
+        final int W = dim.width;
+        final int idxUpLeft = pt.y * W + pt.x;
+        ImageRasterUtils.checkIdx(idxUpLeft, pt.x, pt.y, W);
+        final int maxToX = Math.min(maxWithinRect.toX, pt.x + sameCountsImg.getRightSameCount(idxUpLeft));
+        final int maxToY0 = Math.min(maxWithinRect.toY, pt.y + sameCountsImg.getDownSameCount(idxUpLeft));
+        if (maxToY0 > pt.y) {
+            for (int toX = maxToX; toX >= pt.x; toX--) {
+                Rect tmpres = findLargestBorderDown(idxUpLeft, pt, toX, maxToY0);
+                if (tmpres != null) {
+                    return tmpres;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public Rect findLargestBorderDown(int idxUpLeft, Pt pt, int toX, int maxToY0) {
+        int idxUpRight = idxUpLeft + toX - pt.x - 1; 
+        MutableDim tmpDim = new MutableDim(toX - pt.x, 0);
+        final int maxToY = Math.min(maxToY0, pt.y + sameCountsImg.getDownSameCount(idxUpRight));
+        tmpDim.height = maxToY - pt.y;
+        for(int y = maxToY-1; y >= pt.y; y--,tmpDim.height--) {
+            BorderRectImgDescr tmpres = detectBorder1AtUL(pt, tmpDim);
+            if (tmpres != null) {
+                return tmpres.getRect();
+            }
+        }
+        return null;
+    }
+
     public FillRectImgDescr detectExactFillRect(Rect rect) {
         final int W = dim.width;
         final int rectWidth = rect.getWidth();
@@ -277,7 +368,41 @@ public final class RectImgDescrDetectorHelper {
     
     
     public RoundBorderRectImgDescr detectRoundBorderStartAtUL(Pt pt) {
-        // TODO
+        return null;
+    }
+    
+    public RoundBorderRectImgDescr _test_detectRoundBorderStartAtUL(Pt pt) {
+        final int W = dim.width, H = dim.height;
+        final int idxFromPt = pt.y * W + pt.x; 
+        int idx = idxFromPt;
+        int topLeftCornerX = 0;
+        for (; topLeftCornerX < W && sameCountsImg.getRightSameCount(idx) < 10;topLeftCornerX++,idx++) {            
+        }
+        if (topLeftCornerX == W) {
+            return null;
+        }
+
+        int topLeftCornerY = pt.y;
+        for (; topLeftCornerY < H && sameCountsImg.getDownSameCount(idx) < 10;topLeftCornerY++,idx+=W) {            
+        }
+        if (topLeftCornerY == H) {
+            return null;
+        }
+        MutableDim rectDim = new MutableDim(topLeftCornerX + sameCountsImg.getRightSameCount(idx) + topLeftCornerX,
+                topLeftCornerY + sameCountsImg.getDownSameCount(idx) + topLeftCornerY);
+        MutableDim topCornerDim = new MutableDim(topLeftCornerX, topLeftCornerY);
+        MutableDim bottomCornerDim = new MutableDim(topLeftCornerX, topLeftCornerY);
+        RoundBorderRectImgDescr res = detectRoundBorderStartAtULWithCorners(pt, rectDim, false, topCornerDim, bottomCornerDim, null);
+        if (res != null) {
+            return res;
+        }
+
+        bottomCornerDim.set(0, 0);
+        res = detectRoundBorderStartAtULWithCorners(pt, rectDim, false, topCornerDim, bottomCornerDim, null);
+        if (res != null) {
+            return res;
+        }
+
         return null;
     }
     
