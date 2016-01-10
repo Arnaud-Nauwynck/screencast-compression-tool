@@ -13,20 +13,23 @@ public class ImageTstUtils {
 
     public static final String FILENAME_screen_eclipse_1920x1080 = "screen-eclipse-1920x1080.png";
     public static BufferedImage getImageTest_1920x1080() {
-        return loadImg(new File("src/test/imgs/" + FILENAME_screen_eclipse_1920x1080));
+        return loadTestImg(FILENAME_screen_eclipse_1920x1080);
     }
 
     public static final String FILENAME_screen_eclipse_1920x1080_color7bits = "screen-eclipse-1920x1080-color7bits.png";
     public static BufferedImage getImageTest_1920x1080_color7bits() {
-        return loadImg(new File("src/test/imgs/" + FILENAME_screen_eclipse_1920x1080_color7bits));
+        return loadTestImg(FILENAME_screen_eclipse_1920x1080_color7bits);
     }
 
     public static final String FILENAME_screen_eclipse_1920x1080_color6bits = "screen-eclipse-1920x1080-color6bits.png";
     public static BufferedImage getImageTest_1920x1080_color6bits() {
-        return loadImg(new File("src/test/imgs/" + FILENAME_screen_eclipse_1920x1080_color6bits));
+        return loadTestImg(FILENAME_screen_eclipse_1920x1080_color6bits);
     }
 
-
+    public static BufferedImage loadTestImg(String testFilename) {
+        return loadImg(new File("src/test/imgs/" + testFilename));
+    }
+    
     public static BufferedImage loadImg(File file) {
         try {
             BufferedImage srcImg = ImageIO.read(file);

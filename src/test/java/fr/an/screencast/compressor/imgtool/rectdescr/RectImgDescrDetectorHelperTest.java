@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor.imgtool.rectdescr;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.junit.Test;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.utils.Graphics2DHelper;
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
@@ -22,10 +24,12 @@ import fr.an.screencast.compressor.utils.MutableDim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
+import fr.an.screencast.ui.ImageViewUtils;
 
 public class RectImgDescrDetectorHelperTest {
 
     private static final boolean DEBUG = false;
+    private static final boolean DEBUG_UI = true;
     
     protected static ImageData img_screen1920x1080;
     
@@ -217,8 +221,9 @@ public class RectImgDescrDetectorHelperTest {
         };
         RectImgDescrDetectorHelper sut = new RectImgDescrDetectorHelper(dim);
         sut.setImg(imgData);
+        int retainRectMinW = 1, retainRectMinH = 1; 
         // Perform
-        List<Rect> res = sut.scanListLargestBorderRightThenDown(Rect.newDim(dim));
+        List<Rect> res = sut.scanListLargestBorderRightThenDown(Rect.newDim(dim), retainRectMinW, retainRectMinH);
         // Post-check
         Assert.assertNotNull(res);
         int i = 0;
@@ -228,13 +233,66 @@ public class RectImgDescrDetectorHelperTest {
         Assert.assertEquals(Rect.newPtDim(4, 0, 4, 2), res.get(i++));    //         2 2 2 2 
         Assert.assertEquals(Rect.newPtDim(8, 0, 2, 1), res.get(i++));    //                 3 3
         // line 1
-        Assert.assertEquals(Rect.newPtDim(8, 2, 2, 1), res.get(i++));    //                 4 4
+        Assert.assertEquals(Rect.newPtDim(8, 1, 2, 2), res.get(i++));    //                 4 4
         // line 2
         Assert.assertEquals(Rect.newPtDim(0, 2, 2, 1), res.get(i++));    // 1 1 
         Assert.assertEquals(Rect.newPtDim(2, 2, 2, 1), res.get(i++));    //     0 0  
-        Assert.assertEquals(Rect.newPtDim(4, 2, 1, 1), res.get(i++));    //         2  
+        if (1 > retainRectMinW || 1 > retainRectMinH) {
+            Assert.assertEquals(Rect.newPtDim(4, 2, 1, 1), res.get(i++));    //         2
+        }
         Assert.assertEquals(Rect.newPtDim(5, 2, 2, 1), res.get(i++));    //           0 0   
-        Assert.assertEquals(Rect.newPtDim(7, 2, 1, 1), res.get(i++));    //               2   
+        if (1 > retainRectMinW || 1 > retainRectMinH) {
+            Assert.assertEquals(Rect.newPtDim(7, 2, 1, 1), res.get(i++));    //               2
+        }
+        Assert.assertEquals(i, res.size());
     }
     
+    @Test
+    public void testScanListLargestBorderRightThenDown_screen_egit_merge() {
+        doTestScanListLargestBorderRightThenDown("check-screen-egit-merge.png");
+    }
+
+    @Test
+    public void testScanListLargestBorderRightThenDown_screen_eclipse() {
+        doTestScanListLargestBorderRightThenDown(ImageTstUtils.FILENAME_screen_eclipse_1920x1080);
+    }
+
+    private void doTestScanListLargestBorderRightThenDown(String testFilename) {
+        // Prepare
+        BufferedImage img = ImageTstUtils.loadTestImg(testFilename);        
+        Dim dim = new Dim(img.getWidth(), img.getHeight());
+        Rect rect = Rect.newDim(dim);
+        int[] imgData = ImageRasterUtils.toInts(img);
+        RectImgDescrDetectorHelper sut = new RectImgDescrDetectorHelper(dim);
+        sut.setImg(imgData);
+        int retainMinRectW = 10, retainMinRectH = 10;
+        // Perform
+        List<Rect> res = sut.scanListLargestBorderRightThenDown(rect, retainMinRectW, retainMinRectH);
+        // Post-check
+        Assert.assertNotNull(res);
+        if (DEBUG_UI) {
+            Graphics2DHelper g2dHelper = new Graphics2DHelper(img);
+            for(Rect r : res) {
+                if (r.getWidth() < retainMinRectW) {
+                    g2dHelper.setColorStroke(Color.ORANGE, 1);
+                    if (r.getWidth() == 1) {
+                        continue;
+                    }
+                } else if (r.getHeight() < retainMinRectH) {
+                    g2dHelper.setColorStroke(Color.GREEN, 1);
+                    if (r.getHeight() == 1) {
+                        continue;
+                    }
+                } else {
+                    g2dHelper.setColorStroke(Color.BLUE, 1);
+                }
+                g2dHelper.drawRect(r);
+            }
+            ImageViewUtils.openImageFrame(img);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+            }
+        }
+    }
 }

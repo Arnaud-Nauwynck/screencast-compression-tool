@@ -75,19 +75,32 @@ public final class RectImgDescrDetectorHelper {
     }
 
 
-    public List<Rect> scanListLargestBorderRightThenDown(Rect rect) {
+    public List<Rect> scanListLargestBorderRightThenDown(Rect rect, int retainMinRectW, int retainMinRectH) {
         List<Rect> res = new ArrayList<Rect>();
-        List<Rect> currOpenedBorders = new ArrayList<Rect>();
-        List<Rect> tmpBorders = new ArrayList<Rect>();
+        
         final int W = dim.width;
         int x = rect.fromX;
         int idx = rect.fromY * W + rect.fromX;
         final int incrIdxY = W + rect.fromX - rect.toX;
         Pt pt = new Pt(rect.fromX, rect.fromY);
+        // algorithm
+        // scanning from y desc, then x left to right   
+        // currOpenedBorders:  list of scanned  Rect currently "opened" : y < rect.y
+        //      r0         r1         rk
+        //      |   (     [   (       [   (
+        //      [...(     [   (       [.. (
+        //    
+        // nextX: rec.toX to skip rect from r.fromX
+        // x: 0 1 2 3 4 5 6 7 8 910 1 2 3 4 5 . 
+        // => "." for unchanged: nextX[.]=.
+        //    . 3 . . . . 8 . . . . . 14. . . .    
+        List<Rect> currOpenedBorders = new ArrayList<Rect>();
+        List<Rect> tmpBorders = new ArrayList<Rect>();
         int[] nextX = new int[rect.toX - rect.fromX];
         for (int i = rect.fromX; i < rect.toX; i++) {
             nextX[i] = i;
         }
+        Rect maxWithinRect = new Rect(rect);
         
         for (int y = rect.fromY; y < rect.toY; y++,x = rect.fromX,idx+=incrIdxY) {
             pt.y = y;
@@ -96,13 +109,11 @@ public final class RectImgDescrDetectorHelper {
             // recompute nextX[x] for currently opened borders
             tmpBorders.clear();
             for(Rect r : currOpenedBorders) {
-                if (r.toY >= y) {
+                if (y < r.toY) {
                     tmpBorders.add(r);
                     nextX[r.fromX] = r.toX;
                 } else {
-                    for (int i = r.fromX; i < r.toX; i++) {
-                        nextX[i] = i;
-                    }
+                    nextX[r.fromX] = r.fromX;
                 }
             }
             List<Rect> swap = currOpenedBorders;
@@ -118,15 +129,28 @@ public final class RectImgDescrDetectorHelper {
                     continue;
                 }
                 pt.x = x;
-                Rect foundBorder = findLargestBorderRightThenDown(pt, rect);
-                if (foundBorder != null && (foundBorder.getWidth() > 1 || foundBorder.getHeight() > 1)) {
-                    res.add(foundBorder);
-                    currOpenedBorders.add(foundBorder);
-                    for (int i = foundBorder.fromX; i < foundBorder.toX; i++) {
-                        nextX[i] = foundBorder.toX;
+                // rect should not cross other currently opened rect => restrict maxWithinRect.toX
+                maxWithinRect.toX = rect.toX;
+                for (int maxToX = x+1; maxToX < rect.toX; maxToX++) {
+                    if (nextX[maxToX] != maxToX) {
+                        maxWithinRect.toX = maxToX;
+                        break;
+                    }
+                }
+
+                Rect foundBorder = findLargestBorderRightThenDown(pt, maxWithinRect);
+                if (foundBorder != null) {
+                    if (foundBorder.getWidth() > retainMinRectW || foundBorder.getHeight() > retainMinRectH) {
+                        res.add(foundBorder);
+                    }
+                    if (foundBorder.getHeight() > 1) {
+                        currOpenedBorders.add(foundBorder);
+                        nextX[foundBorder.fromX] = foundBorder.toX;
+                    } else {
+                        nextX[foundBorder.fromX] = foundBorder.fromX; 
                     }
                     int prevX = x;
-                    x = nextX[x] - 1;
+                    x = foundBorder.toX - 1;
                     idx += x - prevX;
                 }
             }
