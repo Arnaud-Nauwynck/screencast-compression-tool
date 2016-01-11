@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.mutable.MutableInt;
+
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
@@ -17,6 +19,7 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.G
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
@@ -111,7 +114,7 @@ public final class RectImgDescrDetectorHelper {
             for(Rect r : currOpenedBorders) {
                 if (y < r.toY) {
                     tmpBorders.add(r);
-                    nextX[r.fromX] = r.toX;
+                    assert nextX[r.fromX] == r.toX;
                 } else {
                     nextX[r.fromX] = r.fromX;
                 }
@@ -131,7 +134,8 @@ public final class RectImgDescrDetectorHelper {
                 pt.x = x;
                 // rect should not cross other currently opened rect => restrict maxWithinRect.toX
                 maxWithinRect.toX = rect.toX;
-                for (int maxToX = x+1; maxToX < rect.toX; maxToX++) {
+                int endMaxToX = Math.min(rect.toX, x+sameCountsImg.getRightSameCount(y*W+x));
+                for (int maxToX = x+1; maxToX < endMaxToX; maxToX++) {
                     if (nextX[maxToX] != maxToX) {
                         maxWithinRect.toX = maxToX;
                         break;
@@ -158,6 +162,78 @@ public final class RectImgDescrDetectorHelper {
         return res;
     }
     
+    public LinesSplitRectImgDescr detectLineBreaksInScannedRightThenDownRects(Rect rect, List<Rect> scannedRects) {
+        List<Segment> splits = new ArrayList<Segment>();
+        List<RectImgDescription> lines = new ArrayList<RectImgDescription>();
+        MutableInt bgColor = new MutableInt(-1);
+        int currFromY = scannedRects.get(0).fromY;
+        int currToY = scannedRects.get(0).toY;
+        int prevToY = currToY; //?
+        List<Rect> currLineRects = new ArrayList<Rect>();
+        int rectI = 0;
+        for(Rect scannedRect : scannedRects) {
+            if (scannedRect.fromY < currToY) {
+                currFromY = Math.min(currFromY, scannedRect.fromY);
+                currToY = Math.max(currToY, scannedRect.toY);
+                currLineRects.add(scannedRect);
+            } else { // if (scannedRect.fromY >= currToY)
+                // line break
+                Segment split = new Segment(prevToY, scannedRect.fromY);
+                if (split.to > split.from) {
+                    // check uniform split border if size>=1
+                    Rect splitRect = Rect.newPtToPt(rect.fromX, split.from, rect.toX, split.to);
+                    if (null == detectExactFillRectSameColor(splitRect, bgColor)) {
+                        // no uniform split color / not same split color => reduce to 0 split size!
+                        split = new Segment(currToY, currToY);
+                    }
+                }
+                splits.add(split);
+                Rect lineRect = Rect.newPtToPt(rect.fromX, currFromY, rect.toX, currToY);
+                RectImgAboveRectImgDescr lineElt = new RectImgAboveRectImgDescr(lineRect, null, 
+                    currLineRects.toArray(new Rect[currLineRects.size()]));  
+                lines.add(lineElt);
+                currLineRects.clear();
+                
+                prevToY = currToY;
+                currFromY = scannedRect.fromY;
+                currToY = scannedRect.toY;
+            }
+            currLineRects.add(scannedRect);
+            rectI++;
+        }
+        // flush current line
+        if (!currLineRects.isEmpty()) {
+            Segment split = new Segment(prevToY, currToY);
+            // copy&paste code with above "line break"
+            if (split.to > split.from) {
+                Rect splitRect = Rect.newPtToPt(rect.fromX, split.from, rect.toX, split.to);
+                if (null == detectExactFillRectSameColor(splitRect, bgColor)) {
+                    split = new Segment(currToY, currToY);
+                }
+            }
+            splits.add(split);
+            Rect lineRect = Rect.newPtToPt(rect.fromX, currFromY, rect.toX, currToY);
+            RectImgAboveRectImgDescr lineElt = new RectImgAboveRectImgDescr(lineRect, null, 
+                currLineRects.toArray(new Rect[currLineRects.size()]));  
+            lines.add(lineElt);
+        }
+        return new LinesSplitRectImgDescr(rect, bgColor.intValue(), splits, lines); 
+    }
+    
+    private FillRectImgDescr detectExactFillRectSameColor(Rect splitRect, MutableInt bgColor) {
+        FillRectImgDescr fillRect = detectExactFillRect(splitRect);
+        if (fillRect != null) {
+            if (bgColor.intValue() == -1) {
+                bgColor.setValue(fillRect.getColor());
+            }
+            if (fillRect.getColor() != bgColor.intValue()) {
+                // not same split color => reduce to 0 split size!
+                fillRect = null;
+            }
+        }
+        return fillRect;
+    }
+
     public Rect findLargestBorderRightThenDown(Pt pt, Rect maxWithinRect) {
         final int W = dim.width;
         final int idxUpLeft = pt.y * W + pt.x;
@@ -390,8 +466,81 @@ public final class RectImgDescrDetectorHelper {
         return new BorderRectImgDescr(rect, borderColor, border, null);
     }
     
+    /**
+     * given uniform border rect(outside rect), compute inner border sizes
+     * <PRE>
+     *       +-------------------+
+     *       |        |          |
+     *       |       \/          |
+     *       |   +----------+    |
+     *       |-->|          |<---|
+     *       |   +----------+    |
+     *       |       /\          |
+     *       |        |          |
+     *       +-------------------+
+     * </PRE>
+     * @return BorderRectImgDescr or FillRectImgDescr when fully uniform color 
+     */
+    public RectImgDescription innerBorderImgDescrAtBorder(Rect rect) {
+        assert null != detectBorder1AtUL(rect.getFromPt(), new MutableDim(rect.getDim()));
+        final int W = dim.width;
+        final int idxLeftUp = rect.fromY*W + rect.fromX;
+        final int idxRightUp = rect.fromY*W + rect.toX;
+        final int borderColor = imgData[idxLeftUp];
+        final int rectWidth = rect.getWidth(), rectHeight = rect.getHeight();
+        assert sameCountsImg.getRightSameCount(idxLeftUp) >= rectWidth; 
+        
+        // scan left border (left to right)
+        int idx = idxLeftUp;
+        for (; idx < idxRightUp; idx++) {
+            if (sameCountsImg.getDownSameCount(idx) < rectHeight) {
+                break;
+            }
+        }
+        if (idx == idxRightUp) {
+            // uniform fill
+            return new FillRectImgDescr(rect, borderColor);
+        }
+        final int borderLeft = idx - idxLeftUp;
+        
+        // scan right border (right to left)
+        idx = idxRightUp - 1;
+        for (; idx > idxLeftUp; idx--) {
+            if (sameCountsImg.getDownSameCount(idx) < rectHeight) {
+                idx++;
+                break;
+            }
+        }
+        final int borderRight = idxRightUp - idx;
+        
+        // scan top border (descending)
+        final int idxLeftDown = idxLeftUp + rectHeight * W; 
+        idx = idxLeftUp + W;
+        int borderTop = 1;
+        for(; idx < idxLeftDown; idx+=W,borderTop++) {
+            if (sameCountsImg.getRightSameCount(idx) < rectWidth) {
+                break;
+            }
+        }
+
+        // scan bottom border (ascending)
+        idx = idxLeftDown - W;
+        int borderBottom = 1;
+        for (; idx > idxLeftUp; idx-=W,borderBottom++) {
+            if (sameCountsImg.getRightSameCount(idx) < rectWidth) {
+                borderBottom--;
+                break;
+            }
+        }
+        
+        Border border = new Border(borderLeft, borderRight, borderTop, borderBottom); 
+        return new BorderRectImgDescr(rect, borderColor, border, null);
+    }
+    
+    
     
     public RoundBorderRectImgDescr detectRoundBorderStartAtUL(Pt pt) {
+        // TODO
         return null;
     }
     

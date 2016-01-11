@@ -15,7 +15,11 @@ public final class MutableDim implements Serializable {
 
     public MutableDim() {
     }
-    
+
+    public MutableDim(Dim dim) {
+        this(dim.width, dim.height);
+    }
+
     public MutableDim(int width, int height) {
         this.width = width;
         this.height = height;

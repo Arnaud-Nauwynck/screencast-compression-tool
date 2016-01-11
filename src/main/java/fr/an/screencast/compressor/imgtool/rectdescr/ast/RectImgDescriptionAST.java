@@ -765,7 +765,12 @@ public class RectImgDescriptionAST {
         public RectImgAboveRectImgDescr(Rect rect) {
             super(rect);
         }
-        
+
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
+                List<Rect> aboveRects) {
+            this(rect, underlyingRectImgDescr, aboveRects.toArray(new Rect[aboveRects.size()]));
+        }
+
         public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
                 Rect[] aboveRects) {
             super(rect);
