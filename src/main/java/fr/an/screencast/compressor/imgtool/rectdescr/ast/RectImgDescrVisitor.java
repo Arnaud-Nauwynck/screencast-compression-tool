@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
@@ -27,5 +28,7 @@ public abstract class RectImgDescrVisitor {
     public abstract void caseRawDataDescr(RawDataRectImgDescr node);
     public abstract void caseGlyphDescr(GlyphRectImgDescr node);
     public abstract void caseDescrAboveDescr(RectImgAboveRectImgDescr node);
-     
+
+    public abstract void caseAnalysisProxyRect(AnalysisProxyRectImgDescr node);
+
 }

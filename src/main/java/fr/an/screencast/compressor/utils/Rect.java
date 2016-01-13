@@ -157,6 +157,15 @@ public class Rect implements Serializable {
 
     // ------------------------------------------------------------------------
     
+    public boolean isInsideOf(Rect outer) {
+        return outer.contains(this);
+    }
+
+    public boolean contains(Rect inner) {
+        return fromX <= inner.fromX && inner.toX <= toX 
+                && fromY <= inner.fromY && inner.toY <= toY;
+    }
+
     public boolean containsPt(int x, int y) {
         return fromX <= x && x < toX && fromY <= y && y < toY;
     }

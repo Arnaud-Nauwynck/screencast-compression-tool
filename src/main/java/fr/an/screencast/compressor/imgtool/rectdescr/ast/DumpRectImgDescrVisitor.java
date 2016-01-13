@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
@@ -297,4 +298,10 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
         }
     }
 
+    @Override
+    public void caseAnalysisProxyRect(AnalysisProxyRectImgDescr node) {
+        RectImgDescription target = node.getTarget();
+        printlnIndent("target", target);        
+    }
+    
 }

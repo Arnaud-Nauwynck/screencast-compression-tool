@@ -99,6 +99,10 @@ public class GlyphMRUTable {
             return key.dim;
         }
         
+        public int getCrc() {
+            return key.crc;
+        }
+        
         public int[] getData() { 
             return key.data; 
         }
@@ -220,7 +224,7 @@ public class GlyphMRUTable {
         }
     }
 
-    public GlyphIndexOrCode readDecodeReuseGlyphIndexOrCode(StructDataInput in) {
+    public GlyphMRUNode readDecodeReuseGlyphIndexOrCode(StructDataInput in) {
         GlyphIndexOrCode tmpres;
         boolean isYoung = in.readBit();
         if (isYoung) {
@@ -236,7 +240,7 @@ public class GlyphMRUTable {
         if (glyphNode == null) {
             throw new IllegalStateException("glyph not found for " + tmpres);
         }
-        return glyphNode.indexOrCode; // reuse code
+        return glyphNode; // reuse code
     }
     
     

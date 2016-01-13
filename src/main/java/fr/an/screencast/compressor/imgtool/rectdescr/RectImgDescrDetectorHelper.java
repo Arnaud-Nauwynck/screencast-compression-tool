@@ -100,8 +100,9 @@ public final class RectImgDescrDetectorHelper {
         List<Rect> currOpenedBorders = new ArrayList<Rect>();
         List<Rect> tmpBorders = new ArrayList<Rect>();
         int[] nextX = new int[rect.toX - rect.fromX];
+        final int offset = - rect.fromX;
         for (int i = rect.fromX; i < rect.toX; i++) {
-            nextX[i] = i;
+            nextX[offset+i] = i;
         }
         Rect maxWithinRect = new Rect(rect);
         
@@ -114,9 +115,9 @@ public final class RectImgDescrDetectorHelper {
             for(Rect r : currOpenedBorders) {
                 if (y < r.toY) {
                     tmpBorders.add(r);
-                    assert nextX[r.fromX] == r.toX;
+                    assert nextX[offset+r.fromX] == r.toX;
                 } else {
-                    nextX[r.fromX] = r.fromX;
+                    nextX[offset+r.fromX] = r.fromX;
                 }
             }
             List<Rect> swap = currOpenedBorders;
@@ -125,9 +126,9 @@ public final class RectImgDescrDetectorHelper {
             tmpBorders.clear();
             
             for(x = rect.fromX; x < rect.toX; x++,idx++) {
-                if (nextX[x] != x) {
+                if (nextX[offset+x] != x) {
                     int prevX = x;
-                    x = nextX[x] - 1;
+                    x = nextX[offset+x] - 1;
                     idx += x - prevX;
                     continue;
                 }
@@ -136,7 +137,7 @@ public final class RectImgDescrDetectorHelper {
                 maxWithinRect.toX = rect.toX;
                 int endMaxToX = Math.min(rect.toX, x+sameCountsImg.getRightSameCount(y*W+x));
                 for (int maxToX = x+1; maxToX < endMaxToX; maxToX++) {
-                    if (nextX[maxToX] != maxToX) {
+                    if (nextX[offset+maxToX] != maxToX) {
                         maxWithinRect.toX = maxToX;
                         break;
                     }
@@ -149,9 +150,9 @@ public final class RectImgDescrDetectorHelper {
                     }
                     if (foundBorder.getHeight() > 1) {
                         currOpenedBorders.add(foundBorder);
-                        nextX[foundBorder.fromX] = foundBorder.toX;
+                        nextX[offset+foundBorder.fromX] = foundBorder.toX;
                     } else {
-                        nextX[foundBorder.fromX] = foundBorder.fromX; 
+                        nextX[offset+foundBorder.fromX] = foundBorder.fromX; 
                     }
                     int prevX = x;
                     x = foundBorder.toX - 1;
@@ -190,17 +191,107 @@ public final class RectImgDescrDetectorHelper {
         // flush current line
         if (!currLineRects.isEmpty()) {
             Rect lineRect = Rect.newPtToPt(rect.fromX, currFromY, rect.toX, currToY);
-            RectImgAboveRectImgDescr lineElt = new RectImgAboveRectImgDescr(lineRect, null, 
-                currLineRects.toArray(new Rect[currLineRects.size()]));  
+            RectImgDescription lineElt = createScannedRectsToImgDescr(lineRect, currLineRects, false);  
             lines.add(lineElt);
+        }
+        if (splits.isEmpty()) {
+            return null;
         }
         return new LinesSplitRectImgDescr(rect, -1, splits, lines); 
     }
     
+    public RectImgDescription createScannedRectsToImgDescr(Rect rect, List<Rect> ls, 
+            boolean isScanRightThenDown) {
+        if (ls != null && ls.size() == 1) {
+            Rect r0 = ls.get(0);
+            if (r0.equals(rect)) {
+                // to inline in parent!
+                return null;
+            }
+            FillRectImgDescr tmpres = detectExactFillRect(rect);
+            if (tmpres != null) {
+                return tmpres;
+            }
+        }
+        if (isScanRightThenDown) {
+            // detect if partition for consecutive line (LineSplit)
+            // 
+        } else {
+            // detect if partition for consecutive column (ColumnSplit)
+            
+        }
+        return new RectImgAboveRectImgDescr(rect, null, ls.toArray(new Rect[ls.size()]));  
+    }
+
+    public LinesSplitRectImgDescr detectLineSplitColorForScannedRects(Rect rect, List<Rect> rects) {
+        int currToY = rect.fromY;
+        for(Rect r : rects) {
+            if (r.fromY == currToY) {
+                currToY = r.toY;
+            } else {
+                return null;
+            }
+        }
+        // determine uniform rects color => fill map color->{list of index of split}
+        Map<Integer,List<Integer>> lsSplitIdxByColor = new HashMap<Integer,List<Integer>>();
+        for(int i = 0; i < rects.size(); i++) {
+            Integer color = detectExactFillColor(rect);
+            if (color != null) {
+                List<Integer> lsSplitIdx = lsSplitIdxByColor.get(color);
+                if (lsSplitIdx == null) {
+                    lsSplitIdx = new ArrayList<Integer>();
+                    lsSplitIdxByColor.put(color, lsSplitIdx);
+                }
+                lsSplitIdx.add(i);
+            }
+        }
+        // determine "optimal" split color: max splits count
+        int splitColor = -1;
+        List<Integer> lsSplitIdx = null;
+        if (lsSplitIdxByColor.isEmpty()) {
+            // no split color
+        } else if (lsSplitIdxByColor.size() == 1) {
+            // only 1 split color
+            Map.Entry<Integer,List<Integer>> first = lsSplitIdxByColor.entrySet().iterator().next(); 
+            splitColor = first.getKey();
+            lsSplitIdx = first.getValue();
+        } else {
+            int maxCount = 0;
+            for(Map.Entry<Integer,List<Integer>> e : lsSplitIdxByColor.entrySet()) {
+                if (e.getValue().size() > maxCount) {
+                    maxCount = e.getValue().size();
+                    splitColor = e.getKey();
+                    lsSplitIdx = e.getValue();
+                }
+            }
+        }
+        
+        if (lsSplitIdx == null) {
+            // 
+        }
+        // sublist by splits
+        List<Segment> splitBorders = new ArrayList<Segment>();
+        
+        // LinesSplitRectImgDescr res = new LinesSplitRectImgDescr(rect, splitColor, splitBorders, );
+        return null; //TODO
+    }
+
+    public ColumnsSplitRectImgDescr detectColumnSplitColorForScannedRects(Rect rect, List<Rect> ls) {
+        return null; // TODO
+    }
 
     public LinesSplitRectImgDescr detectLineBreaksInScannedRightThenDownRects(Rect rect, List<Rect> scannedRects) {
         LinesSplitRectImgDescr tmpres = detectLineBreaksInScannedRightThenDownRects_noSplitColor(rect, scannedRects);
+        if (tmpres == null) {
+            return null;
+        }
         // TODO
+        RectImgDescription[] lines = tmpres.getLines();
+        for(RectImgDescription line : lines) {
+            if (line instanceof RectImgAboveRectImgDescr) {
+                
+            }
+        }
         return tmpres;
     }
     
@@ -260,14 +351,25 @@ public final class RectImgDescrDetectorHelper {
         }
         // flush current column
         if (!currColumnRects.isEmpty()) {
-            Rect columnRect = Rect.newPtToPt(rect.fromX, currFromX, rect.toX, currToX);
-            RectImgAboveRectImgDescr columnElt = new RectImgAboveRectImgDescr(columnRect, null, 
-                currColumnRects.toArray(new Rect[currColumnRects.size()]));  
+            Rect columnRect = Rect.newPtToPt(currFromX, rect.fromY, currToX, rect.toY);
+            RectImgDescription columnElt = createScannedRectsToImgDescr(columnRect, currColumnRects, true);  
             columns.add(columnElt);
+        }
+        if (splits.isEmpty()) {
+            return null;
         }
         return new ColumnsSplitRectImgDescr(rect, -1, splits, columns); 
     }
-    
+
+    public ColumnsSplitRectImgDescr detectColumnBreaksInScannedDownThenRightRects(Rect rect, List<Rect> scannedRects) {
+        ColumnsSplitRectImgDescr tmpres = detectColumnBreaksInScannedDownThenRightRects_noSplitColor(rect, scannedRects);
+        if (tmpres == null) {
+            return null;
+        }
+        // TODO
+        return tmpres;
+    }
+
     private FillRectImgDescr detectExactFillRectSameColor(Rect splitRect, MutableInt bgColor) {
         FillRectImgDescr fillRect = detectExactFillRect(splitRect);
         if (fillRect != null) {
@@ -313,7 +415,7 @@ public final class RectImgDescrDetectorHelper {
         return null;
     }
 
-    public FillRectImgDescr detectExactFillRect(Rect rect) {
+    public Integer detectExactFillColor(Rect rect) {
         final int W = dim.width;
         final int rectWidth = rect.getWidth();
         int idx = rect.fromY*W+rect.fromX;
@@ -327,6 +429,14 @@ public final class RectImgDescrDetectorHelper {
             if (w < rectWidth) {
                 return null;
             }
+        }
+        return color;
+    }
+    
+    public FillRectImgDescr detectExactFillRect(Rect rect) {
+        Integer color = detectExactFillColor(rect);
+        if (color == null) {
+            return null;
         }
         // OK found fill rect
         return new FillRectImgDescr(new Rect(rect), color);
@@ -949,7 +1059,7 @@ public final class RectImgDescrDetectorHelper {
             glyphMRUTable.incrUseCount(glyphNode);
         }
         GlyphIndexOrCode glyphIndexOrCode = glyphNode.getIndexOrCode();
-        return new GlyphRectImgDescr(rect, glyphIndexOrCode, isNew, glyphNode.getData());
+        return new GlyphRectImgDescr(rect, crc, glyphNode.getData(), glyphMRUTable, glyphIndexOrCode, isNew);
     }
 
     public boolean allowDetectGlyphInRect(Dim dim) {

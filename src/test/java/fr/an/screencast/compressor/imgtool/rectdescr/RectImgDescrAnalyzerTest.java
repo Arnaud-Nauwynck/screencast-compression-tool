@@ -208,7 +208,7 @@ public class RectImgDescrAnalyzerTest {
     private void repaintAndCheckImg(String imageFileName, RectImgDescrAnalyzer sut, RectImgDescription res) {
         Dim dim = sut.getDim();
         BufferedImage checkImg = new BufferedImage(dim.getWidth(), dim.getHeight(), BufferedImage.TYPE_INT_RGB);
-        DrawRectImgDescrVisitor drawVisitor = new DrawRectImgDescrVisitor(checkImg, sut.getGlyphMRUTable());
+        DrawRectImgDescrVisitor drawVisitor = new DrawRectImgDescrVisitor(checkImg);
         res.accept(drawVisitor);
         int[] checkImgData = ImageRasterUtils.toInts(checkImg);
         ImageRasterUtils.fillAlpha(checkImgData);
@@ -246,6 +246,8 @@ public class RectImgDescrAnalyzerTest {
         }
 
         if (DEBUG_UI) {
+            ImageViewUtils.openImageFrame(checkImg);
+
             BufferedImage debugImage = BufferedImageUtils.copyImage(checkImg);
             res.accept(new DebugDrawDecoratorRectImgDescrVisitor(debugImage));
             

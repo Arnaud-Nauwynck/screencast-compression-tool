@@ -1,5 +1,6 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,11 +20,16 @@ import fr.an.bitwise4j.encoder.structio.StructDataInput;
 import fr.an.bitwise4j.encoder.structio.helpers.DebugStructDataInput;
 import fr.an.bitwise4j.encoder.structio.helpers.DebugTeeStructDataInput;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
+import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.ui.ImageViewUtils;
 
 public class BitStreamInputRectImgDescrVisitorTest {
 
     private static final boolean DEBUG = BitStreamOutputRectImgDescrVisitorTest.DEBUG;
+
+    private static final boolean DEBUG_UI = true;
     
     // cf corresponding test to run before, to fill input file..
     @Test
@@ -60,7 +66,9 @@ public class BitStreamInputRectImgDescrVisitorTest {
             if (DEBUG) {
                 BufferedReader debugFileReader = new BufferedReader(new InputStreamReader(new FileInputStream(debugInputFile)));
                 StructDataInput debugStructInput = new DebugStructDataInput(debugFileReader);
-                bitStructInput = new DebugTeeStructDataInput(debugStructInput, bitStructInput);
+                bitStructInput = 
+//                        new DebugTeeStructDataInput(debugStructInput, bitStructInput);
+                        debugStructInput; // TEMPORARY FOR DEBUG .. DO NOT COMMIT
             }
     
             BitStreamInputRectImgDescrVisitor sut = new BitStreamInputRectImgDescrVisitor(codecConfig, bitStructInput);
@@ -73,6 +81,22 @@ public class BitStreamInputRectImgDescrVisitorTest {
         // Post-check
         Assert.assertNotNull(res);
 
+        if (DEBUG_UI) {
+            Dim dim = res.getDim();
+            BufferedImage img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB); 
+            res.accept(new DrawRectImgDescrVisitor(img));
+            
+            BufferedImage debugImage = BufferedImageUtils.copyImage(img);
+            res.accept(new DebugDrawDecoratorRectImgDescrVisitor(debugImage));
+            
+            ImageViewUtils.openImageFrame(img);
+            ImageViewUtils.openImageFrame(debugImage);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+            }
+        }
+        
         // read checkRes from serialized file, then deep compare object tree 
 //        RectImgDescription checkRes;
 //        try (InputStream serIn = new BufferedInputStream(new FileInputStream(inputSerializedFile))) {

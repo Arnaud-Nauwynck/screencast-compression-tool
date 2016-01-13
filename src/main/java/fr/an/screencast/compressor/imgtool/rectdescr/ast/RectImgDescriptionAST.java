@@ -1,10 +1,10 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
+import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
@@ -20,6 +20,9 @@ public class RectImgDescriptionAST {
      * abstract root class of AST for describing a rectangular area of an image 
      */
     public static abstract class RectImgDescription implements Serializable {
+
+        /** */
+        private static final long serialVersionUID = 1L;
 
         protected Rect rect;
         
@@ -54,10 +57,43 @@ public class RectImgDescriptionAST {
         }
     }
 
+    // ------------------------------------------------------------------------
+
+    /**
+     * Proxy design-pattern on RectImgDescription AST ... to use temporary mutable node during analysis
+     */
+    public static class AnalysisProxyRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+        
+        private RectImgDescription target;
+        
+        public AnalysisProxyRectImgDescr(RectImgDescription target) {
+            this.target = target;
+        }
+
+        public void accept(RectImgDescrVisitor visitor) {
+            visitor.caseAnalysisProxyRect(this);
+        }
+
+        public RectImgDescription getTarget() {
+            return target;
+        }
+
+        public void setTarget(RectImgDescription target) {
+            this.target = target;
+        }
+        
+    }
+    
     
     // ------------------------------------------------------------------------
 
     public static class FillRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
 
         private int color;
         
@@ -92,7 +128,10 @@ public class RectImgDescriptionAST {
     // ------------------------------------------------------------------------
 
     public static class RoundBorderRectImgDescr extends RectImgDescription {
-        
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
         private int cornerBackgroundColor;
         private int borderColor;
         
@@ -180,7 +219,10 @@ public class RectImgDescriptionAST {
     // ------------------------------------------------------------------------
 
     public static class BorderRectImgDescr extends RectImgDescription {
-        
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
         private int borderColor;
         private Border border;
         private RectImgDescription inside;
@@ -237,6 +279,10 @@ public class RectImgDescriptionAST {
     
     /** specialized BorderRectImgDescr, for Top&Bottom border only */ 
     public static class TopBottomBorderRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
         private int borderColor;
         private int topBorder;
         private int bottomBorder;
@@ -314,6 +360,10 @@ public class RectImgDescriptionAST {
     
     /** specialized BorderRectImgDescr, for Left&Rightborder only */ 
     public static class LeftRightBorderRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
         private int borderColor;
         private int leftBorder;
         private int rightBorder;
@@ -390,6 +440,9 @@ public class RectImgDescriptionAST {
 
     public static class VerticalSplitRectImgDescr extends RectImgDescription {
         
+        /** */
+        private static final long serialVersionUID = 1L;
+
         private RectImgDescription left;
         private Segment splitBorder;
         private int splitColor;
@@ -460,6 +513,10 @@ public class RectImgDescriptionAST {
     // ------------------------------------------------------------------------
 
     public static class HorizontalSplitRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
         private RectImgDescription up;
         private int splitColor;
         private Segment splitBorder;
@@ -530,6 +587,9 @@ public class RectImgDescriptionAST {
 
     public static class LinesSplitRectImgDescr extends RectImgDescription {
 
+        /** */
+        private static final long serialVersionUID = 1L;
+
         private int backgroundColor;
         private Segment[] splitBorders;
         private RectImgDescription[] lines;
@@ -548,6 +608,9 @@ public class RectImgDescriptionAST {
                 Segment[] splitBorders,
                 RectImgDescription[] lines) {
             super(rect);
+            if (splitBorders != null && splitBorders.length == 0) {
+                throw new IllegalArgumentException();
+            }
             this.backgroundColor = backgroundColor;
             this.splitBorders = splitBorders;
             this.lines = lines;
@@ -605,7 +668,10 @@ public class RectImgDescriptionAST {
     // ------------------------------------------------------------------------
 
     public static class ColumnsSplitRectImgDescr extends RectImgDescription {
-        
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
         private int backgroundColor;
         private Segment[] splitBorders;
         private RectImgDescription[] columns;
@@ -709,45 +775,81 @@ public class RectImgDescriptionAST {
     // ------------------------------------------------------------------------
 
     public static class GlyphRectImgDescr extends RectImgDescription {
-        private GlyphIndexOrCode glyphIndexOrCode;
-        private boolean isNewGlyph; // should be implicit with glyphMRUTable + indexOrCode... 
-        private int[] newGlyphData; // TODO??
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
+        private int crc;
+        private int[] sharedData;
+        
+        @Deprecated
+        private transient GlyphMRUTable glyphMRUTable;
+        @Deprecated
+        private transient GlyphIndexOrCode glyphIndexOrCode;
+        @Deprecated
+        private transient boolean isNewGlyph; // should be implicit with glyphMRUTable + indexOrCode... 
         
         public GlyphRectImgDescr(Rect rect) {
             super(rect);
         }
         
-        public GlyphRectImgDescr(Rect rect, GlyphIndexOrCode glyphIndexOrCode, boolean isNewGlyph, int[] newGlyphData) {
+        public GlyphRectImgDescr(Rect rect, int crc, int[] sharedData,
+                GlyphMRUTable glyphMRUTable, GlyphIndexOrCode glyphIndexOrCode, boolean isNewGlyph) {
             super(rect);
+            this.crc = crc;
+            this.sharedData = sharedData;
+            
+            this.glyphMRUTable = glyphMRUTable;
             this.glyphIndexOrCode = glyphIndexOrCode;
             this.isNewGlyph = isNewGlyph;
-            this.newGlyphData = newGlyphData;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseGlyphDescr(this);
         }
         
+        public int getCrc() {
+            return crc;
+        }
+
+        public void setCrc(int crc) {
+            this.crc = crc;
+        }
+
+        public int[] getSharedData() {
+            return sharedData;
+        }
+
+        public void setSharedData(int[] p) {
+            this.sharedData = p;
+        }
+
+        @Deprecated
+        public GlyphMRUTable getGlyphMRUTable() {
+            return glyphMRUTable;
+        }
+
+        @Deprecated
+        public void setGlyphMRUTable(GlyphMRUTable glyphMRUTable) {
+            this.glyphMRUTable = glyphMRUTable;
+        }
+
+        @Deprecated
         public boolean isNewGlyph() {
             return isNewGlyph;
         }
 
+        @Deprecated
         public void setNewGlyph(boolean isNewGlyph) {
             this.isNewGlyph = isNewGlyph;
         }
         
-        public int[] getNewGlyphData() {
-            return newGlyphData;
-        }
-
-        public void setNewGlyphData(int[] newGlyphData) {
-            this.newGlyphData = newGlyphData;
-        }
-
+        @Deprecated
         public GlyphIndexOrCode getGlyphIndexOrCode() {
             return glyphIndexOrCode;
         }
 
+        @Deprecated
         public void setGlyphIndexOrCode(GlyphIndexOrCode p) {
             this.glyphIndexOrCode = p;
         }
@@ -757,6 +859,9 @@ public class RectImgDescriptionAST {
     // ------------------------------------------------------------------------
 
     public static class RectImgAboveRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
 
         private RectImgDescription underlyingRectImgDescr;
         private Rect[] aboveRects;
@@ -776,6 +881,16 @@ public class RectImgDescriptionAST {
             super(rect);
             this.underlyingRectImgDescr = underlyingRectImgDescr;
             this.aboveRects = aboveRects;
+            // check nested rects
+            if (aboveRects != null) {
+                int idx = 0;
+                for (Rect aboveRect : aboveRects) {
+                    if (! rect.contains(aboveRect)) {
+                        throw new IllegalArgumentException("aboveRect[" + idx + "]: " + aboveRect + " not contained in rect:" + rect);
+                    }
+                    idx++;
+                }
+            }
         }
 
 

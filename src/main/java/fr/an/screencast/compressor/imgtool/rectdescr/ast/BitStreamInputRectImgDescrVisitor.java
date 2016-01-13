@@ -17,6 +17,7 @@ import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
 import fr.an.screencast.compressor.imgtool.rectdescr.ExternalFormatRawDataHelper;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
@@ -207,9 +208,9 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     protected Rect readCurrNestedRect() {
         Rect curr = getCurrRect(); 
         int fromX = in.readIntMinMax(curr.fromX, curr.toX);
-        int toX = in.readIntMinMax(fromX, curr.toX);
+        int toX = in.readIntMinMax(fromX, curr.toX + 1);
         int fromY = in.readIntMinMax(curr.fromY, curr.toY);
-        int toY = in.readIntMinMax(fromY, curr.toY);
+        int toY = in.readIntMinMax(fromY, curr.toY + 1);
         return Rect.newPtToPt(fromX,  fromY, toX, toY);
     }
 
@@ -389,6 +390,8 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseGlyphDescr(GlyphRectImgDescr node) {
         GlyphIndexOrCode glyphIndexOrCode;
+        int crc;
+        int[] glyphData;
         boolean isNew = in.readBit();
         if (isNew) {
             // int youngIndex = glyphIndexOrCode.getYoungIndex();
@@ -397,21 +400,25 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
             glyphIndexOrCode = new GlyphIndexOrCode(youngIndex, null);
             
             Dim glyphDim = getCurrRect().getDim();
-            int[] glyphRawData;
             try (StreamPopper topPop = in.pushSetCurrStream("glyph")) {
-                glyphRawData = externalFormatHelper.readRGBData(in, glyphDim);
+                glyphData = externalFormatHelper.readRGBData(in, glyphDim);
             }
             
             GlyphMRUNode glyphNode = glyphMRUTable.findGlyphByIndexOrCode(glyphIndexOrCode);
             if (glyphNode == null) {
-                int crc = IntsCRC32.crc32(glyphRawData);
-                glyphMRUTable.addGlyph(glyphDim, glyphRawData, Rect.newDim(glyphDim), crc);
+                crc = IntsCRC32.crc32(glyphData);
+                glyphMRUTable.addGlyph(glyphDim, glyphData, Rect.newDim(glyphDim), crc);
             } else {
                 throw new IllegalStateException("should not occur: glyph index " + youngIndex + " already found in glyph table");
             }
         } else {
-            glyphIndexOrCode = glyphMRUTable.readDecodeReuseGlyphIndexOrCode(in);
+            GlyphMRUNode glyphNode = glyphMRUTable.readDecodeReuseGlyphIndexOrCode(in);
+            glyphIndexOrCode = glyphNode.getIndexOrCode();
+            crc = glyphNode.getCrc();
+            glyphData = glyphNode.getData();
         }
+        node.setCrc(crc);
+        node.setSharedData(glyphData);
         node.setGlyphIndexOrCode(glyphIndexOrCode);
     }
 
@@ -434,4 +441,11 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         node.setAboveRectImgDescrs(aboves);
     }
 
+    @Override
+    public void caseAnalysisProxyRect(AnalysisProxyRectImgDescr node) {
+        Rect rect = node.getRect();
+        RectImgDescription target = readWithRect(rect);
+        node.setTarget(target);
+    }
+    
 }

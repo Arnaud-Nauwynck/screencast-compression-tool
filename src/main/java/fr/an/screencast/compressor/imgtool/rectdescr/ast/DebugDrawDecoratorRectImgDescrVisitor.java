@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
@@ -57,6 +58,12 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
     
     public BufferedImage getImg() {
         return img;
+    }
+
+    protected void draw(RectImgDescription node) {
+        if (node != null) {
+            node.accept(this);
+        }
     }
     
     protected void drawRect(Rect rect, Color color, BasicStroke stroke) {
@@ -117,9 +124,7 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
         g2d.drawRect(rect.fromX, rect.fromY, w, h);
         g2d.drawRect(rect.fromX+border.left, rect.fromY+border.top, w-border.left-border.right, h-border.top-border.bottom);
 
-        if (inside != null) {
-            inside .accept(this);
-        }
+        draw(inside);
     }
 
     @Override
@@ -128,7 +133,7 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
         final int borderColor = node.getBorderColor();
         final int topBorder = node.getTopBorder();
         final int bottomBorder = node.getBottomBorder();
-        final RectImgDescription insideRect = node.getInside();
+        final RectImgDescription inside = node.getInside();
 
         g2d.setColor(new Color(borderColor));
         g2d.setStroke(debugBorderStroke);
@@ -141,9 +146,7 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
             g2d.drawRect(rect.fromX, rect.toY - bottomBorder, rectW, bottomBorder);
         }
         
-        if (insideRect != null) {
-            insideRect.accept(this);
-        }
+        draw(inside);
     }
 
     @Override
@@ -151,7 +154,7 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
         final Rect rect = node.getRect();
         final int leftBorder = node.getLeftBorder();
         final int rightBorder = node.getRightBorder();
-        final RectImgDescription insideRect = node.getInside();
+        final RectImgDescription inside = node.getInside();
 
         g2d.setStroke(debugBorderStroke);
         g2d.setColor(debugBorderColor);
@@ -163,9 +166,7 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
             g2d.drawRect(rect.toX - rightBorder, rect.fromY, rightBorder, rectH);
         }
         
-        if (insideRect != null) {
-            insideRect.accept(this);
-        }
+        draw(inside);
     }
 
     @Override
@@ -174,17 +175,13 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
         final RectImgDescription left = node.getLeft();
         final Segment splitBorder = node.getSplitBorder();
         final RectImgDescription right = node.getRight();
-        if (left != null) {
-            left.accept(this);
-        }
+        draw(left);
         if (splitBorder != null) {
             g2d.setStroke(debugBorderStroke);
             g2d.setColor(debugFillColor);
             g2d.drawRect(splitBorder.from, rect.fromY, splitBorder.to - splitBorder.from, rect.getHeight());
         }
-        if (right != null) {
-            right.accept(this);
-        }
+        draw(right);
     }
 
     @Override
@@ -193,17 +190,13 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
         final RectImgDescription down = node.getDown();
         final Segment splitBorder = node.getSplitBorder();
         final RectImgDescription up = node.getUp();
-        if (down != null) {
-            down.accept(this);
-        }
+        draw(down);
         if (splitBorder != null) {
             g2d.setStroke(debugBorderStroke);
             g2d.setColor(debugFillColor);
             g2d.drawRect(rect.fromX, splitBorder.from, rect.getWidth(), splitBorder.to - splitBorder.from);
         }
-        if (up != null) {
-            up.accept(this);
-        }
+        draw(up);
     }
 
     @Override
@@ -221,7 +214,7 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
         }
         if (lines != null) {
             for(RectImgDescription line : lines) {
-                line.accept(this);
+                draw(line);
             }
         }
     }
@@ -241,7 +234,7 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
         }
         if (columns != null) {
             for(RectImgDescription column : columns) {
-                column.accept(this);
+                draw(column);
             }
         }
     }
@@ -270,16 +263,20 @@ public class DebugDrawDecoratorRectImgDescrVisitor extends RectImgDescrVisitor {
     public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
         final RectImgDescription underlying = node.getUnderlyingRectImgDescr();
         final RectImgDescription[] aboves = node.getAboveRectImgDescrs();
-        if (underlying != null) {
-            underlying.accept(this);
-        }
+        draw(underlying);
         if (aboves != null) {
             int aboveCount = (aboves != null)? aboves.length : 0;
             for (int i = 0; i < aboveCount; i++) {
-                aboves[i].accept(this);
+                draw(aboves[i]);
                 drawRect(aboves[i].getRect(), debugAboveColor, debugAboveStroke);
             }
         }
     }
 
+    @Override
+    public void caseAnalysisProxyRect(AnalysisProxyRectImgDescr node) {
+        RectImgDescription target = node.getTarget();
+        draw(target);
+    }
+    
 }

@@ -3,7 +3,6 @@ package fr.an.screencast.compressor.imgtool.rectdescr;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -13,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
@@ -43,6 +43,8 @@ public class RectImgDescrAnalyzer {
     private int[] imgData;
     
     private RectImgDescrAnalyzerVisitor recursiveAnalyzer = new RectImgDescrAnalyzerVisitor(); 
+    
+    private static final boolean DEBUG_USE_SCAN_RECTS = false; //TODO
     
     // ------------------------------------------------------------------------
     
@@ -76,6 +78,14 @@ public class RectImgDescrAnalyzer {
     }
     
     public RectImgDescription analyze(Rect rect) {
+        RectImgDescription res = detect(rect);
+        if (res != null) {
+            res.accept(recursiveAnalyzer);
+        }
+        return res;
+    }
+    
+    public RectImgDescription detect(Rect rect) {
         RectImgDescription res;
         
         res = helper.detectExactFillRect(rect);
@@ -87,13 +97,11 @@ public class RectImgDescrAnalyzer {
         MutableDim tmpDim = new MutableDim(rect.getWidth(), rect.getHeight());
         res  = helper.detectBorder1AtUL(rectFromPt, tmpDim);
         if (res != null) {
-            res.accept(recursiveAnalyzer);
             return res;
         }
         
         res = helper.detectRoundBorderStartAtUL(rectFromPt);
         if (res != null) {
-            res.accept(recursiveAnalyzer);
             return res;
         }
         
@@ -103,7 +111,6 @@ public class RectImgDescrAnalyzer {
         // checkCornerColor=false  .. problem with anti-aliasing!
         res = helper.detectRoundBorderStartAtULWithCorners(rectFromPt, tmpDim, false, topCornerDim, bottomCornerDim, optReason);
         if (res != null) {
-            res.accept(recursiveAnalyzer);
             return res;
         }
         
@@ -116,16 +123,38 @@ public class RectImgDescrAnalyzer {
         
         res = helper.detectVertSplit(rect);
         if (res != null) {
-            res.accept(recursiveAnalyzer);
             return res;
         }
         
         res = helper.detectHorizontalSplit(rect);
         if (res != null) {
-            res.accept(recursiveAnalyzer);
             return res;
         }
 
+        // do more exhaustive computation... scan all max uniforms borders in rect
+        if (DEBUG_USE_SCAN_RECTS) {
+            List<Rect> scannedBorderRects = helper.scanListLargestBorderRightThenDown(rect, 1, 1);
+            if (scannedBorderRects != null && !scannedBorderRects.isEmpty() 
+                    && scannedBorderRects.size() < (rect.getArea() / 8)  // many small borders...useless!
+                    ) {
+                res = helper.detectLineBreaksInScannedRightThenDownRects(rect, scannedBorderRects);
+                if (res != null) {
+                    return res;
+                }
+        
+                List<Rect> pivotScannedBorderRects = helper.pivotScannedRectsToDownThenRight(rect, scannedBorderRects);
+                res = helper.detectColumnBreaksInScannedDownThenRightRects(rect, pivotScannedBorderRects);
+                if (res != null) {
+                    return res;
+                }
+        
+                res = helper.createScannedRectsToImgDescr(rect, scannedBorderRects, true);
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        
         // nothing found => use RawData !
         int[] rawData = ImageRasterUtils.getCopyData(dim, imgData, rect);
         res = new RawDataRectImgDescr(rect, rawData);
@@ -161,6 +190,12 @@ public class RectImgDescrAnalyzer {
         
         // ------------------------------------------------------------------------
         
+        protected void recurseAnalyse(RectImgDescription node) {
+            if (node != null) {
+                node.accept(this);
+            }
+        }
+        
         @Override
         public void caseFillRect(FillRectImgDescr node) {
             // do nothing
@@ -171,12 +206,10 @@ public class RectImgDescrAnalyzer {
             RectImgDescription inside = node.getInside();
             if (inside == null) {
                 Rect insideRect = node.getInsideRect();
-                inside = analyze(insideRect);
+                inside = detect(insideRect);
                 node.setInside(inside);
             }
-            if (inside != null) {
-                inside.accept(this);
-            }
+            recurseAnalyse(inside);
         }
 
         @Override
@@ -184,12 +217,10 @@ public class RectImgDescrAnalyzer {
             RectImgDescription inside = node.getInside();
             if (inside == null) {
                 Rect insideRect = node.getInsideRect();
-                inside = analyze(insideRect);
+                inside = detect(insideRect);
                 node.setInside(inside);
             }
-            if (inside != null) {
-                inside.accept(this);
-            }
+            recurseAnalyse(inside);
         }
 
         @Override
@@ -197,12 +228,10 @@ public class RectImgDescrAnalyzer {
             RectImgDescription inside = node.getInside();
             if (inside == null) {
                 Rect insideRect = node.getInsideRect();
-                inside = analyze(insideRect);
+                inside = detect(insideRect);
                 node.setInside(inside);
             }
-            if (inside != null) {
-                inside.accept(this);
-            }
+            recurseAnalyse(inside);
         }
 
         @Override
@@ -210,12 +239,10 @@ public class RectImgDescrAnalyzer {
             RectImgDescription inside = node.getInside();
             if (inside == null) {
                 Rect insideRect = node.getInsideRect();
-                inside = analyze(insideRect);
+                inside = detect(insideRect);
                 node.setInside(inside);
             }
-            if (inside != null) {
-                inside.accept(this);
-            }
+            recurseAnalyse(inside);
         }
 
         
@@ -225,20 +252,16 @@ public class RectImgDescrAnalyzer {
             RectImgDescription right = node.getRight();
             if (left == null) {
                 Rect leftRect = node.getLeftRect();
-                left = analyze(leftRect);
+                left = detect(leftRect);
                 node.setLeft(left);
             }
             if (right == null) {
                 Rect rightRect = node.getRightRect();
-                right = analyze(rightRect);
+                right = detect(rightRect);
                 node.setRight(right);
             }
-            if (left != null) {
-                left.accept(this);
-            }
-            if (right != null) {
-                right.accept(this);
-            }
+            recurseAnalyse(left);
+            recurseAnalyse(right);
         }
 
         @Override
@@ -247,20 +270,16 @@ public class RectImgDescrAnalyzer {
             RectImgDescription up = node.getUp();
             if (up == null) {
                 Rect upRect = node.getUpRect();
-                up = analyze(upRect);
+                up = detect(upRect);
                 node.setUp(up);
             }
             if (down == null) {
                 Rect downRect = node.getDownRect();
-                down = analyze(downRect);
+                down = detect(downRect);
                 node.setDown(down);
             }
-            if (down != null) {
-                down.accept(this);
-            }
-            if (up != null) {
-                up.accept(this);
-            }
+            recurseAnalyse(down);
+            recurseAnalyse(up);
         }
 
         @Override
@@ -270,13 +289,13 @@ public class RectImgDescrAnalyzer {
                 Rect[] lineRects = node.getLineRects();
                 lines = new RectImgDescription[lineRects.length];
                 for(int i = 0; i < lines.length; i++) {
-                    lines[i] = analyze(lineRects[i]);
+                    lines[i] = detect(lineRects[i]);
                 }
                 node.setLines(lines);
             }
             if (lines != null) {
                 for(RectImgDescription line : lines) {
-                    line.accept(this);
+                    recurseAnalyse(line);
                 }
             }
         }
@@ -288,13 +307,13 @@ public class RectImgDescrAnalyzer {
                 Rect[] columnRects = node.getColumnRects();
                 columns = new RectImgDescription[columnRects.length];
                 for(int i = 0; i < columns.length; i++) {
-                    columns[i] = analyze(columnRects[i]);
+                    columns[i] = detect(columnRects[i]);
                 }
                 node.setColumns(columns);
             }
             if (columns != null) {
                 for(RectImgDescription column : columns) {
-                    column.accept(this);
+                    recurseAnalyse(column);
                 }
             }
         }
@@ -318,21 +337,24 @@ public class RectImgDescrAnalyzer {
                 int abovesCount = aboveRects != null? aboveRects.length : 0;
                 aboves = new RectImgDescription[abovesCount]; 
                 for(int i = 0; i < abovesCount; i++) {
-                    aboves[i] = analyze(aboveRects[i]);
+                    aboves[i] = detect(aboveRects[i]);
                 }
                 node.setAboveRectImgDescrs(aboves);
             }
-            if (underlying != null) {
-                underlying.accept(this);
-            }
+            recurseAnalyse(underlying);
             if (aboves != null) {
                 int abovesCount = aboves != null? aboves.length : 0;
                 for(int i = 0; i < abovesCount; i++) {
-                    aboves[i].accept(this);
+                    recurseAnalyse(aboves[i]);
                 }
             }
         }
 
+        @Override
+        public void caseAnalysisProxyRect(AnalysisProxyRectImgDescr node) {
+            recurseAnalyse(node.getTarget());
+        }
+        
     }
 
     
