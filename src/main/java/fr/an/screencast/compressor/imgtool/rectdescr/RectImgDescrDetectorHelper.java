@@ -161,32 +161,20 @@ public final class RectImgDescrDetectorHelper {
         }
         return res;
     }
-    
-    public LinesSplitRectImgDescr detectLineBreaksInScannedRightThenDownRects(Rect rect, List<Rect> scannedRects) {
+
+    public LinesSplitRectImgDescr detectLineBreaksInScannedRightThenDownRects_noSplitColor(Rect rect, List<Rect> scannedRects) {
         List<Segment> splits = new ArrayList<Segment>();
         List<RectImgDescription> lines = new ArrayList<RectImgDescription>();
-        MutableInt bgColor = new MutableInt(-1);
         int currFromY = scannedRects.get(0).fromY;
         int currToY = scannedRects.get(0).toY;
-        int prevToY = currToY; //?
         List<Rect> currLineRects = new ArrayList<Rect>();
-        int rectI = 0;
         for(Rect scannedRect : scannedRects) {
             if (scannedRect.fromY < currToY) {
                 currFromY = Math.min(currFromY, scannedRect.fromY);
                 currToY = Math.max(currToY, scannedRect.toY);
-                currLineRects.add(scannedRect);
             } else { // if (scannedRect.fromY >= currToY)
                 // line break
-                Segment split = new Segment(prevToY, scannedRect.fromY);
-                if (split.to > split.from) {
-                    // check uniform split border if size>=1
-                    Rect splitRect = Rect.newPtToPt(rect.fromX, split.from, rect.toX, split.to);
-                    if (null == detectExactFillRectSameColor(splitRect, bgColor)) {
-                        // no uniform split color / not same split color => reduce to 0 split size!
-                        split = new Segment(currToY, currToY);
-                    }
-                }
+                Segment split = new Segment(currToY, currToY);
                 splits.add(split);
                 Rect lineRect = Rect.newPtToPt(rect.fromX, currFromY, rect.toX, currToY);
                 RectImgAboveRectImgDescr lineElt = new RectImgAboveRectImgDescr(lineRect, null, 
@@ -194,30 +182,90 @@ public final class RectImgDescrDetectorHelper {
                 lines.add(lineElt);
                 currLineRects.clear();
                 
-                prevToY = currToY;
                 currFromY = scannedRect.fromY;
                 currToY = scannedRect.toY;
             }
             currLineRects.add(scannedRect);
-            rectI++;
         }
         // flush current line
         if (!currLineRects.isEmpty()) {
-            Segment split = new Segment(prevToY, currToY);
-            // copy&paste code with above "line break"
-            if (split.to > split.from) {
-                Rect splitRect = Rect.newPtToPt(rect.fromX, split.from, rect.toX, split.to);
-                if (null == detectExactFillRectSameColor(splitRect, bgColor)) {
-                    split = new Segment(currToY, currToY);
-                }
-            }
-            splits.add(split);
             Rect lineRect = Rect.newPtToPt(rect.fromX, currFromY, rect.toX, currToY);
             RectImgAboveRectImgDescr lineElt = new RectImgAboveRectImgDescr(lineRect, null, 
                 currLineRects.toArray(new Rect[currLineRects.size()]));  
             lines.add(lineElt);
         }
-        return new LinesSplitRectImgDescr(rect, bgColor.intValue(), splits, lines); 
+        return new LinesSplitRectImgDescr(rect, -1, splits, lines); 
+    }
+    
+
+    public LinesSplitRectImgDescr detectLineBreaksInScannedRightThenDownRects(Rect rect, List<Rect> scannedRects) {
+        LinesSplitRectImgDescr tmpres = detectLineBreaksInScannedRightThenDownRects_noSplitColor(rect, scannedRects);
+        // TODO
+        return tmpres;
+    }
+    
+    public List<Rect> pivotScannedRectsToDownThenRight(Rect rect, List<Rect> scannedRects) {
+        final int colOffset = rect.getFromX();
+        @SuppressWarnings("unchecked")
+        List<Rect>[] col2list = new List[rect.getWidth()];
+        for(Rect scannedRect : scannedRects) {
+            int colIdx = scannedRect.fromX - colOffset;
+            List<Rect> ls = col2list[colIdx];
+            if (ls == null) {
+                ls = new ArrayList<Rect>();
+                col2list[colIdx] = ls;
+            }
+            ls.add(scannedRect);
+        }
+        // compute union (size then fill)
+        int size = 0;
+        for(List<Rect> ls : col2list) {
+            if (ls != null) {
+                size += ls.size();
+            }
+        }
+        List<Rect> res = new ArrayList<Rect>(size);
+        for(List<Rect> ls : col2list) {
+            if (ls != null) {
+                res.addAll(ls);
+            }
+        }
+        return res;
+    }
+    
+    public ColumnsSplitRectImgDescr detectColumnBreaksInScannedDownThenRightRects_noSplitColor(Rect rect, List<Rect> scannedRects) {
+        List<Segment> splits = new ArrayList<Segment>();
+        List<RectImgDescription> columns = new ArrayList<RectImgDescription>();
+        int currFromX = scannedRects.get(0).fromX;
+        int currToX = scannedRects.get(0).toX;
+        List<Rect> currColumnRects = new ArrayList<Rect>();
+        for(Rect scannedRect : scannedRects) {
+            if (scannedRect.fromX < currToX) {
+                currFromX = Math.min(currFromX, scannedRect.fromX);
+                currToX = Math.max(currToX, scannedRect.toX);
+            } else { // if (scannedRect.fromX >= currToX)
+                // column break
+                Segment split = new Segment(currToX, currToX);
+                splits.add(split);
+                Rect columnRect = Rect.newPtToPt(currFromX, rect.fromY, currToX, rect.toY);
+                RectImgAboveRectImgDescr columnElt = new RectImgAboveRectImgDescr(columnRect, null, 
+                    currColumnRects.toArray(new Rect[currColumnRects.size()]));  
+                columns.add(columnElt);
+                currColumnRects.clear();
+                
+                currFromX = scannedRect.fromX;
+                currToX = scannedRect.toX;
+            }
+            currColumnRects.add(scannedRect);
+        }
+        // flush current column
+        if (!currColumnRects.isEmpty()) {
+            Rect columnRect = Rect.newPtToPt(rect.fromX, currFromX, rect.toX, currToX);
+            RectImgAboveRectImgDescr columnElt = new RectImgAboveRectImgDescr(columnRect, null, 
+                currColumnRects.toArray(new Rect[currColumnRects.size()]));  
+            columns.add(columnElt);
+        }
+        return new ColumnsSplitRectImgDescr(rect, -1, splits, columns); 
     }
     
     private FillRectImgDescr detectExactFillRectSameColor(Rect splitRect, MutableInt bgColor) {

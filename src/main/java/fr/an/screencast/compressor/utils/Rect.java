@@ -2,6 +2,7 @@ package fr.an.screencast.compressor.utils;
 
 import java.awt.Graphics;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 public class Rect implements Serializable {
@@ -81,6 +82,10 @@ public class Rect implements Serializable {
         return res;
     }
 
+    public Rect toTranspose() {
+        return new Rect(fromY, fromX, toY, toX);
+    }
+    
     public int getWidth() {
         return toX - fromX;
     }
@@ -221,7 +226,23 @@ public class Rect implements Serializable {
     public String toStringPtDim() {
         return fromX + "," + fromY + "-" + getWidth() + "x" + getHeight();
     }
-    
+
+    public String toStringCode() {
+        return "Rect.newPtDim(" + fromX + ", " + fromY + ", " + getWidth() + ", " + getHeight() + ")";
+    }
+
+    public static String toStringCodes(Collection<Rect> rects) {
+        StringBuilder sb = new StringBuilder();
+        if (rects != null && ! rects.isEmpty()) {
+            for(Rect r : rects) {
+                sb.append(r.toStringCode());
+                sb.append(",\n");
+            }
+            sb.delete(sb.length() - 2, sb.length());
+        }
+        return sb.toString();
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
