@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.imgtool.rectdescr.ast;
+package fr.an.screencast.compressor.imgtool.rectdescr.ast.codec;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -22,10 +22,7 @@ import fr.an.bitwise4j.encoder.structio.helpers.DebugStructDataOutput;
 import fr.an.bitwise4j.encoder.structio.helpers.DebugTeeStructDataOutput;
 import fr.an.screencast.compressor.imgtool.rectdescr.RectImgDescrAnalyzer;
 import fr.an.screencast.compressor.imgtool.rectdescr.RectImgDescrAnalyzerTest;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.codec.BitStreamOutputRectImgDescrVisitor;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.codec.RectImgDescrCodecConfig;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
 import fr.an.screencast.compressor.utils.Rect;

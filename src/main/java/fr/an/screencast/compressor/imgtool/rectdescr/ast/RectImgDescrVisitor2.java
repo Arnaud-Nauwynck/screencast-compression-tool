@@ -14,21 +14,21 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.R
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
 
-public abstract class RectImgDescrVisitor {
+public abstract class RectImgDescrVisitor2<T,R> {
 
-    public abstract void caseFillRect(FillRectImgDescr node);
-    public abstract void caseRoundBorderDescr(RoundBorderRectImgDescr node);
-    public abstract void caseBorderDescr(BorderRectImgDescr node);
-    public abstract void caseTopBottomBorderDescr(TopBottomBorderRectImgDescr node);
-    public abstract void caseLeftRightBorderDescr(LeftRightBorderRectImgDescr node);
-    public abstract void caseVerticalSplitDescr(VerticalSplitRectImgDescr node);
-    public abstract void caseHorizontalSplitDescr(HorizontalSplitRectImgDescr node);
-    public abstract void caseLinesSplitDescr(LinesSplitRectImgDescr node);
-    public abstract void caseColumnsSplitDescr(ColumnsSplitRectImgDescr node);
-    public abstract void caseRawDataDescr(RawDataRectImgDescr node);
-    public abstract void caseGlyphDescr(GlyphRectImgDescr node);
-    public abstract void caseAboveDescr(RectImgAboveRectImgDescr node);
+    public abstract R caseFillRect(FillRectImgDescr node, T param);
+    public abstract R caseRoundBorderDescr(RoundBorderRectImgDescr node, T param);
+    public abstract R caseBorderDescr(BorderRectImgDescr node, T param);
+    public abstract R caseTopBottomBorderDescr(TopBottomBorderRectImgDescr node, T param);
+    public abstract R caseLeftRightBorderDescr(LeftRightBorderRectImgDescr node, T param);
+    public abstract R caseVerticalSplitDescr(VerticalSplitRectImgDescr node, T param);
+    public abstract R caseHorizontalSplitDescr(HorizontalSplitRectImgDescr node, T param);
+    public abstract R caseLinesSplitDescr(LinesSplitRectImgDescr node, T param);
+    public abstract R caseColumnsSplitDescr(ColumnsSplitRectImgDescr node, T param);
+    public abstract R caseRawDataDescr(RawDataRectImgDescr node, T param);
+    public abstract R caseGlyphDescr(GlyphRectImgDescr node, T param);
+    public abstract R caseAboveDescr(RectImgAboveRectImgDescr node, T param);
 
-    public abstract void caseAnalysisProxyRect(AnalysisProxyRectImgDescr node);
+    public abstract R caseAnalysisProxyRect(AnalysisProxyRectImgDescr node, T param);
 
 }

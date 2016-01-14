@@ -102,6 +102,15 @@ public class Rect implements Serializable {
         return getWidth() * getHeight();
     }
 
+    public static int sumArea(Collection<Rect> rects) {
+        if (rects == null || rects.isEmpty()) return 0;
+        int res = 0;
+        for(Rect r : rects) {
+            res += r.getArea();
+        }
+        return res;
+    }
+
     public boolean isNotEmpty() {
         return toX > fromX && toY > fromY;
     }

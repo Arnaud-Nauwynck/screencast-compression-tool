@@ -10,11 +10,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.DebugDrawDecoratorRectImgDescrVisitor;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.DrawRectImgDescrVisitor;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.DumpRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DebugDrawDecoratorRectImgDescrVisitor;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DrawRectImgDescrVisitor;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageDataAssert;

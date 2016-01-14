@@ -34,7 +34,9 @@ public class RectImgDescriptionAST {
         }
         
         public abstract void accept(RectImgDescrVisitor visitor);
-        
+
+        public abstract <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param);
+
         public Rect getRect() {
             return rect;
         }
@@ -77,6 +79,11 @@ public class RectImgDescriptionAST {
             visitor.caseAnalysisProxyRect(this);
         }
 
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseAnalysisProxyRect(this, param);
+        }
+
+
         public RectImgDescription getTarget() {
             return target;
         }
@@ -110,6 +117,10 @@ public class RectImgDescriptionAST {
             visitor.caseFillRect(this);
         }
 
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseFillRect(this, param);
+        }
+        
         public int getColor() {
             return color;
         }
@@ -159,6 +170,10 @@ public class RectImgDescriptionAST {
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseRoundBorderDescr(this);
+        }
+
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseRoundBorderDescr(this, param);
         }
 
         public Rect getInsideRect() {
@@ -244,6 +259,10 @@ public class RectImgDescriptionAST {
             visitor.caseBorderDescr(this);
         }
 
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseBorderDescr(this, param);
+        }
+
         public int getBorderColor() {
             return borderColor;
         }
@@ -306,6 +325,10 @@ public class RectImgDescriptionAST {
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseTopBottomBorderDescr(this);
+        }
+
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseTopBottomBorderDescr(this, param);
         }
 
         public int getBorderColor() {
@@ -389,6 +412,10 @@ public class RectImgDescriptionAST {
             visitor.caseLeftRightBorderDescr(this);
         }
 
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseLeftRightBorderDescr(this, param);
+        }
+
         public int getBorderColor() {
             return borderColor;
         }
@@ -467,6 +494,10 @@ public class RectImgDescriptionAST {
             visitor.caseVerticalSplitDescr(this);
         }
 
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseVerticalSplitDescr(this, param);
+        }
+
         public Rect getLeftRect() {
             return Rect.newPtToPt(rect.fromX, rect.fromY, splitBorder.from, rect.toY);
         }
@@ -539,6 +570,10 @@ public class RectImgDescriptionAST {
 
         public void accept(RectImgDescrVisitor visitor) {
             visitor.caseHorizontalSplitDescr(this);
+        }
+
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseHorizontalSplitDescr(this, param);
         }
 
         public Rect getUpRect() {
@@ -620,6 +655,10 @@ public class RectImgDescriptionAST {
             visitor.caseLinesSplitDescr(this);
         }
 
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseLinesSplitDescr(this, param);
+        }
+
         public Rect[] getLineRects() {
             final Segment[] sb = splitBorders;
             int len = ((sb[0].from != rect.fromY)?1:0) + sb.length - 1 + ((sb[sb.length-1].to != rect.toY)?1:0);
@@ -699,6 +738,10 @@ public class RectImgDescriptionAST {
             visitor.caseColumnsSplitDescr(this);
         }
 
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseColumnsSplitDescr(this, param);
+        }
+
         public Rect[] getColumnRects() {
             final Segment[] sb = splitBorders;
             int len = ((sb[0].from != rect.fromX)?1:0) + sb.length - 1 + ((sb[sb.length-1].to != rect.toX)?1:0);
@@ -762,6 +805,10 @@ public class RectImgDescriptionAST {
             visitor.caseRawDataDescr(this);
         }
 
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseRawDataDescr(this, param);
+        }
+
         public int[] getRawData() {
             return rawData;
         }
@@ -808,6 +855,10 @@ public class RectImgDescriptionAST {
             visitor.caseGlyphDescr(this);
         }
         
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseGlyphDescr(this, param);
+        }
+
         public int getCrc() {
             return crc;
         }
@@ -903,9 +954,13 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseDescrAboveDescr(this);
+            visitor.caseAboveDescr(this);
         }
         
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseAboveDescr(this, param);
+        }
+
         public Rect[] getAboveRects() {
             return aboveRects;
         }

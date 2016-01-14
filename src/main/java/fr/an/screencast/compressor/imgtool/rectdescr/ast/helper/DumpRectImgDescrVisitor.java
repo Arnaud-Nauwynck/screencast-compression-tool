@@ -1,9 +1,11 @@
-package fr.an.screencast.compressor.imgtool.rectdescr.ast;
+package fr.an.screencast.compressor.imgtool.rectdescr.ast.helper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
@@ -284,7 +286,7 @@ public class DumpRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
+    public void caseAboveDescr(RectImgAboveRectImgDescr node) {
         final RectImgDescription underlying = node.getUnderlyingRectImgDescr();
         final RectImgDescription[] aboves = node.getAboveRectImgDescrs();
         printlnIndent("underlying", underlying);

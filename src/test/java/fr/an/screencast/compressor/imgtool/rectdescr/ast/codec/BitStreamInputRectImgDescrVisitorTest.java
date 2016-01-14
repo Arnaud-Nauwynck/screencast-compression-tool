@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.imgtool.rectdescr.ast;
+package fr.an.screencast.compressor.imgtool.rectdescr.ast.codec;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -20,6 +20,9 @@ import fr.an.bitwise4j.encoder.structio.StructDataInput;
 import fr.an.bitwise4j.encoder.structio.helpers.DebugStructDataInput;
 import fr.an.bitwise4j.encoder.structio.helpers.DebugTeeStructDataInput;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DebugDrawDecoratorRectImgDescrVisitor;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DrawRectImgDescrVisitor;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
 import fr.an.screencast.compressor.utils.Dim;
@@ -67,8 +70,8 @@ public class BitStreamInputRectImgDescrVisitorTest {
                 BufferedReader debugFileReader = new BufferedReader(new InputStreamReader(new FileInputStream(debugInputFile)));
                 StructDataInput debugStructInput = new DebugStructDataInput(debugFileReader);
                 bitStructInput = 
-//                        new DebugTeeStructDataInput(debugStructInput, bitStructInput);
-                        debugStructInput; // TEMPORARY FOR DEBUG .. DO NOT COMMIT
+                        new DebugTeeStructDataInput(debugStructInput, bitStructInput);
+                        // debugStructInput; // TEMPORARY FOR DEBUG .. DO NOT COMMIT
             }
     
             BitStreamInputRectImgDescrVisitor sut = new BitStreamInputRectImgDescrVisitor(codecConfig, bitStructInput);

@@ -1,4 +1,4 @@
-package fr.an.screencast.compressor.imgtool.rectdescr.ast;
+package fr.an.screencast.compressor.imgtool.rectdescr.ast.codec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,8 @@ import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
 import fr.an.screencast.compressor.imgtool.rectdescr.ExternalFormatRawDataHelper;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
@@ -374,7 +376,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
+    public void caseAboveDescr(RectImgAboveRectImgDescr node) {
         final Rect rect = node.getRect();
         final RectImgDescription underlying = node.getUnderlyingRectImgDescr();
         final RectImgDescription[] aboves = node.getAboveRectImgDescrs();

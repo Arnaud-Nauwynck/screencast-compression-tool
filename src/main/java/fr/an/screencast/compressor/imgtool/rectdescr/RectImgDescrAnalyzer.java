@@ -44,7 +44,9 @@ public class RectImgDescrAnalyzer {
     
     private RectImgDescrAnalyzerVisitor recursiveAnalyzer = new RectImgDescrAnalyzerVisitor(); 
     
-    private static final boolean DEBUG_USE_SCAN_RECTS = false; //TODO
+    private static final boolean DEBUG_USE_SCAN_RECTS = 
+            true;
+//            false; //TODO
     
     // ------------------------------------------------------------------------
     
@@ -133,9 +135,13 @@ public class RectImgDescrAnalyzer {
 
         // do more exhaustive computation... scan all max uniforms borders in rect
         if (DEBUG_USE_SCAN_RECTS) {
-            List<Rect> scannedBorderRects = helper.scanListLargestBorderRightThenDown(rect, 1, 1);
+            List<Rect> scannedBorderRects = helper.scanListLargestBorderRightThenDown(rect, 0, 0);
+            int sumArea = Rect.sumArea(scannedBorderRects);
+            if (sumArea != rect.getArea()) {
+                LOG.warn("missing rects area in scan: expecting " + rect.getArea() + ", got " + sumArea + " for " + rect);
+            }
             if (scannedBorderRects != null && !scannedBorderRects.isEmpty() 
-                    && scannedBorderRects.size() < (rect.getArea() / 8)  // many small borders...useless!
+                    && scannedBorderRects.size() < (rect.getArea() / 8)  // else many small borders...useless!
                     ) {
                 res = helper.detectLineBreaksInScannedRightThenDownRects(rect, scannedBorderRects);
                 if (res != null) {
@@ -329,7 +335,7 @@ public class RectImgDescrAnalyzer {
         }
 
         @Override
-        public void caseDescrAboveDescr(RectImgAboveRectImgDescr node) {
+        public void caseAboveDescr(RectImgAboveRectImgDescr node) {
             RectImgDescription underlying = node.getUnderlyingRectImgDescr();
             RectImgDescription[] aboves = node.getAboveRectImgDescrs();
             if (aboves == null) {

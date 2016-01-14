@@ -1,10 +1,11 @@
-package fr.an.screencast.compressor.imgtool.rectdescr.ast;
+package fr.an.screencast.compressor.imgtool.rectdescr.ast.codec;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
