@@ -2,6 +2,7 @@ package fr.an.screencast.compressor.imgtool.rectdescr.ast.helper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -28,11 +29,11 @@ import fr.an.screencast.compressor.utils.Segment;
 public class RectImgDescrBitsCountEstimater {
 
     public static class BitsCount {
-        private Class<?> key;
+        private String key;
         private int count;
         private int estimatedBitsCount;
         
-        public BitsCount(Class<?> key) {
+        public BitsCount(String key) {
             this.key = key;
         }
 
@@ -70,11 +71,11 @@ public class RectImgDescrBitsCountEstimater {
     public static class SynthetisedBitsCount {
         
         private BitsCount sum = new BitsCount(null);
-        private Map<Class<?>,BitsCount> sumPerClass = new HashMap<Class<?>,BitsCount>();
+        private Map<String,BitsCount> sumPerClass = new TreeMap<String,BitsCount>();
         
         public SynthetisedBitsCount incr(BitsCount childStats) {
             sum.incr(childStats);
-            Class<?> key = childStats.key;
+            String key = childStats.key;
             BitsCount statsPerKey = sumPerClass.get(key);
             if (statsPerKey == null) {
                 statsPerKey = new BitsCount(key);
@@ -86,8 +87,8 @@ public class RectImgDescrBitsCountEstimater {
 
         public SynthetisedBitsCount incr(SynthetisedBitsCount src) {
             sum.incr(src.sum);
-            for(Map.Entry<Class<?>,BitsCount> e : src.sumPerClass.entrySet()) {
-                Class<?> key = e.getKey();
+            for(Map.Entry<String,BitsCount> e : src.sumPerClass.entrySet()) {
+                String key = e.getKey();
                 BitsCount incrPerKey = e.getValue();
                 
                 BitsCount statsPerKey = sumPerClass.get(key);
@@ -104,28 +105,42 @@ public class RectImgDescrBitsCountEstimater {
             return sum;
         }
 
-        public Map<Class<?>, BitsCount> getSumPerClass() {
+        public Map<String, BitsCount> getSumPerClass() {
             return sumPerClass;
         }
 
-        @Override
-        public String toString() {
+        public String toStringFilter(int thresholdBitsCount) {
             StringBuilder sb = new StringBuilder();
             sb.append("Total: " + sum + "\n");
-            for (Map.Entry<Class<?>, BitsCount> e : sumPerClass.entrySet()) {
-                sb.append(" per class " + e.getKey().getSimpleName() + ": " + e.getValue() + "\n");
+            for (Map.Entry<String, BitsCount> e : sumPerClass.entrySet()) {
+                if (e.getValue().estimatedBitsCount >= thresholdBitsCount) {
+                    sb.append(" per " + e.getKey() + ": " + e.getValue() + "\n");
+                }
             }
             return sb.toString();
+        }
+        
+        @Override
+        public String toString() {
+            return toStringFilter(0);
         }
 
     }
     
     // ------------------------------------------------------------------------
-
-    public static BitsCount evalBaseStatsBitsCount(RectImgDescription node) {
-        BitsCount res = new BitsCount(node.getClass());
-        evalBaseStatsBitsCount(node);
-        return res;
+    
+    protected static String pixelSmallMediumLarge(int val) {
+        if (val <= 1) return "p";
+        else if (val <= 5) return "s";
+        else if (val <= 20) return "m";
+        else if (val <= 50) return "l";
+        else return "L";
+    }
+    
+    protected static String nodeToKey(RectImgDescription node) {
+        int w = node.getWidth(), h = node.getHeight();
+        String res = node.getClass().getSimpleName() + "-" + pixelSmallMediumLarge(w) + "x" + pixelSmallMediumLarge(h);
+        return res; 
     }
     
     public static void evalBaseStatsBitsCount(RectImgDescription node, BitsCount res) {
@@ -140,7 +155,7 @@ public class RectImgDescrBitsCountEstimater {
         
         Supplier<BitsCount> baseValFactory = () -> new BitsCount(null);
         BiConsumer<RectImgDescription,BitsCount> baseValEvaluator = 
-                (n,r) -> { r.key = n.getClass(); n.accept(StatsBitsCountBaseEstimater.INSTANCE, r); };
+                (n,r) -> { r.key = nodeToKey(n); n.accept(StatsBitsCountBaseEstimater.INSTANCE, r); };
         // BiConsumer<RectImgDescription,TVal> baseAttributeUpdater;
         
         Supplier<SynthetisedBitsCount> valFactory = SynthetisedBitsCount::new;

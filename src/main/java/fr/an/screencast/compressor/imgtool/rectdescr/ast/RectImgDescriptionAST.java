@@ -49,6 +49,14 @@ public class RectImgDescriptionAST {
             return res;
         }
 
+        public int getWidth() {
+            return rect.getWidth();
+        }
+
+        public int getHeight() {
+            return rect.getHeight();
+        }
+
         public Dim getDim() {
             return rect.getDim();
         }

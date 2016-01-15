@@ -35,7 +35,7 @@ public class RectImgDescrBitsCountEstimaterTest {
         // Post-check
         Assert.assertNotNull(res);
         if (DEBUG) {
-            LOG.info(imageFileName + " => synthetised estimated bits count:" + res);
+            LOG.info(imageFileName + " => synthetised estimated bits count:" + res.toStringFilter(200));
         }
     }
     
