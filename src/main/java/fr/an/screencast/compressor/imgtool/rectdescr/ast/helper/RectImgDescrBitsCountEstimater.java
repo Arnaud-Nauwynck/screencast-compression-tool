@@ -12,17 +12,26 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor2;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ConnexSegmentLinesNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseAbovePartsRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.OverrideAttributesProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.PtNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.SegmentNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.InheritedAttributeEvaluatorVisitor.LightweightNoiseFragAdder;
+import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
 
@@ -158,6 +167,10 @@ public class RectImgDescrBitsCountEstimater {
                 (n,r) -> { r.key = nodeToKey(n); n.accept(StatsBitsCountBaseEstimater.INSTANCE, r); };
         // BiConsumer<RectImgDescription,TVal> baseAttributeUpdater;
         
+        LightweightNoiseFragAdder<SynthetisedBitsCount> noiseFragAdder = (parent, partIndex, node, input) -> {
+            return input;
+        };
+
         Supplier<SynthetisedBitsCount> valFactory = SynthetisedBitsCount::new;
         BiFunction<SynthetisedBitsCount,BitsCount,SynthetisedBitsCount> mapFunc =
                 (synth,val) -> synth.incr(val);
@@ -169,7 +182,8 @@ public class RectImgDescrBitsCountEstimater {
         
         InheritedAttributeEvaluatorVisitor<BitsCount,SynthetisedBitsCount> recursiveMergeEval = 
                 new InheritedAttributeEvaluatorVisitor<BitsCount,SynthetisedBitsCount>(
-                        baseValFactory, baseValEvaluator, valFactory, 
+                        baseValFactory, baseValEvaluator, noiseFragAdder, 
+                        valFactory, 
                         mapFunc, reduceFunc,
                         attributeUpdater
                         );
@@ -191,7 +205,7 @@ public class RectImgDescrBitsCountEstimater {
     private static class StatsBitsCountBaseEstimater extends RectImgDescrVisitor2<BitsCount,Void> {
 
         private static final StatsBitsCountBaseEstimater INSTANCE = new StatsBitsCountBaseEstimater();
-        private static final int COLOR_BITS = 3*8;
+        private static final int colorBitsCount = 3*8; // may be better with huffmancode or global color table..
         private static final int ESTIM_BORDER_LEN_BITS = 4;
         
         // ------------------------------------------------------------------------
@@ -203,31 +217,45 @@ public class RectImgDescrBitsCountEstimater {
 
         protected static int estimSumBitsForPoints(RectImgDescription node, int xCount, int yCount) {
             Rect rect = node.getRect();
+            int rectWidth = rect.getWidth();
+            int rectHeight = rect.getHeight();
+            return estimSumBitsForPoints(rectWidth, rectHeight, xCount, yCount);
+        }
+
+        protected static int estimSumBitsForPoints(int rectWidth, int rectHeight, int xCount, int yCount) {
             int res = 0;
             if (xCount > 0) {
-                int xBitsCount = Pow2Utils.valueToUpperLog2(rect.getWidth());
+                int xBitsCount = Pow2Utils.valueToUpperLog2(rectWidth);
                 res += xCount * xBitsCount;
                 // for sorted order points => better encoding is by divide&conquer...
                 // = xBitsCount + (xBitsCount-1) + (xBitsCount-2) + .. + (xBitsCount-xCount)
                 // = xCount * xBitsCount - xCount*(xCount-1)/2;
             }
             if (yCount > 0) {
-                int yBitsCount = Pow2Utils.valueToUpperLog2(rect.getHeight());
+                int yBitsCount = Pow2Utils.valueToUpperLog2(rectHeight);
                 res += yCount * yBitsCount;
                 // for sorted order points => 
             }
             return res;
         }
         
+        
+        
         @Override
-        public Void caseFillRect(FillRectImgDescr node, BitsCount stats) {
-            stats.incr(COLOR_BITS);
+        public Void caseRoot(RootRectImgDescr node, BitsCount param) {
+            param.incr(32*2);
             return null;
         }
 
         @Override
-        public Void caseRoundBorderDescr(RoundBorderRectImgDescr node, BitsCount stats) {
-            int bitsCount = 2*COLOR_BITS // borderColor, cornerBackgroundColor
+        public Void caseFill(FillRectImgDescr node, BitsCount stats) {
+            stats.incr(colorBitsCount);
+            return null;
+        }
+
+        @Override
+        public Void caseRoundBorder(RoundBorderRectImgDescr node, BitsCount stats) {
+            int bitsCount = 2*colorBitsCount // borderColor, cornerBackgroundColor
                     + 4 * ESTIM_BORDER_LEN_BITS // TopCornerDim, BottomCornerDim
                     + ESTIM_BORDER_LEN_BITS; // BorderThick
             stats.incr(bitsCount);
@@ -235,89 +263,153 @@ public class RectImgDescrBitsCountEstimater {
         }
 
         @Override
-        public Void caseBorderDescr(BorderRectImgDescr node, BitsCount stats) {
-            int bitsCount = COLOR_BITS + 4 * ESTIM_BORDER_LEN_BITS;
+        public Void caseBorder(BorderRectImgDescr node, BitsCount stats) {
+            int bitsCount = colorBitsCount + 4 * ESTIM_BORDER_LEN_BITS;
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseTopBottomBorderDescr(TopBottomBorderRectImgDescr node, BitsCount stats) {
-            int bitsCount = COLOR_BITS + 2 * ESTIM_BORDER_LEN_BITS;
+        public Void caseTopBottomBorder(TopBottomBorderRectImgDescr node, BitsCount stats) {
+            int bitsCount = colorBitsCount + 2 * ESTIM_BORDER_LEN_BITS;
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseLeftRightBorderDescr(LeftRightBorderRectImgDescr node, BitsCount stats) {
-            int bitsCount = COLOR_BITS + 2 * ESTIM_BORDER_LEN_BITS;
+        public Void caseLeftRightBorder(LeftRightBorderRectImgDescr node, BitsCount stats) {
+            int bitsCount = colorBitsCount + 2 * ESTIM_BORDER_LEN_BITS;
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseVerticalSplitDescr(VerticalSplitRectImgDescr node, BitsCount stats) {
-            int bitsCount = COLOR_BITS // splitColor
+        public Void caseVerticalSplit(VerticalSplitRectImgDescr node, BitsCount stats) {
+            int bitsCount = colorBitsCount // splitColor
                     + estimSumBitsForPoints(node, 2, 0); //  SplitBorder
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseHorizontalSplitDescr(HorizontalSplitRectImgDescr node, BitsCount stats) {
-            int bitsCount = COLOR_BITS // splitColor
+        public Void caseHorizontalSplit(HorizontalSplitRectImgDescr node, BitsCount stats) {
+            int bitsCount = colorBitsCount // splitColor
                     + estimSumBitsForPoints(node, 0, 2); //  SplitBorder
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseLinesSplitDescr(LinesSplitRectImgDescr node, BitsCount stats) {
+        public Void caseLinesSplit(LinesSplitRectImgDescr node, BitsCount stats) {
             Segment[] splitBorders = node.getSplitBorders();
             int splitBordersCount = splitBorders != null? splitBorders.length : 0; 
-            int bitsCount = COLOR_BITS // splitColor
+            int bitsCount = colorBitsCount // splitColor
                     + estimSumBitsForPoints(node, 0, splitBordersCount); //  SplitBorders
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseColumnsSplitDescr(ColumnsSplitRectImgDescr node, BitsCount stats) {
+        public Void caseColumnsSplit(ColumnsSplitRectImgDescr node, BitsCount stats) {
             Segment[] splitBorders = node.getSplitBorders();
             int splitBordersCount = splitBorders != null? splitBorders.length : 0; 
-            int bitsCount = COLOR_BITS // splitColor
+            int bitsCount = colorBitsCount // splitColor
                     + estimSumBitsForPoints(node, splitBordersCount, 0); //  SplitBorders
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseRawDataDescr(RawDataRectImgDescr node, BitsCount stats) {
-            int bitsCount = node.getRect().getArea() * COLOR_BITS;
+        public Void caseRawData(RawDataRectImgDescr node, BitsCount stats) {
+            int bitsCount = node.getRect().getArea() * colorBitsCount;
             bitsCount -= (bitsCount >>> 3); // -1/8  estim basic gzip compression
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseGlyphDescr(GlyphRectImgDescr node, BitsCount stats) {
-            int bitsCount = node.getRect().getArea() * COLOR_BITS;
+        public Void caseGlyph(GlyphRectImgDescr node, BitsCount stats) {
+            int bitsCount = node.getRect().getArea() * colorBitsCount;
             bitsCount -= (bitsCount >>> 3); // -1/8  estim basic gzip compression
             stats.incr(bitsCount);
             return null;
         }
 
         @Override
-        public Void caseAboveDescr(RectImgAboveRectImgDescr node, BitsCount stats) {
+        public Void caseAbove(RectImgAboveRectImgDescr node, BitsCount stats) {
             final Rect[] aboveRects = node.getAboveRects();
             int aboveRectsCount = aboveRects != null? aboveRects.length : 0; 
             int bitsCount = estimSumBitsForPoints(node, aboveRectsCount, aboveRectsCount);
             stats.incr(bitsCount);
             return null;
         }
+        
+        @Override
+        public Void caseNoiseAbove(NoiseAbovePartsRectImgDescr node, BitsCount stats) {
+            int bitsCount = 0; 
+            final int areaBitsCount = Pow2Utils.valueToUpperLog2(node.getDim().getArea());
+            NoiseFragment[][] noiseFragmentsAboveParts = node.getNoiseFragmentsAboveParts();
+            if (noiseFragmentsAboveParts != null) {
+                for (int part = 0; part < noiseFragmentsAboveParts.length; part++) {
+                    NoiseFragment[] frags = noiseFragmentsAboveParts[part];
+                    bitsCount += 1;
+                    if (frags != null) {
+                        bitsCount += areaBitsCount; // TODO
+                        for(NoiseFragment frag : frags) {
+                            frag.accept(this, node, part, stats);
+                        }
+                    }
+                }
+            }
+            stats.incr(bitsCount);
+            return null;
+        }
 
         @Override
-        public Void caseAnalysisProxyRect(AnalysisProxyRectImgDescr node, BitsCount stats) {
+        public Void caseNoiseAboveParts_Pt(NoiseAbovePartsRectImgDescr parent, int partIndex, PtNoiseFragment node, BitsCount stats) {
+            int bitsCount = 10;
+            Dim partDim = parent.getPartDim(partIndex); 
+            bitsCount += estimSumBitsForPoints(partDim.width, partDim.height, 1, 1);
+            bitsCount += colorBitsCount;
+            stats.incr(bitsCount);
+            return null;
+        }
+
+        @Override
+        public Void caseNoiseAboveParts_Segment(NoiseAbovePartsRectImgDescr parent, int partIndex, SegmentNoiseFragment node, BitsCount stats) {
+            int bitsCount = 10;
+            Dim partDim = parent.getPartDim(partIndex); 
+            bitsCount += estimSumBitsForPoints(partDim.width, partDim.height, 2, 1);
+            bitsCount += colorBitsCount;
+            stats.incr(bitsCount);
+            return null;
+        }
+
+        @Override
+        public Void caseNoiseAboveParts_ConnexSegmentLines(NoiseAbovePartsRectImgDescr parent, int partIndex, ConnexSegmentLinesNoiseFragment node,
+                BitsCount stats) {
+            int bitsCount = 10; 
+            Dim partDim = parent.getPartDim(partIndex);
+            Segment[] lines = node.getLines();
+            int linesLen = lines != null? lines.length : 0;
+            bitsCount += estimSumBitsForPoints(partDim.width, partDim.height, 2*linesLen, 2);
+            bitsCount += colorBitsCount;
+            stats.incr(bitsCount);
+            return null;
+        }
+
+        @Override
+        public Void caseOverrideAttributesProxy(OverrideAttributesProxyRectImgDescr node, BitsCount stats) {
+            int bitsCount = 10; 
+            Map<Object, Object> attributeOverrides = node.getAttributeOverrides();
+            // TODO estim encoding bits for attributes
+            stats.incr(bitsCount);
+            return null;
+        }
+
+        @Override
+        public Void caseAnalysisProxy(AnalysisProxyRectImgDescr node, BitsCount stats) {
+            stats.incr(1);
             return null;
         }
 

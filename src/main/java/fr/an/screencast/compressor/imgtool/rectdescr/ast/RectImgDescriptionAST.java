@@ -1,7 +1,9 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
@@ -24,6 +26,8 @@ public class RectImgDescriptionAST {
         /** */
         private static final long serialVersionUID = 1L;
 
+        protected RectImgDescription parent;
+        
         protected Rect rect;
         
         public RectImgDescription() {
@@ -67,6 +71,49 @@ public class RectImgDescriptionAST {
         }
     }
 
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * 
+     */
+    public static class RootRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+        
+        private Dim topLevelDim;
+        
+        private RectImgDescription target;
+        
+        public RootRectImgDescr(Dim dim, RectImgDescription target) {
+            this.topLevelDim = dim;
+            this.target = target;
+        }
+
+        public void accept(RectImgDescrVisitor visitor) {
+            visitor.caseRoot(this);
+        }
+
+        public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
+            return visitor.caseRoot(this, param);
+        }
+
+        public Dim getTopLevelDim() {
+            return topLevelDim;
+        }
+
+        public RectImgDescription getTarget() {
+            return target;
+        }
+
+        public void setTarget(RectImgDescription target) {
+            this.target = target;
+        }
+        
+    }
+    
+    
     // ------------------------------------------------------------------------
 
     /**
@@ -84,11 +131,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseAnalysisProxyRect(this);
+            visitor.caseAnalysisProxy(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseAnalysisProxyRect(this, param);
+            return visitor.caseAnalysisProxy(this, param);
         }
 
 
@@ -122,11 +169,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseFillRect(this);
+            visitor.caseFill(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseFillRect(this, param);
+            return visitor.caseFill(this, param);
         }
         
         public int getColor() {
@@ -177,11 +224,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseRoundBorderDescr(this);
+            visitor.caseRoundBorder(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseRoundBorderDescr(this, param);
+            return visitor.caseRoundBorder(this, param);
         }
 
         public Rect getInsideRect() {
@@ -264,11 +311,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseBorderDescr(this);
+            visitor.caseBorder(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseBorderDescr(this, param);
+            return visitor.caseBorder(this, param);
         }
 
         public int getBorderColor() {
@@ -332,11 +379,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseTopBottomBorderDescr(this);
+            visitor.caseTopBottomBorder(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseTopBottomBorderDescr(this, param);
+            return visitor.caseTopBottomBorder(this, param);
         }
 
         public int getBorderColor() {
@@ -417,11 +464,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseLeftRightBorderDescr(this);
+            visitor.caseLeftRightBorder(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseLeftRightBorderDescr(this, param);
+            return visitor.caseLeftRightBorder(this, param);
         }
 
         public int getBorderColor() {
@@ -499,11 +546,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseVerticalSplitDescr(this);
+            visitor.caseVerticalSplit(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseVerticalSplitDescr(this, param);
+            return visitor.caseVerticalSplit(this, param);
         }
 
         public Rect getLeftRect() {
@@ -577,11 +624,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseHorizontalSplitDescr(this);
+            visitor.caseHorizontalSplit(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseHorizontalSplitDescr(this, param);
+            return visitor.caseHorizontalSplit(this, param);
         }
 
         public Rect getUpRect() {
@@ -660,11 +707,11 @@ public class RectImgDescriptionAST {
         }
         
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseLinesSplitDescr(this);
+            visitor.caseLinesSplit(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseLinesSplitDescr(this, param);
+            return visitor.caseLinesSplit(this, param);
         }
 
         public Rect[] getLineRects() {
@@ -743,11 +790,11 @@ public class RectImgDescriptionAST {
         }
         
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseColumnsSplitDescr(this);
+            visitor.caseColumnsSplit(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseColumnsSplitDescr(this, param);
+            return visitor.caseColumnsSplit(this, param);
         }
 
         public Rect[] getColumnRects() {
@@ -798,6 +845,9 @@ public class RectImgDescriptionAST {
 
     public static class RawDataRectImgDescr extends RectImgDescription {
         
+        /** */
+        private static final long serialVersionUID = 1L;
+        
         private int[] rawData;
 
         public RawDataRectImgDescr(Rect rect) {
@@ -810,11 +860,11 @@ public class RectImgDescriptionAST {
         }
         
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseRawDataDescr(this);
+            visitor.caseRawData(this);
         }
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseRawDataDescr(this, param);
+            return visitor.caseRawData(this, param);
         }
 
         public int[] getRawData() {
@@ -860,11 +910,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseGlyphDescr(this);
+            visitor.caseGlyph(this);
         }
         
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseGlyphDescr(this, param);
+            return visitor.caseGlyph(this, param);
         }
 
         public int getCrc() {
@@ -962,11 +1012,11 @@ public class RectImgDescriptionAST {
         }
 
         public void accept(RectImgDescrVisitor visitor) {
-            visitor.caseAboveDescr(this);
+            visitor.caseAbove(this);
         }
         
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
-            return visitor.caseAboveDescr(this, param);
+            return visitor.caseAbove(this, param);
         }
 
         public Rect[] getAboveRects() {
@@ -978,15 +1028,15 @@ public class RectImgDescriptionAST {
             this.aboveRectImgDescrs = null;
         }
 
-        public RectImgDescription getUnderlyingRectImgDescr() {
+        public RectImgDescription getUnderlying() {
             return underlyingRectImgDescr;
         }
 
-        public void setUnderlyingRectImgDescr(RectImgDescription underlyingRectImgDescr) {
+        public void setUnderlying(RectImgDescription underlyingRectImgDescr) {
             this.underlyingRectImgDescr = underlyingRectImgDescr;
         }
 
-        public RectImgDescription[] getAboveRectImgDescrs() {
+        public RectImgDescription[] getAboves() {
             return aboveRectImgDescrs;
         }
 
@@ -994,6 +1044,250 @@ public class RectImgDescriptionAST {
             this.aboveRectImgDescrs = aboveRectImgDescrs;
             this.aboveRects = (aboveRectImgDescrs != null)? arrayToRectArray(aboveRectImgDescrs) : null;;
         }
+        
+    }
+    
+    // ------------------------------------------------------------------------
+
+    public static abstract class NoiseFragment implements Serializable {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+        
+        public abstract void accept(RectImgDescrVisitor visitor, NoiseAbovePartsRectImgDescr parent, int partIndex);
+
+        public abstract <T, R> R accept(RectImgDescrVisitor2<T, R> visitor, NoiseAbovePartsRectImgDescr parent, int partIndex, T param);
+        
+    }
+    
+    public static class PtNoiseFragment extends NoiseFragment {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
+        private int color;
+        private int x, y;
+        
+        public PtNoiseFragment(int x, int y, int color) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+        }
+
+        @Override
+        public void accept(RectImgDescrVisitor visitor, NoiseAbovePartsRectImgDescr parent, int partIndex) {
+            visitor.caseNoiseAboveParts_Pt(parent, partIndex, this);            
+        }
+
+        @Override
+        public <T, R> R accept(RectImgDescrVisitor2<T, R> visitor, NoiseAbovePartsRectImgDescr parent, int partIndex, T param) {
+            return visitor.caseNoiseAboveParts_Pt(parent, partIndex, this, param);
+        }
+
+        
+        public int getColor() {
+            return color;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+        
+    }
+
+    public static class SegmentNoiseFragment extends NoiseFragment {
+        
+        /** */
+        private static final long serialVersionUID = 1L;
+        
+        private int color;
+        private int fromX;
+        private int toX;
+        private int y;
+        
+        public SegmentNoiseFragment(int fromX, int toX, int y, int color) {
+            this.fromX = fromX;
+            this.toX = toX;
+            this.y = y;
+            this.color = color;
+        }
+
+        @Override
+        public void accept(RectImgDescrVisitor visitor, NoiseAbovePartsRectImgDescr parent, int partIndex) {
+            visitor.caseNoiseAboveParts_Segment(parent, partIndex, this);
+        }
+
+        @Override
+        public <T, R> R accept(RectImgDescrVisitor2<T, R> visitor, NoiseAbovePartsRectImgDescr parent, int partIndex, T param) {
+            return visitor.caseNoiseAboveParts_Segment(parent, partIndex, this, param);
+        }
+
+        public int getColor() {
+            return color;
+        }
+
+        public void setColor(int color) {
+            this.color = color;
+        }
+
+        public int getFromX() {
+            return fromX;
+        }
+
+        public int getToX() {
+            return toX;
+        }
+
+        public int getY() {
+            return y;
+        }
+        
+    }
+
+    // TODO ... 
+    public static class ConnexSegmentLinesNoiseFragment extends NoiseFragment {
+        
+        /** */
+        private static final long serialVersionUID = 1L;
+        
+        private int color;
+        private int fromY;
+        private Segment[] lines;
+        
+        
+        public ConnexSegmentLinesNoiseFragment(int fromY, Segment[] lines, int color) {
+            this.fromY = fromY;
+            this.lines = lines;
+            this.color = color;
+        }
+        
+        @Override
+        public void accept(RectImgDescrVisitor visitor, NoiseAbovePartsRectImgDescr parent, int partIndex) {
+            visitor.caseNoiseAboveParts_ConnexSegmentLines(parent, partIndex, this);            
+        }
+
+        @Override
+        public <T, R> R accept(RectImgDescrVisitor2<T, R> visitor, NoiseAbovePartsRectImgDescr parent, int partIndex, T param) {
+            return visitor.caseNoiseAboveParts_ConnexSegmentLines(parent, partIndex, this, param);
+        }
+        
+        public int getColor() {
+            return color;
+        }
+        public int getFromY() {
+            return fromY;
+        }
+        public Segment[] getLines() {
+            return lines;
+        }
+        
+        
+    }
+    
+    public static class NoiseAbovePartsRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
+        private RectImgDescription underlying;
+
+        private NoiseFragment[][] noiseFragmentsAboveParts;
+
+        public NoiseAbovePartsRectImgDescr(Rect rect) {
+            super(rect);
+        }
+
+        public NoiseAbovePartsRectImgDescr(RectImgDescription underlying, NoiseFragment[][] noiseFragmentsAboveParts) {
+            this.underlying = underlying;
+            this.noiseFragmentsAboveParts = noiseFragmentsAboveParts;
+        }
+
+        @Override
+        public void accept(RectImgDescrVisitor visitor) {
+            visitor.caseNoiseAboveParts(this);            
+        }
+
+        @Override
+        public <T, R> R accept(RectImgDescrVisitor2<T, R> visitor, T param) {
+            return visitor.caseNoiseAbove(this, param);
+        }
+
+        public RectImgDescription getUnderlying() {
+            return underlying;
+        }
+
+        public void setUnderlying(RectImgDescription  p) {
+            this.underlying = p;
+        }
+
+        public NoiseFragment[][] getNoiseFragmentsAboveParts() {
+            return noiseFragmentsAboveParts;
+        }
+
+        public void setNoiseFragmentsAboveParts(NoiseFragment[][] p) {
+            this.noiseFragmentsAboveParts = p;
+        }
+
+        public Dim getPartDim(int partIndex) {
+            return rect.getDim(); // TODO NOTIMPLEMENTED YET .... restrict for partIndex !!
+        }
+
+        public int getPartCount() {
+            return 0;
+        }
+
+        public Rect getPartRect(int partIndex) {
+            return rect; // TODO NOT IMPlEMENTED YET ... restrict
+        }
+        
+    }
+
+    // ------------------------------------------------------------------------
+
+    
+    public static class OverrideAttributesProxyRectImgDescr extends RectImgDescription {
+
+        /** */
+        private static final long serialVersionUID = 1L;
+
+        private RectImgDescription underlying;
+
+        private Map<Object,Object> attributeOverrides = new HashMap<Object,Object>();
+        
+        public OverrideAttributesProxyRectImgDescr(Rect rect) {
+            super(rect);
+        }
+
+        public OverrideAttributesProxyRectImgDescr(RectImgDescription underlying, Map<Object, Object> attributeOverrides) {
+            this.underlying = underlying;
+            this.attributeOverrides = attributeOverrides;
+        }
+        
+        public void accept(RectImgDescrVisitor visitor) {
+            visitor.caseOverrideAttributesProxy(this);            
+        }
+
+        @Override
+        public <T, R> R accept(RectImgDescrVisitor2<T, R> visitor, T param) {
+            return visitor.caseOverrideAttributesProxy(this, param);
+        }
+
+        public RectImgDescription getUnderlying() {
+            return underlying;
+        }
+        
+        public void setUnderlying(RectImgDescription underlying) {
+            this.underlying = underlying;
+        }
+
+        public Map<Object, Object> getAttributeOverrides() {
+            return attributeOverrides;
+        }
+        
         
     }
     

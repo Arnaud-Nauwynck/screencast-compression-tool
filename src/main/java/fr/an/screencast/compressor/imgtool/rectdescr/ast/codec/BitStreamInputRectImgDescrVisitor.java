@@ -22,15 +22,22 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ConnexSegmentLinesNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseAbovePartsRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.OverrideAttributesProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.PtNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.SegmentNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
@@ -217,14 +224,25 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         return Rect.newPtToPt(fromX,  fromY, toX, toY);
     }
 
+    // implements Visitor
+    // ------------------------------------------------------------------------
+    
     @Override
-    public void caseFillRect(FillRectImgDescr node) {
-        int color = readColor("fill");
-        node.setColor(color);
+    public void caseRoot(RootRectImgDescr node) {
+        // TODO cf readTopLevel..
+        Rect rect = node.getRect();
+        RectImgDescription target = readWithRect(rect);
+        node.setTarget(target);
     }
 
     @Override
-    public void caseRoundBorderDescr(RoundBorderRectImgDescr node) {
+    public void caseFill(FillRectImgDescr node) {
+        int color = readColor("fill");
+        node.setColor(color);
+    }
+    
+    @Override
+    public void caseRoundBorder(RoundBorderRectImgDescr node) {
         Rect rect = node.getRect();
 
         node.setBorderColor(readColor("fill"));
@@ -246,7 +264,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseBorderDescr(BorderRectImgDescr node) {
+    public void caseBorder(BorderRectImgDescr node) {
         final Rect rect = node.getRect();
         final int W = rect.getWidth(), H = rect.getHeight();
         int borderTop = in.readIntMinMax(0, H-1);
@@ -262,7 +280,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseTopBottomBorderDescr(TopBottomBorderRectImgDescr node) {
+    public void caseTopBottomBorder(TopBottomBorderRectImgDescr node) {
         final Rect rect = node.getRect();
         final int H = rect.getHeight();
         int borderTop = in.readIntMinMax(0, H-1);
@@ -277,7 +295,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseLeftRightBorderDescr(LeftRightBorderRectImgDescr node) {
+    public void caseLeftRightBorder(LeftRightBorderRectImgDescr node) {
         final Rect rect = node.getRect();
         final int W = rect.getWidth();
         int borderLeft = in.readIntMinMax(0, W-1);
@@ -292,7 +310,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseVerticalSplitDescr(VerticalSplitRectImgDescr node) {
+    public void caseVerticalSplit(VerticalSplitRectImgDescr node) {
         final Rect rect = node.getRect();
 
         int splitBorderFrom = in.readIntMinMax(rect.fromX, rect.toX);
@@ -309,7 +327,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseHorizontalSplitDescr(HorizontalSplitRectImgDescr node) {
+    public void caseHorizontalSplit(HorizontalSplitRectImgDescr node) {
         final Rect rect = node.getRect();
         int splitBorderFrom = in.readIntMinMax(rect.fromY, rect.toY);
         int splitBorderTo = in.readIntMinMax(splitBorderFrom+1, rect.toY);
@@ -325,7 +343,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseLinesSplitDescr(LinesSplitRectImgDescr node) {
+    public void caseLinesSplit(LinesSplitRectImgDescr node) {
         final Rect rect = node.getRect();
         if (!in.readBit()) {
             return;
@@ -361,7 +379,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseColumnsSplitDescr(ColumnsSplitRectImgDescr node) {
+    public void caseColumnsSplit(ColumnsSplitRectImgDescr node) {
         final Rect rect = node.getRect();
         if (!in.readBit()) {
             return;
@@ -380,7 +398,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseRawDataDescr(RawDataRectImgDescr node) {
+    public void caseRawData(RawDataRectImgDescr node) {
         Dim dim = node.getDim();
         int[] rawData;
         try (StreamPopper topPop = in.pushSetCurrStream("rawData")) {
@@ -391,7 +409,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
 
 
     @Override
-    public void caseGlyphDescr(GlyphRectImgDescr node) {
+    public void caseGlyph(GlyphRectImgDescr node) {
         GlyphIndexOrCode glyphIndexOrCode;
         int crc;
         int[] glyphData;
@@ -426,11 +444,11 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     @Override
-    public void caseAboveDescr(RectImgAboveRectImgDescr node) {
+    public void caseAbove(RectImgAboveRectImgDescr node) {
         final Rect rect = node.getRect();
 
         RectImgDescription underlying = readWithRect(rect);
-        node.setUnderlyingRectImgDescr(underlying);
+        node.setUnderlying(underlying);
 
         int aboveCount = in.readIntMinMax(0, rect.getArea()+1);
         RectImgDescription[] aboves = new RectImgDescription[aboveCount]; 
@@ -443,9 +461,85 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         }
         node.setAboveRectImgDescrs(aboves);
     }
+    
+    @Override
+    public void caseNoiseAboveParts(NoiseAbovePartsRectImgDescr node) {
+        final Rect rect = node.getRect();
+        RectImgDescription underlying = readWithRect(rect);
+        node.setUnderlying(underlying);
+        int maxFragCount = rect.getArea(); // TODO 
+        int partCount = node.getPartCount();
+        NoiseFragment[][] noiseFragmentsAboveParts = new NoiseFragment[partCount][];
+        for (int partIndex = 0; partIndex < partCount; partIndex++) {
+            Rect fragRect = node.getPartRect(partIndex);
+            int fragCount = in.readIntMinMax(0, maxFragCount);
+            NoiseFragment[] frags = new NoiseFragment[fragCount];
+            for(int fragI = 0; fragI < fragCount; fragI++) {
+                int type = in.readIntMinMax(0, 3); // 0:Pt, 1:Seg, 2:ConnexLines
+                NoiseFragment frag;
+                switch(type) {
+                case 0: {
+                    int x = in.readIntMinMax(fragRect.fromX, fragRect.toX);
+                    int y = in.readIntMinMax(fragRect.fromY, fragRect.toY);
+                    int color = readColor("noise-pt");
+                    frag = new PtNoiseFragment(x, y, color);
+                } break;
+                case 1: { 
+                    int fromX = in.readIntMinMax(fragRect.fromX, fragRect.toX);
+                    int toX = in.readIntMinMax(fromX + 1, fragRect.toX);
+                    int y = in.readIntMinMax(fragRect.fromY, fragRect.toY);
+                    int color = readColor("noise-seg");
+                    frag = new SegmentNoiseFragment(fromX, toX, y, color);
+                } break;
+                case 2: { 
+                    int fromY = in.readIntMinMax(fragRect.fromY, fragRect.toY);
+                    int linesCount = in.readIntMinMax(fromY, fragRect.toY) - fromY;
+                    Segment[] lines = new Segment[linesCount];
+                    for(int lineI = 0; lineI < linesCount; lineI++) {
+                        int fromX = in.readIntMinMax(fragRect.fromX, fragRect.toX);
+                        int toX = in.readIntMinMax(fromX + 1, fragRect.toX);
+                        lines[lineI] = new Segment(fromX, toX);
+                    }
+                    int color = readColor("noise-connexe");
+                    frag = new ConnexSegmentLinesNoiseFragment(fromY, lines, color);
+                } break;
+                default:
+                    throw new IllegalStateException();
+                }
+                frags[fragI] = frag; //TODO NOT IMPLEMENTED YET
+            }
+            noiseFragmentsAboveParts[partIndex] = frags;
+        }
+        node.setNoiseFragmentsAboveParts(noiseFragmentsAboveParts);
+    }
 
     @Override
-    public void caseAnalysisProxyRect(AnalysisProxyRectImgDescr node) {
+    public void caseNoiseAboveParts_Pt(NoiseAbovePartsRectImgDescr parent, int partIndex, PtNoiseFragment node) {
+        // no used
+    }
+
+    @Override
+    public void caseNoiseAboveParts_Segment(NoiseAbovePartsRectImgDescr parent, int partIndex, SegmentNoiseFragment node) {
+        // no used
+    }
+
+    @Override
+    public void caseNoiseAboveParts_ConnexSegmentLines(NoiseAbovePartsRectImgDescr parent, int partIndex, ConnexSegmentLinesNoiseFragment node) {
+        // no used
+    }
+
+    @Override
+    public void caseOverrideAttributesProxy(OverrideAttributesProxyRectImgDescr node) {
+        Rect rect = node.getRect();
+        RectImgDescription underlying = readWithRect(rect);
+        node.setUnderlying(underlying);
+        Map<Object, Object> attributeOverrides = node.getAttributeOverrides();
+        // TODO NOT IMPLEMENTED read attributes!
+        
+    }
+
+    @Override
+    public void caseAnalysisProxy(AnalysisProxyRectImgDescr node) {
         Rect rect = node.getRect();
         RectImgDescription target = readWithRect(rect);
         node.setTarget(target);

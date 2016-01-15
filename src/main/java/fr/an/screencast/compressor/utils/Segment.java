@@ -83,5 +83,16 @@ public final class Segment implements ISegment, Serializable {
         }
         return res;
     }
+
+    public static String toString(Segment[] src) {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < src.length; i++) {
+            sb.append(src[i]);
+            if (i + 1 < src.length) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
+    }
     
 }
