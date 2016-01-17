@@ -1,4 +1,4 @@
-package fr.an.screencast.ui;
+package fr.an.screencast.ui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -15,10 +15,10 @@ import javax.swing.SwingUtilities;
 import fr.an.screencast.compressor.imgstream.VideoStreamFactory;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.player.ScreenPlayerListener.ScreenPlayerListenerAdapter;
+import fr.an.screencast.ui.swing.internal.ImageCanvas;
+import fr.an.screencast.ui.swing.internal.PlayerStatusBar;
+import fr.an.screencast.ui.swing.internal.PlayerToolbar;
 import fr.an.screencast.player.VideoStreamPlayer;
-import fr.an.screencast.ui.internal.ImageCanvas;
-import fr.an.screencast.ui.internal.PlayerStatusBar;
-import fr.an.screencast.ui.internal.PlayerToolbar;
 
 public class PlayerView {
 

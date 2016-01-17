@@ -1,4 +1,4 @@
-package fr.an.screencast.ui;
+package fr.an.screencast.ui.swing;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -40,10 +40,10 @@ import fr.an.screencast.compressor.utils.FileSerialisationUtils;
 import fr.an.screencast.compressor.utils.ProgessPrinter;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.player.ScreenPlayerListener.ScreenPlayerListenerAdapter;
+import fr.an.screencast.ui.swing.internal.DeltaImageAnalysisPanel;
+import fr.an.screencast.ui.swing.internal.PlayerStatusBar;
+import fr.an.screencast.ui.swing.internal.PlayerToolbar;
 import fr.an.screencast.player.VideoStreamPlayer;
-import fr.an.screencast.ui.internal.DeltaImageAnalysisPanel;
-import fr.an.screencast.ui.internal.PlayerStatusBar;
-import fr.an.screencast.ui.internal.PlayerToolbar;
 
 public class DecodeDiffView {
 

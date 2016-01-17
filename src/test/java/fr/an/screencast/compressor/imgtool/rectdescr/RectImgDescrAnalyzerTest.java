@@ -25,7 +25,7 @@ import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
-import fr.an.screencast.ui.ImageViewUtils;
+import fr.an.screencast.ui.swing.ImageViewUtils;
 
 public class RectImgDescrAnalyzerTest {
 
@@ -48,6 +48,17 @@ public class RectImgDescrAnalyzerTest {
         img_screen1920x1080 = new ImageData(dim, imgData);
     }
 
+    public static RectImgDescription analyseTstFile0() {
+        return analyseTstFile(ImageTstUtils.FILENAME_screen_eclipse_1920x1080);
+    }
+    
+    public static RectImgDescription analyseTstFile(String imageFileName) {
+        RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
+        Rect imgRect = Rect.newDim(sut.getDim());
+        RectImgDescription res = sut.analyze(imgRect);
+        return res;
+    }
+    
     @Test
     public void testAnalyze_screen_eclipse_1920x1080() {
         // Prepare

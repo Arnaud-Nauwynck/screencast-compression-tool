@@ -468,10 +468,10 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         RectImgDescription underlying = readWithRect(rect);
         node.setUnderlying(underlying);
         int maxFragCount = rect.getArea(); // TODO 
-        int partCount = node.getPartCount();
+        int partCount = node.getUnderlyingExtraPartCount();
         NoiseFragment[][] noiseFragmentsAboveParts = new NoiseFragment[partCount][];
         for (int partIndex = 0; partIndex < partCount; partIndex++) {
-            Rect fragRect = node.getPartRect(partIndex);
+            Rect fragRect = node.getUnderlyingExtraPartRect(partIndex);
             int fragCount = in.readIntMinMax(0, maxFragCount);
             NoiseFragment[] frags = new NoiseFragment[fragCount];
             for(int fragI = 0; fragI < fragCount; fragI++) {

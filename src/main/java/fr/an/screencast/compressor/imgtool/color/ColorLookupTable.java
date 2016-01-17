@@ -2,6 +2,8 @@ package fr.an.screencast.compressor.imgtool.color;
 
 import java.util.Arrays;
 
+import fr.an.bitwise4j.encoder.structio.StructDataInput;
+import fr.an.bitwise4j.encoder.structio.StructDataOutput;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
@@ -67,5 +69,28 @@ public class ColorLookupTable {
     public int size() {
         return rgbToIndexMap.size();
     }
+
+    public void sortRGBIndexes() {
+        int size = rgbToIndexMap.size();
+        Arrays.sort(indexToRgb, 0, size);
+        rgbToIndexMap.clear();
+        for(int i = 0; i != size; i++) {
+            rgbToIndexMap.put(indexToRgb[i], i); 
+        }
+    }
     
+    public void writeSortedTo(StructDataOutput out) {
+        // assert ... sortRGBIndexes();
+        int size = rgbToIndexMap.size();
+        out.writeIntMinMax(0, 1 << 24, size);
+        
+    }
+
+    public void readSortedFrom(StructDataInput in) {
+        int size = in.readIntMinMax(0, 1 << 24);
+        rgbToIndexMap.clear();
+        indexToRgb = new int[size];
+        
+    }
+
 }

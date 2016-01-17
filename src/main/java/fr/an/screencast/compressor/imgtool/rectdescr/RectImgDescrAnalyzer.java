@@ -1,11 +1,6 @@
 package fr.an.screencast.compressor.imgtool.rectdescr;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +142,6 @@ public class RectImgDescrAnalyzer {
                 LOG.warn("missing rects area in scan: expecting " + rect.getArea() + ", got " + sumArea + " for " + rect);
             }
             if (scannedBorderRects != null && !scannedBorderRects.isEmpty() 
-                    && scannedBorderRects.size() < (rect.getArea() / 8)  // else many small borders...useless!
                     ) {
                 res = helper.detectLineBreaksInScannedRightThenDownRects(rect, scannedBorderRects);
                 if (res != null) {
@@ -159,10 +153,12 @@ public class RectImgDescrAnalyzer {
                 if (res != null) {
                     return res;
                 }
-        
-                res = helper.createScannedRectsToImgDescr(rect, scannedBorderRects, true);
-                if (res != null) {
-                    return res;
+
+                if (scannedBorderRects.size() < (rect.getArea() / 8)) {  // else many small borders...useless!
+                    res = helper.createScannedRectsToImgDescr(rect, scannedBorderRects, true);
+                    if (res != null) {
+                        return res;
+                    }
                 }
             }
         }
@@ -170,18 +166,6 @@ public class RectImgDescrAnalyzer {
         // nothing found => use RawData !
         int[] rawData = ImageRasterUtils.getCopyData(dim, imgData, rect);
         res = new RawDataRectImgDescr(rect, rawData);
-        
-        boolean debug = false;
-        if (debug) {
-            BufferedImage img = new BufferedImage(rect.getWidth(), rect.getHeight(), BufferedImage.TYPE_INT_RGB);
-            ImageRasterUtils.copyData(img, rawData);
-            File outputFile = new File("src/test/imgs/img-" + rect.toStringPtDim() + ".png");
-            try {
-                ImageIO.write(img, "png", outputFile);
-            } catch (IOException ex) {
-                LOG.warn("Failed write file:" + outputFile, ex);
-            }
-        }
         
         return res;
     }

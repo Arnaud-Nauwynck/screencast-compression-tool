@@ -31,7 +31,7 @@ import fr.an.screencast.compressor.utils.MutableDim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
-import fr.an.screencast.ui.ImageViewUtils;
+import fr.an.screencast.ui.swing.ImageViewUtils;
 
 public class RectImgDescrDetectorHelperTest {
 

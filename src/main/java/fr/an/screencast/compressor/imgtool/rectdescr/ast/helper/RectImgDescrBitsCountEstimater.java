@@ -368,7 +368,7 @@ public class RectImgDescrBitsCountEstimater {
         @Override
         public Void caseNoiseAboveParts_Pt(NoiseAbovePartsRectImgDescr parent, int partIndex, PtNoiseFragment node, BitsCount stats) {
             int bitsCount = 10;
-            Dim partDim = parent.getPartDim(partIndex); 
+            Dim partDim = parent.getUnderlyingExtraPartDim(partIndex); 
             bitsCount += estimSumBitsForPoints(partDim.width, partDim.height, 1, 1);
             bitsCount += colorBitsCount;
             stats.incr(bitsCount);
@@ -378,7 +378,7 @@ public class RectImgDescrBitsCountEstimater {
         @Override
         public Void caseNoiseAboveParts_Segment(NoiseAbovePartsRectImgDescr parent, int partIndex, SegmentNoiseFragment node, BitsCount stats) {
             int bitsCount = 10;
-            Dim partDim = parent.getPartDim(partIndex); 
+            Dim partDim = parent.getUnderlyingExtraPartDim(partIndex); 
             bitsCount += estimSumBitsForPoints(partDim.width, partDim.height, 2, 1);
             bitsCount += colorBitsCount;
             stats.incr(bitsCount);
@@ -389,7 +389,7 @@ public class RectImgDescrBitsCountEstimater {
         public Void caseNoiseAboveParts_ConnexSegmentLines(NoiseAbovePartsRectImgDescr parent, int partIndex, ConnexSegmentLinesNoiseFragment node,
                 BitsCount stats) {
             int bitsCount = 10; 
-            Dim partDim = parent.getPartDim(partIndex);
+            Dim partDim = parent.getUnderlyingExtraPartDim(partIndex);
             Segment[] lines = node.getLines();
             int linesLen = lines != null? lines.length : 0;
             bitsCount += estimSumBitsForPoints(partDim.width, partDim.height, 2*linesLen, 2);

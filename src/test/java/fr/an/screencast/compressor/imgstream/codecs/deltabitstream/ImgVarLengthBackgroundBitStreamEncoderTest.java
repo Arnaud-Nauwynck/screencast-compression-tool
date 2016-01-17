@@ -25,7 +25,7 @@ public class ImgVarLengthBackgroundBitStreamEncoderTest {
         
         ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
         BitOutputStream bitOut = new OutputStreamToBitOutputStream(byteBuffer);
-        BitStreamStructDataOutput bitStructOut = new BitStreamStructDataOutput(bitOut );
+        BitStreamStructDataOutput bitStructOut = new BitStreamStructDataOutput(bitOut);
         ImgVarLengthBackgroundBitStreamEncoder sut = new ImgVarLengthBackgroundBitStreamEncoder(bitStructOut );
         // Perform
         sut.writeImgData_divideVarLengthWithBg(imgData, backgroundColor);

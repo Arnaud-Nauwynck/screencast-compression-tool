@@ -65,6 +65,11 @@ public class RectImgDescriptionAST {
             return rect.getDim();
         }
 
+        public abstract int getChildCount();
+        public abstract RectImgDescription getChild(int child);
+        public abstract int getExtraPartCount();
+        public abstract Rect getExtraPartRect(int part);
+        
         @Override
         public String toString() {
             return "RectImgDescr[rect=" + rect + "]";
@@ -99,6 +104,20 @@ public class RectImgDescriptionAST {
             return visitor.caseRoot(this, param);
         }
 
+        public int getChildCount() {
+            return 1;
+        }
+        public RectImgDescription getChild(int child) {
+            assert child == 0;
+            return target;
+        }
+        public int getExtraPartCount() {
+            return 0;
+        }
+        public Rect getExtraPartRect(int part) {
+            throw new IllegalStateException();
+        }
+
         public Dim getTopLevelDim() {
             return topLevelDim;
         }
@@ -110,7 +129,7 @@ public class RectImgDescriptionAST {
         public void setTarget(RectImgDescription target) {
             this.target = target;
         }
-        
+
     }
     
     
@@ -138,6 +157,19 @@ public class RectImgDescriptionAST {
             return visitor.caseAnalysisProxy(this, param);
         }
 
+        public int getChildCount() {
+            return 1;
+        }
+        public RectImgDescription getChild(int child) {
+            assert child == 0;
+            return target;
+        }
+        public int getExtraPartCount() {
+            return 0;
+        }
+        public Rect getExtraPartRect(int part) {
+            throw new IllegalStateException();
+        }
 
         public RectImgDescription getTarget() {
             return target;
@@ -175,6 +207,19 @@ public class RectImgDescriptionAST {
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseFill(this, param);
         }
+
+        public int getChildCount() {
+            return 0;
+        }
+        public RectImgDescription getChild(int child) {
+            throw new IllegalStateException();
+        }
+        public int getExtraPartCount() {
+            return 0;
+        }
+        public Rect getExtraPartRect(int part) {
+            throw new IllegalStateException();
+        }
         
         public int getColor() {
             return color;
@@ -193,6 +238,19 @@ public class RectImgDescriptionAST {
 
     // ------------------------------------------------------------------------
 
+    /**
+     * descr for rectangular img wrapped with corner(round?) border 
+     * <PRE>
+     * +-----------------------+
+     * |0  |       1       | 2 |
+     * |---+---------------+---|
+     * |3|        inside     |4|
+     * |--+-----------------+--|
+     * |5 |      6          | 7|
+     * +-----------------------+
+     * </PRE>
+     * 
+     */
     public static class RoundBorderRectImgDescr extends RectImgDescription {
 
         /** */
@@ -231,6 +289,38 @@ public class RectImgDescriptionAST {
             return visitor.caseRoundBorder(this, param);
         }
 
+        public int getChildCount() {
+            return 1;
+        }
+        public RectImgDescription getChild(int child) {
+            if (child != 0) throw new IllegalStateException();
+            return inside;
+        }
+        public int getExtraPartCount() {
+            return 8;
+        }
+        public Rect getExtraPartRect(int part) {
+            switch(part) {
+            case 0: return Rect.newPtToPt(rect.fromX, rect.fromY, 
+                rect.fromX + topCornerDim.width, rect.fromY + topCornerDim.height);
+            case 1: return Rect.newPtToPt(rect.fromX + topCornerDim.width, rect.fromY,
+                rect.toX - topCornerDim.width, rect.fromY + topCornerDim.height);
+            case 2: return Rect.newPtToPt(rect.toX - topCornerDim.width, rect.fromY,
+                rect.toX, rect.fromY + topCornerDim.height);
+            case 3: return Rect.newPtToPt(rect.fromX, rect.fromY + topCornerDim.height,
+                rect.fromX + borderThick, rect.toY - bottomCornerDim.height);
+            case 4: return Rect.newPtToPt(rect.fromX + borderThick, rect.fromY + topCornerDim.height,
+                rect.toX - borderThick, rect.toY - bottomCornerDim.height);
+            case 5: return Rect.newPtToPt(rect.fromX, rect.toY - bottomCornerDim.height,
+                rect.fromX + bottomCornerDim.width, rect.toY);
+            case 6: return Rect.newPtToPt(rect.fromX + bottomCornerDim.width, rect.toY - bottomCornerDim.height,
+                rect.toX - bottomCornerDim.width, rect.toY);
+            case 7: return Rect.newPtToPt(rect.toX - bottomCornerDim.width, rect.toY - bottomCornerDim.height,
+                rect.toX, rect.toY);
+            default: throw new IllegalStateException();
+            }
+        }
+        
         public Rect getInsideRect() {
             return Rect.newPtToPt(rect.fromX + borderThick, rect.fromY + borderThick,
                 rect.toX - borderThick, rect.toY - borderThick);
@@ -288,6 +378,19 @@ public class RectImgDescriptionAST {
     
     // ------------------------------------------------------------------------
 
+    /**
+     * descr for rectangular img wrapped with round border 
+     * <PRE>
+     * +---------------------+
+     * |       0             |
+     * |--+---------------+--|
+     * | 1|   inside      | 2|
+     * |--+---------------+--|
+     * |       3             |
+     * +---------------------+
+     * </PRE>
+     * 
+     */
     public static class BorderRectImgDescr extends RectImgDescription {
 
         /** */
@@ -316,6 +419,30 @@ public class RectImgDescriptionAST {
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseBorder(this, param);
+        }
+
+        public int getChildCount() {
+            return 1;
+        }
+        public RectImgDescription getChild(int child) {
+            assert child == 0;
+            return inside;
+        }
+        public int getExtraPartCount() {
+            return 4;
+        }
+        public Rect getExtraPartRect(int part) {
+            switch(part) {
+            case 0: return Rect.newPtToPt(rect.fromX, rect.fromY, 
+                rect.toX, rect.fromY + border.top);
+            case 1: return Rect.newPtToPt(rect.fromX, rect.fromY + border.top,
+                rect.toX + border.left, rect.toY - border.bottom);
+            case 2: return Rect.newPtToPt(rect.toX - border.right, rect.fromY + border.top,
+                rect.toX, rect.toY - border.bottom);
+            case 3: return Rect.newPtToPt(rect.fromX, rect.toY - border.bottom,
+                rect.toX, rect.toY);
+            default: throw new IllegalStateException();
+            }
         }
 
         public int getBorderColor() {
@@ -351,7 +478,19 @@ public class RectImgDescriptionAST {
 
     // ------------------------------------------------------------------------
     
-    /** specialized BorderRectImgDescr, for Top&Bottom border only */ 
+    /** 
+     * specialized BorderRectImgDescr, for Top&Bottom border only 
+     * 
+     * <PRE>
+     * +---------------------+
+     * |       0             |
+     * |---------------------|
+     * |      inside         |
+     * |---------------------|
+     * |       1             |
+     * +---------------------+
+     * </PRE>
+     */ 
     public static class TopBottomBorderRectImgDescr extends RectImgDescription {
 
         /** */
@@ -384,6 +523,26 @@ public class RectImgDescriptionAST {
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseTopBottomBorder(this, param);
+        }
+
+        public int getChildCount() {
+            return 1;
+        }
+        public RectImgDescription getChild(int child) {
+            assert child == 0;
+            return inside;
+        }
+        public int getExtraPartCount() {
+            return 2;
+        }
+        public Rect getExtraPartRect(int part) {
+            switch(part) {
+            case 0: return Rect.newPtToPt(rect.fromX, rect.fromY, 
+                rect.toX, rect.fromY + topBorder);
+            case 1: return Rect.newPtToPt(rect.fromX, rect.toY - bottomBorder,
+                rect.toX, rect.toY);
+            default: throw new IllegalStateException();
+            }
         }
 
         public int getBorderColor() {
@@ -436,7 +595,16 @@ public class RectImgDescriptionAST {
 
     // ------------------------------------------------------------------------
     
-    /** specialized BorderRectImgDescr, for Left&Rightborder only */ 
+    /** specialized BorderRectImgDescr, for Left&Rightborder only 
+     * 
+     * <PRE>
+     * +--+---------------+--+
+     * |  |               |  |
+     * | 0|   inside      | 1|
+     * |  |               |  |
+     * +--+---------------+--+
+     * </PRE>
+     */ 
     public static class LeftRightBorderRectImgDescr extends RectImgDescription {
 
         /** */
@@ -469,6 +637,26 @@ public class RectImgDescriptionAST {
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseLeftRightBorder(this, param);
+        }
+
+        public int getChildCount() {
+            return 1;
+        }
+        public RectImgDescription getChild(int child) {
+            assert child == 0;
+            return inside;
+        }
+        public int getExtraPartCount() {
+            return 2;
+        }
+        public Rect getExtraPartRect(int part) {
+            switch(part) {
+            case 0: return Rect.newPtToPt(rect.fromX, rect.fromY, 
+                rect.fromX + leftBorder, rect.toY);
+            case 1: return Rect.newPtToPt(rect.toX - rightBorder, rect.fromY,
+                rect.toX, rect.toY);
+            default: throw new IllegalStateException();
+            }
         }
 
         public int getBorderColor() {
@@ -520,6 +708,16 @@ public class RectImgDescriptionAST {
 
     // ------------------------------------------------------------------------
 
+    /**
+     * <PRE>
+     * +--------+-+---------+
+     * |        | |         |
+     * |  left  |0|  right  |
+     * |        | |         |
+     * +--------+-+---------+
+     * </PRE>
+     *
+     */
     public static class VerticalSplitRectImgDescr extends RectImgDescription {
         
         /** */
@@ -551,6 +749,21 @@ public class RectImgDescriptionAST {
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseVerticalSplit(this, param);
+        }
+
+        public int getChildCount() {
+            return 2;
+        }
+        public RectImgDescription getChild(int child) {
+            assert 0 <= child && child < 2;
+            return child == 0? left : right;
+        }
+        public int getExtraPartCount() {
+            return 1;
+        }
+        public Rect getExtraPartRect(int part) {
+            return Rect.newPtToPt(splitBorder.from, rect.fromY, 
+                splitBorder.to, rect.toY);
         }
 
         public Rect getLeftRect() {
@@ -598,6 +811,19 @@ public class RectImgDescriptionAST {
 
     // ------------------------------------------------------------------------
 
+    /**
+     * <PRE>
+     * +---------------------+
+     * |        up           |
+     * |                     |
+     * +---------------------+
+     * |         0           |
+     * +---------------------+
+     * |                     |
+     * |        down         |
+     * +---------------------+
+     * </PRE>
+     */
     public static class HorizontalSplitRectImgDescr extends RectImgDescription {
 
         /** */
@@ -629,6 +855,21 @@ public class RectImgDescriptionAST {
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseHorizontalSplit(this, param);
+        }
+
+        public int getChildCount() {
+            return 2;
+        }
+        public RectImgDescription getChild(int child) {
+            assert 0 <= child && child < 2;
+            return child == 0? up : down;
+        }
+        public int getExtraPartCount() {
+            return 1;
+        }
+        public Rect getExtraPartRect(int part) {
+            return Rect.newPtToPt(rect.fromX, splitBorder.from, 
+                rect.toX, splitBorder.to);
         }
 
         public Rect getUpRect() {
@@ -675,6 +916,28 @@ public class RectImgDescriptionAST {
     
     // ------------------------------------------------------------------------
 
+    /**
+     * <PRE>
+     * +---------------------+
+     * |         0           |
+     * +---------------------+
+     * |        line[0]      |
+     * |                     |
+     * +---------------------+
+     * |         1           |
+     * +---------------------+
+     * |        line[1]      |
+     * +---------------------+
+     * |         2           |
+     * +---------------------+
+     * |        ...          |
+     * |                     |
+     * |        line[n-1]    |
+     * +---------------------+
+     * |          n          |
+     * +---------------------+
+     * </PRE>
+     */
     public static class LinesSplitRectImgDescr extends RectImgDescription {
 
         /** */
@@ -712,6 +975,22 @@ public class RectImgDescriptionAST {
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseLinesSplit(this, param);
+        }
+
+        public int getChildCount() {
+            return lines.length;
+        }
+        public RectImgDescription getChild(int child) {
+            assert 0 <= child && child < lines.length;
+            return lines[child];
+        }
+        public int getExtraPartCount() {
+            return splitBorders.length;
+        }
+        public Rect getExtraPartRect(int part) {
+            assert 0 <= part && part < splitBorders.length;
+            return Rect.newPtToPt(rect.fromX, splitBorders[part].from,  
+                rect.toX, splitBorders[part].to);
         }
 
         public Rect[] getLineRects() {
@@ -761,6 +1040,16 @@ public class RectImgDescriptionAST {
 
     // ------------------------------------------------------------------------
 
+    /**
+     * <PRE>
+     * +--+------+-+---------+-+---------+--+
+     * |  |      | |         | |         |  |
+     * |0 |col[0]|1| col[1]  |2| col[n-1]|n |
+     * |  |      | |         | |         |  | 
+     * +--+------+-+---------+-+---------+--+
+     * </PRE>
+     *
+     */
     public static class ColumnsSplitRectImgDescr extends RectImgDescription {
 
         /** */
@@ -795,6 +1084,22 @@ public class RectImgDescriptionAST {
 
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseColumnsSplit(this, param);
+        }
+
+        public int getChildCount() {
+            return columns.length;
+        }
+        public RectImgDescription getChild(int child) {
+            assert 0 <= child && child < columns.length;
+            return columns[child];
+        }
+        public int getExtraPartCount() {
+            return splitBorders.length;
+        }
+        public Rect getExtraPartRect(int part) {
+            assert 0 <= part && part < splitBorders.length;
+            return Rect.newPtToPt(splitBorders[part].from, rect.fromY,  
+                splitBorders[part].to, rect.toY);
         }
 
         public Rect[] getColumnRects() {
@@ -843,6 +1148,17 @@ public class RectImgDescriptionAST {
 
     // ------------------------------------------------------------------------
 
+    /**
+     * <PRE>
+     * +--------------+
+     * |              |
+     * |  raw data    |
+     * |              |
+     * |  no repeat   |
+     * |  size>20x20  |
+     * +--------------+
+     * </PRE>
+     */
     public static class RawDataRectImgDescr extends RectImgDescription {
         
         /** */
@@ -867,6 +1183,19 @@ public class RectImgDescriptionAST {
             return visitor.caseRawData(this, param);
         }
 
+        public int getChildCount() {
+            return 0;
+        }
+        public RectImgDescription getChild(int child) {
+            throw new IllegalStateException();
+        }
+        public int getExtraPartCount() {
+            return 0;
+        }
+        public Rect getExtraPartRect(int part) {
+            throw new IllegalStateException();
+        }
+
         public int[] getRawData() {
             return rawData;
         }
@@ -879,6 +1208,15 @@ public class RectImgDescriptionAST {
     
     // ------------------------------------------------------------------------
 
+    /**
+     * <PRE>
+     * +------------+
+     * | glyph #123 | 
+     * | (repeated) |
+     * | size<~20x20|
+     * +------------+
+     * </PRE>
+     */
     public static class GlyphRectImgDescr extends RectImgDescription {
 
         /** */
@@ -915,6 +1253,19 @@ public class RectImgDescriptionAST {
         
         public <T,R> R accept(RectImgDescrVisitor2<T,R> visitor, T param) {
             return visitor.caseGlyph(this, param);
+        }
+
+        public int getChildCount() {
+            return 0;
+        }
+        public RectImgDescription getChild(int child) {
+            throw new IllegalStateException();
+        }
+        public int getExtraPartCount() {
+            return 0;
+        }
+        public Rect getExtraPartRect(int part) {
+            throw new IllegalStateException();
         }
 
         public int getCrc() {
@@ -972,23 +1323,23 @@ public class RectImgDescriptionAST {
         /** */
         private static final long serialVersionUID = 1L;
 
-        private RectImgDescription underlyingRectImgDescr;
+        private RectImgDescription underlying;
         private Rect[] aboveRects;
-        private RectImgDescription[] aboveRectImgDescrs;
+        private RectImgDescription[] aboves;
 
         public RectImgAboveRectImgDescr(Rect rect) {
             super(rect);
         }
 
-        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlying, 
                 List<Rect> aboveRects) {
-            this(rect, underlyingRectImgDescr, aboveRects.toArray(new Rect[aboveRects.size()]));
+            this(rect, underlying, aboveRects.toArray(new Rect[aboveRects.size()]));
         }
 
-        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlying, 
                 Rect[] aboveRects) {
             super(rect);
-            this.underlyingRectImgDescr = underlyingRectImgDescr;
+            this.underlying = underlying;
             this.aboveRects = aboveRects;
             // check nested rects
             if (aboveRects != null) {
@@ -1003,12 +1354,12 @@ public class RectImgDescriptionAST {
         }
 
 
-        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlyingRectImgDescr, 
-                RectImgDescription[] aboveRectImgDescrs) {
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlying, 
+                RectImgDescription[] aboves) {
             super(rect);
-            this.underlyingRectImgDescr = underlyingRectImgDescr;
-            this.aboveRects = (aboveRectImgDescrs != null)? arrayToRectArray(aboveRectImgDescrs) : null;
-            this.aboveRectImgDescrs = aboveRectImgDescrs;
+            this.underlying = underlying;
+            this.aboveRects = (aboves != null)? arrayToRectArray(aboves) : null;
+            this.aboves = aboves;
         }
 
         public void accept(RectImgDescrVisitor visitor) {
@@ -1019,29 +1370,44 @@ public class RectImgDescriptionAST {
             return visitor.caseAbove(this, param);
         }
 
+        public int getChildCount() {
+            return 1 + aboves.length;
+        }
+        public RectImgDescription getChild(int child) {
+            if (child == 0) return underlying;
+            else return aboves[child-1];
+        }
+        public int getExtraPartCount() {
+            // TODO? partition rect without above rects?
+            return 1;
+        }
+        public Rect getExtraPartRect(int part) {
+            return rect;
+        }
+
         public Rect[] getAboveRects() {
             return aboveRects;
         }
 
         public void setAboveRects(Rect[] aboveRects) {
             this.aboveRects = aboveRects;
-            this.aboveRectImgDescrs = null;
+            this.aboves = null;
         }
 
         public RectImgDescription getUnderlying() {
-            return underlyingRectImgDescr;
+            return underlying;
         }
 
         public void setUnderlying(RectImgDescription underlyingRectImgDescr) {
-            this.underlyingRectImgDescr = underlyingRectImgDescr;
+            this.underlying = underlyingRectImgDescr;
         }
 
         public RectImgDescription[] getAboves() {
-            return aboveRectImgDescrs;
+            return aboves;
         }
 
         public void setAboveRectImgDescrs(RectImgDescription[] aboveRectImgDescrs) {
-            this.aboveRectImgDescrs = aboveRectImgDescrs;
+            this.aboves = aboveRectImgDescrs;
             this.aboveRects = (aboveRectImgDescrs != null)? arrayToRectArray(aboveRectImgDescrs) : null;;
         }
         
@@ -1188,6 +1554,16 @@ public class RectImgDescriptionAST {
         
     }
     
+    /** 
+     * Description for any underlying element, with noise fragments above it
+     * <PRE>
+     * +---+----------+---+
+     * |X  |   yyyyy  |   |
+     * | 0 |  elt[0]  | 1 |
+     * | XX| ZZ       |ZZZ|
+     * +-- +----------+---+
+     * </PRE>
+     */ 
     public static class NoiseAbovePartsRectImgDescr extends RectImgDescription {
 
         /** */
@@ -1216,6 +1592,19 @@ public class RectImgDescriptionAST {
             return visitor.caseNoiseAbove(this, param);
         }
 
+        public int getChildCount() {
+            return 1;
+        }
+        public RectImgDescription getChild(int child) {
+            return underlying;
+        }
+        public int getExtraPartCount() {
+            return (underlying != null)? underlying.getExtraPartCount() : 0;
+        }
+        public Rect getExtraPartRect(int part) {
+            return underlying.getExtraPartRect(part);
+        }
+        
         public RectImgDescription getUnderlying() {
             return underlying;
         }
@@ -1232,16 +1621,16 @@ public class RectImgDescriptionAST {
             this.noiseFragmentsAboveParts = p;
         }
 
-        public Dim getPartDim(int partIndex) {
-            return rect.getDim(); // TODO NOTIMPLEMENTED YET .... restrict for partIndex !!
+        public Dim getUnderlyingExtraPartDim(int partIndex) {
+            return underlying.getExtraPartRect(partIndex).getDim();
         }
 
-        public int getPartCount() {
-            return 0;
+        public int getUnderlyingExtraPartCount() {
+            return underlying.getExtraPartCount();
         }
 
-        public Rect getPartRect(int partIndex) {
-            return rect; // TODO NOT IMPlEMENTED YET ... restrict
+        public Rect getUnderlyingExtraPartRect(int partIndex) {
+            return underlying.getExtraPartRect(partIndex);
         }
         
     }
@@ -1274,6 +1663,20 @@ public class RectImgDescriptionAST {
         @Override
         public <T, R> R accept(RectImgDescrVisitor2<T, R> visitor, T param) {
             return visitor.caseOverrideAttributesProxy(this, param);
+        }
+
+        public int getChildCount() {
+            return 1;
+        }
+        public RectImgDescription getChild(int child) {
+            assert child == 0;
+            return underlying;
+        }
+        public int getExtraPartCount() {
+            return 0;
+        }
+        public Rect getExtraPartRect(int part) {
+            throw new IllegalStateException();
         }
 
         public RectImgDescription getUnderlying() {

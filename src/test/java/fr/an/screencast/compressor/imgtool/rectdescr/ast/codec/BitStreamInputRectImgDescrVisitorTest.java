@@ -26,7 +26,7 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescr
 import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
 import fr.an.screencast.compressor.utils.Dim;
-import fr.an.screencast.ui.ImageViewUtils;
+import fr.an.screencast.ui.swing.ImageViewUtils;
 
 public class BitStreamInputRectImgDescrVisitorTest {
 

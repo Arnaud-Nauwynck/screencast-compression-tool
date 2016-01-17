@@ -1,4 +1,4 @@
-package fr.an.screencast.ui.internal;
+package fr.an.screencast.ui.swing.internal;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;

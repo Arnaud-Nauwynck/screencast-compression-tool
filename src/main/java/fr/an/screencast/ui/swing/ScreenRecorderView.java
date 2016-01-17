@@ -1,4 +1,4 @@
-package fr.an.screencast.ui;
+package fr.an.screencast.ui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;

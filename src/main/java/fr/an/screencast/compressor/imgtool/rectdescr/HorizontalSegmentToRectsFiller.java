@@ -6,8 +6,8 @@ import java.util.List;
 import fr.an.screencast.compressor.utils.Rect;
 
 /**
- * scanner class in y,x order to build build rectangles on the fly
- * by filling their bottom segments [fromX,toX];y  
+ * scanner to detect uniform rectangles in scanning y,x order
+ *   
  *
  */
 public final class HorizontalSegmentToRectsFiller {
