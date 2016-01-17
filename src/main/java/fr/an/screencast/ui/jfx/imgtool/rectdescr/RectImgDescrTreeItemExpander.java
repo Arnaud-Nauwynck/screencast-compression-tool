@@ -45,7 +45,7 @@ public class RectImgDescrTreeItemExpander extends RectImgDescrVisitor2<RectImgDe
             return null;
         }
         RectImgDescrTreeItem res = new RectImgDescrTreeItem(
-            new NodeRectImgDescrTreeItemData(displayName, node));
+            new NodeRectImgDescrTreeItemData<RectImgDescription>(displayName, node));
         node.accept(this, res);
         return res;
     }

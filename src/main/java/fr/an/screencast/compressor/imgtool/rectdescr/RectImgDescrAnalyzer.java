@@ -154,12 +154,12 @@ public class RectImgDescrAnalyzer {
                     return res;
                 }
 
-                if (scannedBorderRects.size() < (rect.getArea() / 8)) {  // else many small borders...useless!
-                    res = helper.createScannedRectsToImgDescr(rect, scannedBorderRects, true);
-                    if (res != null) {
-                        return res;
-                    }
-                }
+//                if (scannedBorderRects.size() < (rect.getArea() / 8)) {  // else many small borders...useless!
+//                    res = helper.createScannedRectsToImgDescr(rect, scannedBorderRects, true);
+//                    if (res != null) {
+//                        return res;
+//                    }
+//                }
             }
         }
         

@@ -25,6 +25,7 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.R
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.SegmentNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
@@ -114,7 +115,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
     }
     
     protected String colorToString(int color) {
-        return colorToString(color);
+        return RGBUtils.toString(color);
     }
     
     // ------------------------------------------------------------------------
