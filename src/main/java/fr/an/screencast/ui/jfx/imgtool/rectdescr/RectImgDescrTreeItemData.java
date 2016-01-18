@@ -1,7 +1,7 @@
 package fr.an.screencast.ui.jfx.imgtool.rectdescr;
 
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RootRectImgDescr;
 
 public abstract class RectImgDescrTreeItemData {
 
@@ -33,7 +33,7 @@ public abstract class RectImgDescrTreeItemData {
     /**
      *
      */
-    public static class NodeRectImgDescrTreeItemData<T extends RectImgDescription> extends RectImgDescrTreeItemData {
+    public static class NodeRectImgDescrTreeItemData<T extends RectImgDescr> extends RectImgDescrTreeItemData {
 
         private T node;
             
@@ -46,7 +46,7 @@ public abstract class RectImgDescrTreeItemData {
 
         // ------------------------------------------------------------------------
 
-        public RectImgDescription getNode() {
+        public RectImgDescr getNode() {
             return node;
         }
     }

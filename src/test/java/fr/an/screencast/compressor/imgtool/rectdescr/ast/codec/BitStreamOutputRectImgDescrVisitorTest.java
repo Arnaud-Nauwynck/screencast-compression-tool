@@ -22,7 +22,7 @@ import fr.an.bitwise4j.encoder.structio.helpers.DebugStructDataOutput;
 import fr.an.bitwise4j.encoder.structio.helpers.DebugTeeStructDataOutput;
 import fr.an.screencast.compressor.imgtool.rectdescr.RectImgDescrAnalyzer;
 import fr.an.screencast.compressor.imgtool.rectdescr.RectImgDescrAnalyzerTest;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.utils.ImageTstUtils;
 import fr.an.screencast.compressor.utils.Rect;
@@ -43,7 +43,7 @@ public class BitStreamOutputRectImgDescrVisitorTest {
 
         RectImgDescrAnalyzer analyzer = RectImgDescrAnalyzerTest.prepareAnalyzeImage(inputImageFileName);
         Rect imgRect = Rect.newDim(analyzer.getDim());
-        RectImgDescription imgRectDescr = analyzer.analyze(imgRect);
+        RectImgDescr imgRectDescr = analyzer.analyze(imgRect);
 
         RectImgDescrCodecConfig codecConfig = new RectImgDescrCodecConfig();
         if (BitStreamOutputRectImgDescrVisitor.DEBUG_MARK) {

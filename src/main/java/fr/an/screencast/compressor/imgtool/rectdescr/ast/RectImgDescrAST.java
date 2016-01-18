@@ -16,24 +16,24 @@ import fr.an.screencast.compressor.utils.Segment;
 /**
  * 
  */
-public class RectImgDescriptionAST {
+public class RectImgDescrAST {
 
     /**
      * abstract root class of AST for describing a rectangular area of an image 
      */
-    public static abstract class RectImgDescription implements Serializable {
+    public static abstract class RectImgDescr implements Serializable {
 
         /** */
         private static final long serialVersionUID = 1L;
 
-        protected RectImgDescription parent;
+        protected RectImgDescr parent;
         
         protected Rect rect;
         
-        public RectImgDescription() {
+        public RectImgDescr() {
         }
         
-        public RectImgDescription(Rect rect) {
+        public RectImgDescr(Rect rect) {
             this.rect = rect;
         }
         
@@ -45,7 +45,7 @@ public class RectImgDescriptionAST {
             return rect;
         }
 
-        public static Rect[] arrayToRectArray(RectImgDescription[] src) {
+        public static Rect[] arrayToRectArray(RectImgDescr[] src) {
             Rect[] res = new Rect[src.length];
             for(int i = 0; i < src.length; i++) {
                 res[i] = src[i].getRect();
@@ -66,7 +66,7 @@ public class RectImgDescriptionAST {
         }
 
         public abstract int getChildCount();
-        public abstract RectImgDescription getChild(int child);
+        public abstract RectImgDescr getChild(int child);
         public abstract int getExtraPartCount();
         public abstract Rect getExtraPartRect(int part);
         
@@ -80,18 +80,25 @@ public class RectImgDescriptionAST {
     // ------------------------------------------------------------------------
 
     /**
-     * 
+     * <PRE>
+     * TopLevel: img.with x height, Codec config properties ...
+     * +-----------------+
+     * |                 |
+     * |     target      |
+     * |                 |
+     * +-----------------+
+     * </PRE>
      */
-    public static class RootRectImgDescr extends RectImgDescription {
+    public static class RootRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
         
         private Dim topLevelDim;
         
-        private RectImgDescription target;
+        private RectImgDescr target;
         
-        public RootRectImgDescr(Dim dim, RectImgDescription target) {
+        public RootRectImgDescr(Dim dim, RectImgDescr target) {
             this.topLevelDim = dim;
             this.target = target;
         }
@@ -107,7 +114,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert child == 0;
             return target;
         }
@@ -122,11 +129,11 @@ public class RectImgDescriptionAST {
             return topLevelDim;
         }
 
-        public RectImgDescription getTarget() {
+        public RectImgDescr getTarget() {
             return target;
         }
 
-        public void setTarget(RectImgDescription target) {
+        public void setTarget(RectImgDescr target) {
             this.target = target;
         }
 
@@ -137,15 +144,28 @@ public class RectImgDescriptionAST {
 
     /**
      * Proxy design-pattern on RectImgDescription AST ... to use temporary mutable node during analysis
+     * <PRE>
+     * Inherited ("transient" non encoded) attributes:  
+     *   - Synthetised Attributes = computed from child tree
+     *   - Inherited Attributes = computed from parent
+     *   - .. any user defined attributes ..
+     * +-----------------+
+     * |                 |
+     * |     target      |
+     * |                 |
+     * +-----------------+
+     * </PRE>
      */
-    public static class AnalysisProxyRectImgDescr extends RectImgDescription {
+    public static class AnalysisProxyRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
         
-        private RectImgDescription target;
+        private RectImgDescr target;
+
+        private Map<Object,Object> attributes = new HashMap<Object,Object>();
         
-        public AnalysisProxyRectImgDescr(RectImgDescription target) {
+        public AnalysisProxyRectImgDescr(RectImgDescr target) {
             this.target = target;
         }
 
@@ -160,7 +180,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert child == 0;
             return target;
         }
@@ -171,20 +191,37 @@ public class RectImgDescriptionAST {
             throw new IllegalStateException();
         }
 
-        public RectImgDescription getTarget() {
+        public RectImgDescr getTarget() {
             return target;
         }
 
-        public void setTarget(RectImgDescription target) {
+        public void setTarget(RectImgDescr target) {
             this.target = target;
         }
+
+        public Map<Object, Object> getAttributes() {
+            return attributes;
+        }
+
+        public void setAttributes(Map<Object, Object> attributes) {
+            this.attributes = attributes;
+        }
+
+        public Object getAttribute(Object key) {
+            return attributes.get(key);
+        }
+
+        public void putAttribute(Object key, Object value) {
+            attributes.put(key, value);
+        }
+
         
     }
     
     
     // ------------------------------------------------------------------------
 
-    public static class FillRectImgDescr extends RectImgDescription {
+    public static class FillRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
@@ -211,7 +248,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 0;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             throw new IllegalStateException();
         }
         public int getExtraPartCount() {
@@ -251,7 +288,7 @@ public class RectImgDescriptionAST {
      * </PRE>
      * 
      */
-    public static class RoundBorderRectImgDescr extends RectImgDescription {
+    public static class RoundBorderRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
@@ -264,14 +301,14 @@ public class RectImgDescriptionAST {
         private Dim topCornerDim;
         private Dim bottomCornerDim;
         
-        private RectImgDescription inside;
+        private RectImgDescr inside;
         
         public RoundBorderRectImgDescr(Rect rect) {
             super(rect);
         }
         
         public RoundBorderRectImgDescr(Rect rect, int cornerBackgroundColor, int borderColor, int borderThick, Dim topCornerDim, Dim bottomCornerDim,
-                RectImgDescription insideRect) {
+                RectImgDescr insideRect) {
             super(rect);
             this.cornerBackgroundColor = cornerBackgroundColor;
             this.borderColor = borderColor;
@@ -292,7 +329,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             if (child != 0) throw new IllegalStateException();
             return inside;
         }
@@ -366,11 +403,11 @@ public class RectImgDescriptionAST {
             this.bottomCornerDim = bottomCornerDim;
         }
 
-        public RectImgDescription getInside() {
+        public RectImgDescr getInside() {
             return inside;
         }
 
-        public void setInside(RectImgDescription p) {
+        public void setInside(RectImgDescr p) {
             this.inside = p;
         }
         
@@ -391,14 +428,14 @@ public class RectImgDescriptionAST {
      * </PRE>
      * 
      */
-    public static class BorderRectImgDescr extends RectImgDescription {
+    public static class BorderRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
 
         private int borderColor;
         private Border border;
-        private RectImgDescription inside;
+        private RectImgDescr inside;
         
         public BorderRectImgDescr(Rect rect) {
             super(rect);
@@ -406,7 +443,7 @@ public class RectImgDescriptionAST {
         
         public BorderRectImgDescr(Rect rect, 
                 int borderColor, Border border,
-                RectImgDescription inside) {
+                RectImgDescr inside) {
             super(rect);
             this.borderColor = borderColor;
             this.border = border;
@@ -424,7 +461,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert child == 0;
             return inside;
         }
@@ -461,11 +498,11 @@ public class RectImgDescriptionAST {
             this.border = p;
         }
 
-        public RectImgDescription getInside() {
+        public RectImgDescr getInside() {
             return inside;
         }
 
-        public void setInside(RectImgDescription p) {
+        public void setInside(RectImgDescr p) {
             this.inside = p;
         }
         
@@ -491,7 +528,7 @@ public class RectImgDescriptionAST {
      * +---------------------+
      * </PRE>
      */ 
-    public static class TopBottomBorderRectImgDescr extends RectImgDescription {
+    public static class TopBottomBorderRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
@@ -499,13 +536,13 @@ public class RectImgDescriptionAST {
         private int borderColor;
         private int topBorder;
         private int bottomBorder;
-        private RectImgDescription inside;
+        private RectImgDescr inside;
         
         public TopBottomBorderRectImgDescr(Rect rect) {
             super(rect);
         }
         
-        public TopBottomBorderRectImgDescr(Rect rect, int borderColor, int topBorder, int bottomBorder, RectImgDescription inside) {
+        public TopBottomBorderRectImgDescr(Rect rect, int borderColor, int topBorder, int bottomBorder, RectImgDescr inside) {
             super(rect);
             int rectH = rect.getHeight();
             if ((topBorder == 0 && bottomBorder == 0) || (topBorder + bottomBorder) >= rectH) {
@@ -528,7 +565,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert child == 0;
             return inside;
         }
@@ -569,11 +606,11 @@ public class RectImgDescriptionAST {
             this.bottomBorder = bottomBorder;
         }
 
-        public RectImgDescription getInside() {
+        public RectImgDescr getInside() {
             return inside;
         }
 
-        public void setInside(RectImgDescription p) {
+        public void setInside(RectImgDescr p) {
             this.inside = p;
         }
         
@@ -605,7 +642,7 @@ public class RectImgDescriptionAST {
      * +--+---------------+--+
      * </PRE>
      */ 
-    public static class LeftRightBorderRectImgDescr extends RectImgDescription {
+    public static class LeftRightBorderRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
@@ -613,13 +650,13 @@ public class RectImgDescriptionAST {
         private int borderColor;
         private int leftBorder;
         private int rightBorder;
-        private RectImgDescription inside;
+        private RectImgDescr inside;
         
         public LeftRightBorderRectImgDescr(Rect rect) {
             super(rect);
         }
         
-        public LeftRightBorderRectImgDescr(Rect rect, int borderColor, int leftBorder, int rightBorder, RectImgDescription inside) {
+        public LeftRightBorderRectImgDescr(Rect rect, int borderColor, int leftBorder, int rightBorder, RectImgDescr inside) {
             super(rect);
             int rectW = rect.getWidth();
             if ((leftBorder == 0 && rightBorder == 0) || (leftBorder + rightBorder) >= rectW) {
@@ -642,7 +679,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert child == 0;
             return inside;
         }
@@ -683,11 +720,11 @@ public class RectImgDescriptionAST {
             this.rightBorder = rightBorder;
         }
 
-        public RectImgDescription getInside() {
+        public RectImgDescr getInside() {
             return inside;
         }
 
-        public void setInside(RectImgDescription p) {
+        public void setInside(RectImgDescr p) {
             this.inside = p;
         }
         
@@ -718,21 +755,21 @@ public class RectImgDescriptionAST {
      * </PRE>
      *
      */
-    public static class VerticalSplitRectImgDescr extends RectImgDescription {
+    public static class VerticalSplitRectImgDescr extends RectImgDescr {
         
         /** */
         private static final long serialVersionUID = 1L;
 
-        private RectImgDescription left;
+        private RectImgDescr left;
         private Segment splitBorder;
         private int splitColor;
-        private RectImgDescription right;
+        private RectImgDescr right;
         
         public VerticalSplitRectImgDescr(Rect rect) {
             super(rect);
         }
         
-        public VerticalSplitRectImgDescr(Rect rect, RectImgDescription left, Segment splitBorder, int splitColor, RectImgDescription right) {
+        public VerticalSplitRectImgDescr(Rect rect, RectImgDescr left, Segment splitBorder, int splitColor, RectImgDescr right) {
             super(rect);
             this.left = left;
             this.splitBorder = splitBorder;
@@ -754,7 +791,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 2;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert 0 <= child && child < 2;
             return child == 0? left : right;
         }
@@ -774,11 +811,11 @@ public class RectImgDescriptionAST {
             return Rect.newPtToPt(splitBorder.to, rect.fromY, rect.toX, rect.toY);
         }
 
-        public RectImgDescription getLeft() {
+        public RectImgDescr getLeft() {
             return left;
         }
 
-        public void setLeft(RectImgDescription left) {
+        public void setLeft(RectImgDescr left) {
             this.left = left;
         }
         
@@ -798,11 +835,11 @@ public class RectImgDescriptionAST {
             this.splitColor = splitColor;
         }
 
-        public RectImgDescription getRight() {
+        public RectImgDescr getRight() {
             return right;
         }
 
-        public void setRight(RectImgDescription right) {
+        public void setRight(RectImgDescr right) {
             this.right = right;
         }
         
@@ -824,21 +861,21 @@ public class RectImgDescriptionAST {
      * +---------------------+
      * </PRE>
      */
-    public static class HorizontalSplitRectImgDescr extends RectImgDescription {
+    public static class HorizontalSplitRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
 
-        private RectImgDescription up;
+        private RectImgDescr up;
         private int splitColor;
         private Segment splitBorder;
-        private RectImgDescription down;
+        private RectImgDescr down;
         
         public HorizontalSplitRectImgDescr(Rect rect) {
             super(rect);
         }
         
-        public HorizontalSplitRectImgDescr(Rect rect, RectImgDescription up, Segment splitBorder, int splitColor, RectImgDescription down) {
+        public HorizontalSplitRectImgDescr(Rect rect, RectImgDescr up, Segment splitBorder, int splitColor, RectImgDescr down) {
             super(rect);
             this.up = up;
             this.splitBorder = splitBorder;
@@ -860,7 +897,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 2;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert 0 <= child && child < 2;
             return child == 0? up : down;
         }
@@ -880,11 +917,11 @@ public class RectImgDescriptionAST {
             return Rect.newPtToPt(rect.fromX, splitBorder.to, rect.toX, rect.toY);
         }
         
-        public RectImgDescription getUp() {
+        public RectImgDescr getUp() {
             return up;
         }
 
-        public void setUp(RectImgDescription up) {
+        public void setUp(RectImgDescr up) {
             this.up = up;
         }
         
@@ -904,11 +941,11 @@ public class RectImgDescriptionAST {
             this.splitColor = splitColor;
         }
 
-        public RectImgDescription getDown() {
+        public RectImgDescr getDown() {
             return down;
         }
 
-        public void setDown(RectImgDescription down) {
+        public void setDown(RectImgDescr down) {
             this.down = down;
         }
         
@@ -938,28 +975,28 @@ public class RectImgDescriptionAST {
      * +---------------------+
      * </PRE>
      */
-    public static class LinesSplitRectImgDescr extends RectImgDescription {
+    public static class LinesSplitRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
 
         private int backgroundColor;
         private Segment[] splitBorders;
-        private RectImgDescription[] lines;
+        private RectImgDescr[] lines;
         
         public LinesSplitRectImgDescr(Rect rect) {
             super(rect);
         }
         
-        public LinesSplitRectImgDescr(Rect rect, int backgroundColor, List<Segment> splitBorders, List<RectImgDescription> lines) {
+        public LinesSplitRectImgDescr(Rect rect, int backgroundColor, List<Segment> splitBorders, List<RectImgDescr> lines) {
             this(rect, backgroundColor, 
                 (splitBorders != null)? splitBorders.toArray(new Segment[splitBorders.size()]) : null,
-                (lines != null)? lines.toArray(new RectImgDescription[lines.size()]) : null);
+                (lines != null)? lines.toArray(new RectImgDescr[lines.size()]) : null);
         }
         
         public LinesSplitRectImgDescr(Rect rect, int backgroundColor, 
                 Segment[] splitBorders,
-                RectImgDescription[] lines) {
+                RectImgDescr[] lines) {
             super(rect);
             if (splitBorders != null && splitBorders.length == 0) {
                 throw new IllegalArgumentException();
@@ -980,7 +1017,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return lines.length;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert 0 <= child && child < lines.length;
             return lines[child];
         }
@@ -1027,11 +1064,11 @@ public class RectImgDescriptionAST {
             this.splitBorders = splitBorders;
         }
 
-        public RectImgDescription[] getLines() {
+        public RectImgDescr[] getLines() {
             return lines;
         }
 
-        public void setLines(RectImgDescription[] lines) {
+        public void setLines(RectImgDescr[] lines) {
             this.lines = lines;
         }
         
@@ -1050,28 +1087,28 @@ public class RectImgDescriptionAST {
      * </PRE>
      *
      */
-    public static class ColumnsSplitRectImgDescr extends RectImgDescription {
+    public static class ColumnsSplitRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
 
         private int backgroundColor;
         private Segment[] splitBorders;
-        private RectImgDescription[] columns;
+        private RectImgDescr[] columns;
 
         public ColumnsSplitRectImgDescr(Rect rect) {
             super(rect);
         }
         
         public ColumnsSplitRectImgDescr(Rect rect, int backgroundColor, List<Segment> splitBorders, 
-                List<RectImgDescription> columns) {
+                List<RectImgDescr> columns) {
             this(rect, backgroundColor,
                 (splitBorders != null)? splitBorders.toArray(new Segment[splitBorders.size()]) : null,
-                (columns != null)? columns.toArray(new RectImgDescription[columns.size()]) : null);
+                (columns != null)? columns.toArray(new RectImgDescr[columns.size()]) : null);
         }
 
         public ColumnsSplitRectImgDescr(Rect rect, int backgroundColor, 
-                Segment[] splitBorders, RectImgDescription[] columns) {
+                Segment[] splitBorders, RectImgDescr[] columns) {
             super(rect);
             this.backgroundColor = backgroundColor;
             this.splitBorders = splitBorders;
@@ -1089,7 +1126,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return columns.length;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert 0 <= child && child < columns.length;
             return columns[child];
         }
@@ -1136,10 +1173,10 @@ public class RectImgDescriptionAST {
             this.splitBorders = splitBorders;
         }
 
-        public RectImgDescription[] getColumns() {
+        public RectImgDescr[] getColumns() {
             return columns;
         }
-        public void setColumns(RectImgDescription[] columns) {
+        public void setColumns(RectImgDescr[] columns) {
             this.columns = columns;
         }
         
@@ -1159,7 +1196,7 @@ public class RectImgDescriptionAST {
      * +--------------+
      * </PRE>
      */
-    public static class RawDataRectImgDescr extends RectImgDescription {
+    public static class RawDataRectImgDescr extends RectImgDescr {
         
         /** */
         private static final long serialVersionUID = 1L;
@@ -1186,7 +1223,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 0;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             throw new IllegalStateException();
         }
         public int getExtraPartCount() {
@@ -1217,7 +1254,7 @@ public class RectImgDescriptionAST {
      * +------------+
      * </PRE>
      */
-    public static class GlyphRectImgDescr extends RectImgDescription {
+    public static class GlyphRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
@@ -1258,7 +1295,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 0;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             throw new IllegalStateException();
         }
         public int getExtraPartCount() {
@@ -1318,25 +1355,36 @@ public class RectImgDescriptionAST {
      
     // ------------------------------------------------------------------------
 
-    public static class RectImgAboveRectImgDescr extends RectImgDescription {
+    /**
+     * <PRE>
+     * +-----------------------+
+     * | 0             +----+  |
+     * | +--------+    +----+  |
+     * | |        |  +--+      |
+     * | +--------+  |  |      |
+     * |             +--+      |
+     * +-----------------------+
+     * </PRE>
+     */
+    public static class RectImgAboveRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
 
-        private RectImgDescription underlying;
+        private RectImgDescr underlying;
         private Rect[] aboveRects;
-        private RectImgDescription[] aboves;
+        private RectImgDescr[] aboves;
 
         public RectImgAboveRectImgDescr(Rect rect) {
             super(rect);
         }
 
-        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlying, 
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescr underlying, 
                 List<Rect> aboveRects) {
             this(rect, underlying, aboveRects.toArray(new Rect[aboveRects.size()]));
         }
 
-        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlying, 
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescr underlying, 
                 Rect[] aboveRects) {
             super(rect);
             this.underlying = underlying;
@@ -1354,8 +1402,8 @@ public class RectImgDescriptionAST {
         }
 
 
-        public RectImgAboveRectImgDescr(Rect rect, RectImgDescription underlying, 
-                RectImgDescription[] aboves) {
+        public RectImgAboveRectImgDescr(Rect rect, RectImgDescr underlying, 
+                RectImgDescr[] aboves) {
             super(rect);
             this.underlying = underlying;
             this.aboveRects = (aboves != null)? arrayToRectArray(aboves) : null;
@@ -1373,7 +1421,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1 + aboves.length;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             if (child == 0) return underlying;
             else return aboves[child-1];
         }
@@ -1394,19 +1442,19 @@ public class RectImgDescriptionAST {
             this.aboves = null;
         }
 
-        public RectImgDescription getUnderlying() {
+        public RectImgDescr getUnderlying() {
             return underlying;
         }
 
-        public void setUnderlying(RectImgDescription underlyingRectImgDescr) {
+        public void setUnderlying(RectImgDescr underlyingRectImgDescr) {
             this.underlying = underlyingRectImgDescr;
         }
 
-        public RectImgDescription[] getAboves() {
+        public RectImgDescr[] getAboves() {
             return aboves;
         }
 
-        public void setAboveRectImgDescrs(RectImgDescription[] aboveRectImgDescrs) {
+        public void setAboveRectImgDescrs(RectImgDescr[] aboveRectImgDescrs) {
             this.aboves = aboveRectImgDescrs;
             this.aboveRects = (aboveRectImgDescrs != null)? arrayToRectArray(aboveRectImgDescrs) : null;;
         }
@@ -1415,6 +1463,20 @@ public class RectImgDescriptionAST {
     
     // ------------------------------------------------------------------------
 
+    /**
+     * Lightweight class AST for NoiseFragment  (not rectangular shape)
+     * cf owner class NoiseAbovePartsRectImgDescr
+     * <PRE>
+     * +---+----------+---+
+     * |X  |   yyyyy  |   |
+     * | 0 |  elt[0]  | 1 |  ----*>   NoiseFragment
+     * | XX| ZZ       |ZZZ|  <--owner--  /\
+     * +-- +----------+---+               |
+     *                            +-------+------+
+     *                            |       |      |
+     *                           Pt    Segment  ConnexeSegmentLines
+     * </PRE>
+     */
     public static abstract class NoiseFragment implements Serializable {
 
         /** */
@@ -1426,6 +1488,16 @@ public class RectImgDescriptionAST {
         
     }
     
+    /**
+     * NoiseFragment sub-class for single pixel 
+     * <PRE>
+     * +------------------+
+     * | [X]    [x]       |              
+     * |     underlying   |  
+     * |    [y]           |
+     * +------------------+
+     * </PRE>
+     */
     public static class PtNoiseFragment extends NoiseFragment {
 
         /** */
@@ -1465,6 +1537,16 @@ public class RectImgDescriptionAST {
         
     }
 
+    /**
+     * NoiseFragment sub-class for Horizontal segment 
+     * <PRE>
+     * +------------------+
+     * | [XX(    [xxxxx(  |              
+     * |     underlying   |  
+     * |    [yyy(         |
+     * +------------------+
+     * </PRE>
+     */
     public static class SegmentNoiseFragment extends NoiseFragment {
         
         /** */
@@ -1514,7 +1596,19 @@ public class RectImgDescriptionAST {
         
     }
 
-    // TODO ... 
+    /**
+     * NoiseFragment sub-class for connexe lines 
+     * <PRE>
+     * +------------------+
+     * |   [X(     [xxx(  |
+     * |  [XX(     [x(    |
+     * | [XXXX(    [x(    |
+     * |     underlying   |  
+     * |    [yyy(         |
+     * |    [yy(          |
+     * +------------------+
+     * </PRE>
+     */
     public static class ConnexSegmentLinesNoiseFragment extends NoiseFragment {
         
         /** */
@@ -1559,17 +1653,20 @@ public class RectImgDescriptionAST {
      * <PRE>
      * +---+----------+---+
      * |X  |   yyyyy  |   |
-     * | 0 |  elt[0]  | 1 |
-     * | XX| ZZ       |ZZZ|
-     * +-- +----------+---+
+     * | 0 |  elt[0]  | 1 |  ---->   NoiseFragment
+     * | XX| ZZ       |ZZZ|              /\
+     * +-- +----------+---+               |
+     *                            +-------+------+
+     *                            |       |      |
+     *                           Pt    Segment  ConnexeSegmentLines               
      * </PRE>
      */ 
-    public static class NoiseAbovePartsRectImgDescr extends RectImgDescription {
+    public static class NoiseAbovePartsRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
 
-        private RectImgDescription underlying;
+        private RectImgDescr underlying;
 
         private NoiseFragment[][] noiseFragmentsAboveParts;
 
@@ -1577,7 +1674,7 @@ public class RectImgDescriptionAST {
             super(rect);
         }
 
-        public NoiseAbovePartsRectImgDescr(RectImgDescription underlying, NoiseFragment[][] noiseFragmentsAboveParts) {
+        public NoiseAbovePartsRectImgDescr(RectImgDescr underlying, NoiseFragment[][] noiseFragmentsAboveParts) {
             this.underlying = underlying;
             this.noiseFragmentsAboveParts = noiseFragmentsAboveParts;
         }
@@ -1595,7 +1692,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             return underlying;
         }
         public int getExtraPartCount() {
@@ -1605,11 +1702,11 @@ public class RectImgDescriptionAST {
             return underlying.getExtraPartRect(part);
         }
         
-        public RectImgDescription getUnderlying() {
+        public RectImgDescr getUnderlying() {
             return underlying;
         }
 
-        public void setUnderlying(RectImgDescription  p) {
+        public void setUnderlying(RectImgDescr  p) {
             this.underlying = p;
         }
 
@@ -1636,14 +1733,22 @@ public class RectImgDescriptionAST {
     }
 
     // ------------------------------------------------------------------------
-
     
-    public static class OverrideAttributesProxyRectImgDescr extends RectImgDescription {
+    /**
+     * <PRE>
+     * ctx = OverrideAttributes: {key1=newValue, key2=newValue2 }
+     *    +-------------------+
+     *    |     underlying    |
+     *    |                   |
+     *    +-------------------+ 
+     * </PRE>
+     */
+    public static class OverrideAttributesProxyRectImgDescr extends RectImgDescr {
 
         /** */
         private static final long serialVersionUID = 1L;
 
-        private RectImgDescription underlying;
+        private RectImgDescr underlying;
 
         private Map<Object,Object> attributeOverrides = new HashMap<Object,Object>();
         
@@ -1651,7 +1756,7 @@ public class RectImgDescriptionAST {
             super(rect);
         }
 
-        public OverrideAttributesProxyRectImgDescr(RectImgDescription underlying, Map<Object, Object> attributeOverrides) {
+        public OverrideAttributesProxyRectImgDescr(RectImgDescr underlying, Map<Object, Object> attributeOverrides) {
             this.underlying = underlying;
             this.attributeOverrides = attributeOverrides;
         }
@@ -1668,7 +1773,7 @@ public class RectImgDescriptionAST {
         public int getChildCount() {
             return 1;
         }
-        public RectImgDescription getChild(int child) {
+        public RectImgDescr getChild(int child) {
             assert child == 0;
             return underlying;
         }
@@ -1679,18 +1784,17 @@ public class RectImgDescriptionAST {
             throw new IllegalStateException();
         }
 
-        public RectImgDescription getUnderlying() {
+        public RectImgDescr getUnderlying() {
             return underlying;
         }
         
-        public void setUnderlying(RectImgDescription underlying) {
+        public void setUnderlying(RectImgDescr underlying) {
             this.underlying = underlying;
         }
 
         public Map<Object, Object> getAttributeOverrides() {
             return attributeOverrides;
         }
-        
         
     }
     

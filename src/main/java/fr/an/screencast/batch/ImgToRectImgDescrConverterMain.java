@@ -24,7 +24,7 @@ import fr.an.bitwise4j.encoder.structio.BitStreamStructDataOutput;
 import fr.an.bitwise4j.encoder.structio.StructDataOutput;
 import fr.an.bitwise4j.util.RuntimeIOException;
 import fr.an.screencast.compressor.imgtool.rectdescr.RectImgDescrAnalyzer;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.codec.BitStreamOutputRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.codec.RectImgDescrCodecConfig;
 import fr.an.screencast.compressor.imgtool.utils.ImageIOUtils;
@@ -131,7 +131,7 @@ public class ImgToRectImgDescrConverterMain {
         analyzer.setImg(ImageRasterUtils.toInts(img));
 
         // *** the biggy : analyse image ***
-        RectImgDescription imgRectDescr = analyzer.analyze(imgRect);
+        RectImgDescr imgRectDescr = analyzer.analyze(imgRect);
 
         // step 3/3: encode result description into file using binary compression
         OutputStream fileOutputStream;

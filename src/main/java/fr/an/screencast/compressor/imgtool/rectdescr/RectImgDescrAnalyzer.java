@@ -7,26 +7,26 @@ import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ConnexSegmentLinesNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseAbovePartsRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.OverrideAttributesProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.PtNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.SegmentNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.AnalysisProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ConnexSegmentLinesNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.GlyphRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LeftRightBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.NoiseAbovePartsRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.OverrideAttributesProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.PtNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RawDataRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgAboveRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RootRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.SegmentNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.utils.Dim;
@@ -80,16 +80,16 @@ public class RectImgDescrAnalyzer {
         return helper.getGlyphMRUTable();
     }
     
-    public RectImgDescription analyze(Rect rect) {
-        RectImgDescription res = detect(rect);
+    public RectImgDescr analyze(Rect rect) {
+        RectImgDescr res = detect(rect);
         if (res != null) {
             res.accept(recursiveAnalyzer);
         }
         return res;
     }
     
-    public RectImgDescription detect(Rect rect) {
-        RectImgDescription res;
+    public RectImgDescr detect(Rect rect) {
+        RectImgDescr res;
         
         res = helper.detectExactFillRect(rect);
         if (res != null) {
@@ -186,7 +186,7 @@ public class RectImgDescrAnalyzer {
         
         // ------------------------------------------------------------------------
         
-        protected void recurseAnalyse(RectImgDescription node) {
+        protected void recurseAnalyse(RectImgDescr node) {
             if (node != null) {
                 node.accept(this);
             }
@@ -204,7 +204,7 @@ public class RectImgDescrAnalyzer {
 
         @Override
         public void caseRoundBorder(RoundBorderRectImgDescr node) {
-            RectImgDescription inside = node.getInside();
+            RectImgDescr inside = node.getInside();
             if (inside == null) {
                 Rect insideRect = node.getInsideRect();
                 inside = detect(insideRect);
@@ -215,7 +215,7 @@ public class RectImgDescrAnalyzer {
 
         @Override
         public void caseBorder(BorderRectImgDescr node) {
-            RectImgDescription inside = node.getInside();
+            RectImgDescr inside = node.getInside();
             if (inside == null) {
                 Rect insideRect = node.getInsideRect();
                 inside = detect(insideRect);
@@ -226,7 +226,7 @@ public class RectImgDescrAnalyzer {
 
         @Override
         public void caseTopBottomBorder(TopBottomBorderRectImgDescr node) {
-            RectImgDescription inside = node.getInside();
+            RectImgDescr inside = node.getInside();
             if (inside == null) {
                 Rect insideRect = node.getInsideRect();
                 inside = detect(insideRect);
@@ -237,7 +237,7 @@ public class RectImgDescrAnalyzer {
 
         @Override
         public void caseLeftRightBorder(LeftRightBorderRectImgDescr node) {
-            RectImgDescription inside = node.getInside();
+            RectImgDescr inside = node.getInside();
             if (inside == null) {
                 Rect insideRect = node.getInsideRect();
                 inside = detect(insideRect);
@@ -249,8 +249,8 @@ public class RectImgDescrAnalyzer {
         
         @Override
         public void caseVerticalSplit(VerticalSplitRectImgDescr node) {
-            RectImgDescription left = node.getLeft();
-            RectImgDescription right = node.getRight();
+            RectImgDescr left = node.getLeft();
+            RectImgDescr right = node.getRight();
             if (left == null) {
                 Rect leftRect = node.getLeftRect();
                 left = detect(leftRect);
@@ -267,8 +267,8 @@ public class RectImgDescrAnalyzer {
 
         @Override
         public void caseHorizontalSplit(HorizontalSplitRectImgDescr node) {
-            RectImgDescription down = node.getDown();
-            RectImgDescription up = node.getUp();
+            RectImgDescr down = node.getDown();
+            RectImgDescr up = node.getUp();
             if (up == null) {
                 Rect upRect = node.getUpRect();
                 up = detect(upRect);
@@ -285,17 +285,17 @@ public class RectImgDescrAnalyzer {
 
         @Override
         public void caseLinesSplit(LinesSplitRectImgDescr node) {
-            RectImgDescription[] lines = node.getLines();
+            RectImgDescr[] lines = node.getLines();
             if (lines == null || lines.length == 0) {
                 Rect[] lineRects = node.getLineRects();
-                lines = new RectImgDescription[lineRects.length];
+                lines = new RectImgDescr[lineRects.length];
                 for(int i = 0; i < lines.length; i++) {
                     lines[i] = detect(lineRects[i]);
                 }
                 node.setLines(lines);
             }
             if (lines != null) {
-                for(RectImgDescription line : lines) {
+                for(RectImgDescr line : lines) {
                     recurseAnalyse(line);
                 }
             }
@@ -303,17 +303,17 @@ public class RectImgDescrAnalyzer {
 
         @Override
         public void caseColumnsSplit(ColumnsSplitRectImgDescr node) {
-            RectImgDescription[] columns = node.getColumns();
+            RectImgDescr[] columns = node.getColumns();
             if (columns == null || columns.length == 0) {
                 Rect[] columnRects = node.getColumnRects();
-                columns = new RectImgDescription[columnRects.length];
+                columns = new RectImgDescr[columnRects.length];
                 for(int i = 0; i < columns.length; i++) {
                     columns[i] = detect(columnRects[i]);
                 }
                 node.setColumns(columns);
             }
             if (columns != null) {
-                for(RectImgDescription column : columns) {
+                for(RectImgDescr column : columns) {
                     recurseAnalyse(column);
                 }
             }
@@ -331,12 +331,12 @@ public class RectImgDescrAnalyzer {
 
         @Override
         public void caseAbove(RectImgAboveRectImgDescr node) {
-            RectImgDescription underlying = node.getUnderlying();
-            RectImgDescription[] aboves = node.getAboves();
+            RectImgDescr underlying = node.getUnderlying();
+            RectImgDescr[] aboves = node.getAboves();
             if (aboves == null) {
                 Rect[] aboveRects = node.getAboveRects();
                 int abovesCount = aboveRects != null? aboveRects.length : 0;
-                aboves = new RectImgDescription[abovesCount]; 
+                aboves = new RectImgDescr[abovesCount]; 
                 for(int i = 0; i < abovesCount; i++) {
                     aboves[i] = detect(aboveRects[i]);
                 }

@@ -11,18 +11,18 @@ import org.apache.commons.lang.mutable.MutableInt;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.GlyphRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LeftRightBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgAboveRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.codec.RectImgDescrCodecConfig;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
 import fr.an.screencast.compressor.imgtool.utils.IntsCRC32;
@@ -165,7 +165,7 @@ public final class RectImgDescrDetectorHelper {
 
     public LinesSplitRectImgDescr detectLineBreaksInScannedRightThenDownRects_noSplitColor(Rect rect, List<Rect> scannedRects) {
         List<Segment> splits = new ArrayList<Segment>();
-        List<RectImgDescription> lines = new ArrayList<RectImgDescription>();
+        List<RectImgDescr> lines = new ArrayList<RectImgDescr>();
         int currFromY = scannedRects.get(0).fromY;
         int currToY = scannedRects.get(0).toY;
         List<Rect> currLineRects = new ArrayList<Rect>();
@@ -191,7 +191,7 @@ public final class RectImgDescrDetectorHelper {
         // flush current line
         if (!currLineRects.isEmpty()) {
             Rect lineRect = Rect.newPtToPt(rect.fromX, currFromY, rect.toX, currToY);
-            RectImgDescription lineElt = createScannedRectsToImgDescr(lineRect, currLineRects, false);  
+            RectImgDescr lineElt = createScannedRectsToImgDescr(lineRect, currLineRects, false);  
             lines.add(lineElt);
         }
         if (splits.isEmpty()) {
@@ -200,7 +200,7 @@ public final class RectImgDescrDetectorHelper {
         return new LinesSplitRectImgDescr(rect, -1, splits, lines); 
     }
     
-    public RectImgDescription createScannedRectsToImgDescr(Rect rect, List<Rect> ls, 
+    public RectImgDescr createScannedRectsToImgDescr(Rect rect, List<Rect> ls, 
             boolean isScanRightThenDown) {
         if (ls != null && ls.size() == 1) {
             Rect r0 = ls.get(0);
@@ -286,8 +286,8 @@ public final class RectImgDescrDetectorHelper {
             return null;
         }
         // TODO
-        RectImgDescription[] lines = tmpres.getLines();
-        for(RectImgDescription line : lines) {
+        RectImgDescr[] lines = tmpres.getLines();
+        for(RectImgDescr line : lines) {
             if (line instanceof RectImgAboveRectImgDescr) {
                 
             }
@@ -326,7 +326,7 @@ public final class RectImgDescrDetectorHelper {
     
     public ColumnsSplitRectImgDescr detectColumnBreaksInScannedDownThenRightRects_noSplitColor(Rect rect, List<Rect> scannedRects) {
         List<Segment> splits = new ArrayList<Segment>();
-        List<RectImgDescription> columns = new ArrayList<RectImgDescription>();
+        List<RectImgDescr> columns = new ArrayList<RectImgDescr>();
         int currFromX = scannedRects.get(0).fromX;
         int currToX = scannedRects.get(0).toX;
         List<Rect> currColumnRects = new ArrayList<Rect>();
@@ -352,7 +352,7 @@ public final class RectImgDescrDetectorHelper {
         // flush current column
         if (!currColumnRects.isEmpty()) {
             Rect columnRect = Rect.newPtToPt(currFromX, rect.fromY, currToX, rect.toY);
-            RectImgDescription columnElt = createScannedRectsToImgDescr(columnRect, currColumnRects, true);  
+            RectImgDescr columnElt = createScannedRectsToImgDescr(columnRect, currColumnRects, true);  
             columns.add(columnElt);
         }
         if (splits.isEmpty()) {
@@ -639,7 +639,7 @@ public final class RectImgDescrDetectorHelper {
      * </PRE>
      * @return BorderRectImgDescr or FillRectImgDescr when fully uniform color 
      */
-    public RectImgDescription innerBorderImgDescrAtBorder(Rect rect) {
+    public RectImgDescr innerBorderImgDescrAtBorder(Rect rect) {
         assert null != detectBorder1AtUL(rect.getFromPt(), new MutableDim(rect.getDim()));
         final int W = dim.width;
         final int idxLeftUp = rect.fromY*W + rect.fromX;
@@ -876,7 +876,7 @@ public final class RectImgDescrDetectorHelper {
     }
     
 
-    public RectImgDescription detectVertSplit(Rect rect) {
+    public RectImgDescr detectVertSplit(Rect rect) {
         // scan vertical full lines, and sort by colors
         Map<Integer, List<Segment>> colorsToSplits = detectVerticalBorderSplits(rect);
 
@@ -923,7 +923,7 @@ public final class RectImgDescrDetectorHelper {
             }
         }
         
-        List<RectImgDescription> columns = null;
+        List<RectImgDescr> columns = null;
             // decompose columns with other colors vertical borders ...
             // TODO
         return new ColumnsSplitRectImgDescr(rect, splitColor, splitBorders, columns);
@@ -961,7 +961,7 @@ public final class RectImgDescrDetectorHelper {
         return colorsToSplits;
     }
 
-    public RectImgDescription detectHorizontalSplit(Rect rect) {
+    public RectImgDescr detectHorizontalSplit(Rect rect) {
         // scan horizontal full lines, and sort by colors
         Map<Integer, List<Segment>> colorsToSplits = detectHorizontalBorderSplits(rect);
 
@@ -1008,7 +1008,7 @@ public final class RectImgDescrDetectorHelper {
             }
         }
         
-        List<RectImgDescription> rows = null; // new ArrayList<RectImgDescription>();
+        List<RectImgDescr> rows = null; // new ArrayList<RectImgDescription>();
         if (colorsToSplits.size() > 1) {
             // decompose columns with other colors vertical borders ...
             // TODO

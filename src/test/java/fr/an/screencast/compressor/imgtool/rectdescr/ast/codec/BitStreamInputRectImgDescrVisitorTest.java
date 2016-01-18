@@ -19,7 +19,7 @@ import fr.an.bitwise4j.encoder.structio.BitStreamStructDataInput;
 import fr.an.bitwise4j.encoder.structio.StructDataInput;
 import fr.an.bitwise4j.encoder.structio.helpers.DebugStructDataInput;
 import fr.an.bitwise4j.encoder.structio.helpers.DebugTeeStructDataInput;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DebugDrawDecoratorRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DrawRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
@@ -59,7 +59,7 @@ public class BitStreamInputRectImgDescrVisitorTest {
             codecConfig.setDebugAddMarkers(true);
         }
 
-        RectImgDescription res;
+        RectImgDescr res;
         StructDataInput bitStructInput = null;
         try {
             InputStream fileInput = new BufferedInputStream(new FileInputStream(inputFile));

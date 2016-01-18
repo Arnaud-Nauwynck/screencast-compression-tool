@@ -5,20 +5,20 @@ import java.util.Map;
 
 import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.GlyphRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LeftRightBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RawDataRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgAboveRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
 
 public class RectImgDescrCodecConfig {
 
@@ -26,7 +26,7 @@ public class RectImgDescrCodecConfig {
 
     private int glyphMRUTableSize = DEFAULT_GLYPHMRUTABLE_SIZE;
     
-    private Map<Class<? extends RectImgDescription>,Integer> class2frequency = defaultClass2FrequencyMap();
+    private Map<Class<? extends RectImgDescr>,Integer> class2frequency = defaultClass2FrequencyMap();
     
     private boolean debugAddBeginEndMarker = true;
 
@@ -37,8 +37,8 @@ public class RectImgDescrCodecConfig {
     public RectImgDescrCodecConfig() {
     }
 
-    public static Map<Class<? extends RectImgDescription>, Integer> defaultClass2FrequencyMap() {
-        Map<Class<? extends RectImgDescription>, Integer> res = new LinkedHashMap<Class<? extends RectImgDescription>, Integer>(); 
+    public static Map<Class<? extends RectImgDescr>, Integer> defaultClass2FrequencyMap() {
+        Map<Class<? extends RectImgDescr>, Integer> res = new LinkedHashMap<Class<? extends RectImgDescr>, Integer>(); 
         res.put(FillRectImgDescr.class, 3);
         res.put(RoundBorderRectImgDescr.class, 1);
         res.put(BorderRectImgDescr.class, 2);
@@ -65,11 +65,11 @@ public class RectImgDescrCodecConfig {
         this.glyphMRUTableSize = glyphMRUTableSize;
     }
     
-    public Map<Class<? extends RectImgDescription>, Integer> getClass2frequency() {
+    public Map<Class<? extends RectImgDescr>, Integer> getClass2frequency() {
         return class2frequency;
     }
 
-    public void setClass2frequency(Map<Class<? extends RectImgDescription>, Integer> class2frequency) {
+    public void setClass2frequency(Map<Class<? extends RectImgDescr>, Integer> class2frequency) {
         this.class2frequency = class2frequency;
     }
     
@@ -89,9 +89,9 @@ public class RectImgDescrCodecConfig {
         this.debugAddBeginEndMarker = debugAddBeginEndMarker;
     }
 
-    public HuffmanTable<Class<? extends RectImgDescription>> createHuffmanTableForClass2Frequency() {
-        HuffmanTable<Class<? extends RectImgDescription>> res = new HuffmanTable<Class<? extends RectImgDescription>>();
-        for(Map.Entry<Class<? extends RectImgDescription>, Integer> e : class2frequency.entrySet()) {
+    public HuffmanTable<Class<? extends RectImgDescr>> createHuffmanTableForClass2Frequency() {
+        HuffmanTable<Class<? extends RectImgDescr>> res = new HuffmanTable<Class<? extends RectImgDescr>>();
+        for(Map.Entry<Class<? extends RectImgDescr>, Integer> e : class2frequency.entrySet()) {
             res.addSymbol(e.getKey(), e.getValue());
         }
                  

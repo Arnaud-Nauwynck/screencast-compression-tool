@@ -1,7 +1,7 @@
 package fr.an.screencast.ui.swing.imgtool.rectdescr;
 
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RootRectImgDescr;
 
 public abstract class RectImgDescrTreeNodeData {
 
@@ -33,7 +33,7 @@ public abstract class RectImgDescrTreeNodeData {
     /**
      *
      */
-    public static class NodeRectImgDescrTreeNodeData<T extends RectImgDescription> extends RectImgDescrTreeNodeData {
+    public static class NodeRectImgDescrTreeNodeData<T extends RectImgDescr> extends RectImgDescrTreeNodeData {
 
         private T node;
             
@@ -46,7 +46,7 @@ public abstract class RectImgDescrTreeNodeData {
 
         // ------------------------------------------------------------------------
 
-        public RectImgDescription getNode() {
+        public RectImgDescr getNode() {
             return node;
         }
     }

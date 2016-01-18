@@ -2,7 +2,7 @@ package fr.an.screencast.ui.swing.imgtool.rectdescr;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
 import fr.an.screencast.ui.jfx.imgtool.rectdescr.RectImgDescrTreeItemData.NodeRectImgDescrTreeItemData;
 
 public class RectImgDescrTreeNode extends DefaultMutableTreeNode/*<RectImgDescrTreeItemData>*/ {

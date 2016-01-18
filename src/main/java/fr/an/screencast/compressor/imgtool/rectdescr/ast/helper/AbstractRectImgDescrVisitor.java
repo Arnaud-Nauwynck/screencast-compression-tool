@@ -1,6 +1,5 @@
 package fr.an.screencast.compressor.imgtool.rectdescr.ast.helper;
 
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
@@ -22,29 +21,23 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBo
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.SegmentNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
-import fr.an.screencast.compressor.utils.Rect;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
 
 /**
- * abstract RectImgDescrVisitor implementation for recursive traversal of RectImgDescr AST 
- * using ROI="Region Of Interest" filtering selection
+ * abstract RectImgDescrVisitor implementation for recursive traversal of RectImgDescr AST
  */
-public abstract class AbstractRectImgDescrROIVisitor extends RectImgDescrVisitor {
-
-   protected Rect roi;
+public abstract class AbstractRectImgDescrVisitor extends RectImgDescrVisitor {
     
     // ------------------------------------------------------------------------
 
-    public AbstractRectImgDescrROIVisitor(Rect roi) {
-        this.roi = roi;
+    public AbstractRectImgDescrVisitor() {
     }
 
     // ------------------------------------------------------------------------
 
     protected void recurse(RectImgDescr node) {
         if (node != null) {
-            if (roi == null || node.getRect().isIntersect(roi)) {
-                node.accept(this);
-            }
+            node.accept(this);
         }
     }
     

@@ -13,26 +13,26 @@ import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
 import fr.an.screencast.compressor.imgtool.rectdescr.ExternalFormatRawDataHelper;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ConnexSegmentLinesNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseAbovePartsRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.OverrideAttributesProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.PtNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.SegmentNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.AnalysisProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ConnexSegmentLinesNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.GlyphRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LeftRightBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.NoiseAbovePartsRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.OverrideAttributesProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.PtNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RawDataRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgAboveRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RootRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.SegmentNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
@@ -49,7 +49,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     
     private StructDataOutput out;
 
-    private HuffmanTable<Class<? extends RectImgDescription>> huffmanTableRectImgDescriptionClass;
+    private HuffmanTable<Class<? extends RectImgDescr>> huffmanTableRectImgDescriptionClass;
     private GlyphMRUTable glyphMRUTable;
     // TODO ... private Map<String,HuffmanTable<Integer>> field2huffmanTableColor;
 
@@ -73,12 +73,12 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
     
     public static void writeTopLevelTo(RectImgDescrCodecConfig codecConfig, BitStreamStructDataOutput out, 
-            RectImgDescription node) {
+            RectImgDescr node) {
         BitStreamOutputRectImgDescrVisitor visitor = new BitStreamOutputRectImgDescrVisitor(codecConfig, out);
         visitor.writeTopLevel(node);
     }
 
-    public void writeTopLevel(RectImgDescription node) {
+    public void writeTopLevel(RectImgDescr node) {
         Rect rect = node.getRect();
 
         if (codecConfig.isDebugAddBeginEndMarker()) {
@@ -98,9 +98,9 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         }
     }
 
-    protected void doWrite(RectImgDescription node) {
+    protected void doWrite(RectImgDescr node) {
         // TOOPTIM: if small rect => use different HuffmanTable for "mostly" glyph 
-        Class<? extends RectImgDescription> nodeClass = node.getClass();
+        Class<? extends RectImgDescr> nodeClass = node.getClass();
         huffmanTableRectImgDescriptionClass.writeEncodeSymbol(out, nodeClass);
         
         if (DEBUG_MARK && codecConfig.isDebugAddMarkers()) {
@@ -114,7 +114,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         }
     }
 
-    protected void writeCheckRect(RectImgDescription node, Rect rect) {
+    protected void writeCheckRect(RectImgDescr node, Rect rect) {
         out.writeBit(node != null);
         if (node != null) {
             Rect nodeRect = node.getRect();
@@ -179,7 +179,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         final Dim bottomCornerDim = node.getBottomCornerDim();
         final int borderColor = node.getBorderColor();
         final int borderThick = node.getBorderThick();
-        final RectImgDescription inside = node.getInside();
+        final RectImgDescr inside = node.getInside();
         final Rect insideRect = node.getInsideRect();
 
         writeColor("fill", borderColor);
@@ -200,7 +200,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         final Rect rect = node.getRect();
         final int borderColor = node.getBorderColor();
         final Border border = node.getBorder();
-        final RectImgDescription inside = node.getInside();
+        final RectImgDescr inside = node.getInside();
         final Rect insideRect = node.getInsideRect();
 
         final int W = rect.getWidth(), H = rect.getHeight();
@@ -219,7 +219,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         final int borderColor = node.getBorderColor();
         final int topBorder = node.getTopBorder();
         final int bottomBorder = node.getBottomBorder();
-        final RectImgDescription inside = node.getInside();
+        final RectImgDescr inside = node.getInside();
         final Rect insideRect = node.getInsideRect();
         
         final int H = rect.getHeight();
@@ -236,7 +236,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         final int borderColor = node.getBorderColor();
         final int leftBorder = node.getLeftBorder();
         final int rightBorder = node.getRightBorder();
-        final RectImgDescription inside = node.getInside();
+        final RectImgDescr inside = node.getInside();
         final Rect insideRect = node.getInsideRect();
         
         final int W = rect.getWidth();
@@ -250,11 +250,11 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseVerticalSplit(VerticalSplitRectImgDescr node) {
         final Rect rect = node.getRect();
-        final RectImgDescription left = node.getLeft();
+        final RectImgDescr left = node.getLeft();
         final Rect leftRect = node.getLeftRect();
         final Segment splitBorder = node.getSplitBorder();
         final int splitColor = node.getSplitColor();
-        final RectImgDescription right = node.getRight();
+        final RectImgDescr right = node.getRight();
         final Rect rightRect = node.getRightRect();
 
         out.writeIntMinMax(rect.fromX, rect.toX, splitBorder.from);
@@ -268,11 +268,11 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseHorizontalSplit(HorizontalSplitRectImgDescr node) {
         final Rect rect = node.getRect();
-        final RectImgDescription down = node.getDown();
+        final RectImgDescr down = node.getDown();
         final Rect downRect = node.getDownRect();
         final Segment splitBorder = node.getSplitBorder();
         final int splitColor = node.getSplitColor();
-        final RectImgDescription up = node.getUp();
+        final RectImgDescr up = node.getUp();
         final Rect upRect = node.getUpRect();
 
         out.writeIntMinMax(rect.fromY, rect.toY, splitBorder.from);
@@ -288,7 +288,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         final Rect rect = node.getRect();
         final int backgroundColor = node.getBackgroundColor();
         final Segment[] splitBorders = node.getSplitBorders();
-        final RectImgDescription[] lines = node.getLines();
+        final RectImgDescr[] lines = node.getLines();
 
         if (splitBorders == null) {
             out.writeBit(false);
@@ -299,7 +299,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         writeColor("background", backgroundColor);
         writeSegmentsOrderedMinMax(rect.fromY, rect.toY, splitBorders);
 
-        for(RectImgDescription line : lines) {
+        for(RectImgDescr line : lines) {
             Rect lineRect = line.getRect();
             // TODO ... optim encode child when expected TopBottomBorderRectImgDescr with same background color.. 
             writeCheckRect(line, lineRect);
@@ -325,7 +325,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         final Rect rect = node.getRect();
         final int backgroundColor = node.getBackgroundColor();
         final Segment[] splitBorders = node.getSplitBorders();
-        final RectImgDescription[] columns = node.getColumns();
+        final RectImgDescr[] columns = node.getColumns();
         
         if (splitBorders == null) {
             out.writeBit(false);
@@ -336,7 +336,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         writeColor("background", backgroundColor);
         writeSegmentsOrderedMinMax(rect.fromX, rect.toX, splitBorders);
 
-        for(RectImgDescription column : columns) {
+        for(RectImgDescr column : columns) {
             Rect lineRect = column.getRect();
             // TODO ... optim encode child when expected LeftRightBorderRectImgDescr with same background color.. 
             writeCheckRect(column, lineRect);
@@ -393,15 +393,15 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseAbove(RectImgAboveRectImgDescr node) {
         final Rect rect = node.getRect();
-        final RectImgDescription underlying = node.getUnderlying();
-        final RectImgDescription[] aboves = node.getAboves();
+        final RectImgDescr underlying = node.getUnderlying();
+        final RectImgDescr[] aboves = node.getAboves();
         // final Rect aboveRect = node.getAboveRect();
 
         writeCheckRect(underlying, rect);
         final int aboveCount = (aboves != null)? aboves.length : 0;
         out.writeIntMinMax(0, rect.getArea()+1, aboveCount);
         for (int i = 0; i < aboveCount; i++) {
-            RectImgDescription above = aboves[i];
+            RectImgDescr above = aboves[i];
             Rect aboveRect =  above.getRect();
             writeCurrNestedRect(aboveRect);
             pushRect(aboveRect);

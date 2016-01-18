@@ -18,28 +18,28 @@ import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
 import fr.an.screencast.compressor.imgtool.rectdescr.ExternalFormatRawDataHelper;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ConnexSegmentLinesNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseAbovePartsRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.OverrideAttributesProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.PtNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.SegmentNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.AnalysisProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ConnexSegmentLinesNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.GlyphRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LeftRightBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.NoiseAbovePartsRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.NoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.OverrideAttributesProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.PtNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RawDataRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgAboveRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RootRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.SegmentNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.utils.IntsCRC32;
 import fr.an.screencast.compressor.utils.Border;
@@ -60,7 +60,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     
     private StructDataInput in;
 
-    private HuffmanTable<Class<? extends RectImgDescription>> huffmanTableRectImgDescriptionClass;
+    private HuffmanTable<Class<? extends RectImgDescr>> huffmanTableRectImgDescriptionClass;
     private GlyphMRUTable glyphMRUTable;
     // TODO ... private Map<String,HuffmanTable<Integer>> field2huffmanTableColor;
 
@@ -83,12 +83,12 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         return codecConfig;
     }
     
-    public static RectImgDescription readTopLevelFrom(RectImgDescrCodecConfig codecConfig, StructDataInput in) {
+    public static RectImgDescr readTopLevelFrom(RectImgDescrCodecConfig codecConfig, StructDataInput in) {
         BitStreamInputRectImgDescrVisitor visitor = new BitStreamInputRectImgDescrVisitor(codecConfig, in);
         return visitor.readTopLevel();
     }
 
-    public RectImgDescription readTopLevel() {
+    public RectImgDescr readTopLevel() {
         if (codecConfig.isDebugAddBeginEndMarker()) {
             debugReadCheckMarker("RectImgDecr{{{");
         }
@@ -101,9 +101,9 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         pushRect(rect);
 
         // RectImgDescription res = doRead();
-        Class<? extends RectImgDescription> nodeClass = in.readDecodeHuffmanCode(huffmanTableRectImgDescriptionClass);
+        Class<? extends RectImgDescr> nodeClass = in.readDecodeHuffmanCode(huffmanTableRectImgDescriptionClass);
         // introspection code equivalent to <code>switch(nodeClass.getName()) { case XX: return new XX(rect);... }</code>
-        RectImgDescription node = newInstance(nodeClass, rect);
+        RectImgDescr node = newInstance(nodeClass, rect);
         try {
             doReadNode(node);
         } catch(Exception ex) {
@@ -121,19 +121,19 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         return node;
     }
 
-    protected RectImgDescription doRead() {
+    protected RectImgDescr doRead() {
         // TOOPTIM: if small rect => use different HuffmanTable for "mostly" glyph 
-        Class<? extends RectImgDescription> nodeClass = in.readDecodeHuffmanCode(huffmanTableRectImgDescriptionClass);
+        Class<? extends RectImgDescr> nodeClass = in.readDecodeHuffmanCode(huffmanTableRectImgDescriptionClass);
         Rect rect = getCurrRect();
         // introspection code equivalent to <code>switch(nodeClass.getName()) { case XX: return new XX(rect);... }</code>
-        RectImgDescription node = newInstance(nodeClass, rect);
+        RectImgDescr node = newInstance(nodeClass, rect);
         
         doReadNode(node);
 
         return node;
     }
     
-    protected void doReadNode(RectImgDescription node) {
+    protected void doReadNode(RectImgDescr node) {
         if (DEBUG_MARK && codecConfig.isDebugAddMarkers()) {
             debugReadCheckMarker("DEBUG_MARK node: {" + node.getClass().getSimpleName() + " " + node.getRect());
         }
@@ -152,26 +152,26 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         };
     }
     
-    private static RectImgDescription newInstance(Class<? extends RectImgDescription> clss, Rect rect) {
-        RectImgDescription res;
+    private static RectImgDescr newInstance(Class<? extends RectImgDescr> clss, Rect rect) {
+        RectImgDescr res;
         Constructor<?> ctor = class2ctors.get(clss);
         try {
-            res = (RectImgDescription) ctor.newInstance(rect);
+            res = (RectImgDescr) ctor.newInstance(rect);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new RuntimeException("Failed", e);
         }
         return res;
     }
     
-    private static Map<Class<? extends RectImgDescription>, Constructor<?>> class2ctors = resolveClassCtors();
+    private static Map<Class<? extends RectImgDescr>, Constructor<?>> class2ctors = resolveClassCtors();
     
-    private static Map<Class<? extends RectImgDescription>, Constructor<?>> resolveClassCtors() {
+    private static Map<Class<? extends RectImgDescr>, Constructor<?>> resolveClassCtors() {
         if (class2ctors != null) {
             return class2ctors;
         }
-        Map<Class<? extends RectImgDescription>,Constructor<?>> res = new HashMap<>();
-        for(Class<? extends RectImgDescription> clss : RectImgDescrCodecConfig.defaultClass2FrequencyMap().keySet()) {
-            Constructor<? extends RectImgDescription> ctor;
+        Map<Class<? extends RectImgDescr>,Constructor<?>> res = new HashMap<>();
+        for(Class<? extends RectImgDescr> clss : RectImgDescrCodecConfig.defaultClass2FrequencyMap().keySet()) {
+            Constructor<? extends RectImgDescr> ctor;
             try {
                 ctor = clss.getDeclaredConstructor(Rect.class);
             } catch (NoSuchMethodException | SecurityException e) {
@@ -184,8 +184,8 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     }
 
     
-    protected RectImgDescription readWithRect(Rect rect) {
-        RectImgDescription node;
+    protected RectImgDescr readWithRect(Rect rect) {
+        RectImgDescr node;
         if (in.readBit()) {
             pushRect(rect);
             
@@ -231,7 +231,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     public void caseRoot(RootRectImgDescr node) {
         // TODO cf readTopLevel..
         Rect rect = node.getRect();
-        RectImgDescription target = readWithRect(rect);
+        RectImgDescr target = readWithRect(rect);
         node.setTarget(target);
     }
 
@@ -259,7 +259,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         node.setBottomCornerDim(new Dim(bottomCornerDimWidth, bottomCornerDimHeight));
 
         Rect insideRect = node.getInsideRect();
-        RectImgDescription inside = readWithRect(insideRect);
+        RectImgDescr inside = readWithRect(insideRect);
         node.setInside(inside);
     }
 
@@ -275,7 +275,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         node.setBorderColor(readColor("border"));
         
         Rect insideRect = node.getInsideRect();
-        RectImgDescription inside = readWithRect(insideRect);
+        RectImgDescr inside = readWithRect(insideRect);
         node.setInside(inside);
     }
 
@@ -290,7 +290,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         node.setBorderColor(readColor("border"));        
 
         Rect insideRect = node.getInsideRect();
-        RectImgDescription inside = readWithRect(insideRect);
+        RectImgDescr inside = readWithRect(insideRect);
         node.setInside(inside);
     }
 
@@ -305,7 +305,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         node.setBorderColor(readColor("border"));
         
         Rect insideRect = node.getInsideRect();
-        RectImgDescription inside = readWithRect(insideRect);
+        RectImgDescr inside = readWithRect(insideRect);
         node.setInside(inside);
     }
 
@@ -320,9 +320,9 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
 
         final Rect leftRect = node.getLeftRect();
         final Rect rightRect = node.getRightRect();
-        RectImgDescription left = readWithRect(leftRect);
+        RectImgDescr left = readWithRect(leftRect);
         node.setLeft(left);
-        RectImgDescription right = readWithRect(rightRect);
+        RectImgDescr right = readWithRect(rightRect);
         node.setRight(right);
     }
 
@@ -336,9 +336,9 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         
         final Rect upRect = node.getUpRect();
         final Rect downRect = node.getDownRect();
-        RectImgDescription up = readWithRect(upRect);
+        RectImgDescr up = readWithRect(upRect);
         node.setUp(up);
-        RectImgDescription down = readWithRect(downRect);
+        RectImgDescr down = readWithRect(downRect);
         node.setDown(down);
     }
 
@@ -353,7 +353,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         node.setSplitBorders(splitBorders);
 
         Rect[] lineRects = node.getLineRects();
-        RectImgDescription[] lines = new RectImgDescription[lineRects.length];
+        RectImgDescr[] lines = new RectImgDescr[lineRects.length];
         for(int i = 0; i < lineRects.length; i++) {
             // TODO ... optim encode child when expected TopBottomBorderRectImgDescr with same background color.. 
             lines[i] = readWithRect(lineRects[i]);
@@ -389,7 +389,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
         node.setSplitBorders(splitBorders);
 
         Rect[] columnRects = node.getColumnRects();
-        RectImgDescription[] columns = new RectImgDescription[columnRects.length];
+        RectImgDescr[] columns = new RectImgDescr[columnRects.length];
         for(int i = 0; i < columnRects.length; i++) {
             // TODO ... optim encode child when expected TopBottomBorderRectImgDescr with same background color.. 
             columns[i] = readWithRect(columnRects[i]);
@@ -447,11 +447,11 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     public void caseAbove(RectImgAboveRectImgDescr node) {
         final Rect rect = node.getRect();
 
-        RectImgDescription underlying = readWithRect(rect);
+        RectImgDescr underlying = readWithRect(rect);
         node.setUnderlying(underlying);
 
         int aboveCount = in.readIntMinMax(0, rect.getArea()+1);
-        RectImgDescription[] aboves = new RectImgDescription[aboveCount]; 
+        RectImgDescr[] aboves = new RectImgDescr[aboveCount]; 
         for (int i = 0; i < aboveCount; i++) {
             Rect aboveRect = readCurrNestedRect();
             
@@ -465,7 +465,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseNoiseAboveParts(NoiseAbovePartsRectImgDescr node) {
         final Rect rect = node.getRect();
-        RectImgDescription underlying = readWithRect(rect);
+        RectImgDescr underlying = readWithRect(rect);
         node.setUnderlying(underlying);
         int maxFragCount = rect.getArea(); // TODO 
         int partCount = node.getUnderlyingExtraPartCount();
@@ -531,7 +531,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseOverrideAttributesProxy(OverrideAttributesProxyRectImgDescr node) {
         Rect rect = node.getRect();
-        RectImgDescription underlying = readWithRect(rect);
+        RectImgDescr underlying = readWithRect(rect);
         node.setUnderlying(underlying);
         Map<Object, Object> attributeOverrides = node.getAttributeOverrides();
         // TODO NOT IMPLEMENTED read attributes!
@@ -541,7 +541,7 @@ public class BitStreamInputRectImgDescrVisitor extends RectImgDescrVisitor {
     @Override
     public void caseAnalysisProxy(AnalysisProxyRectImgDescr node) {
         Rect rect = node.getRect();
-        RectImgDescription target = readWithRect(rect);
+        RectImgDescr target = readWithRect(rect);
         node.setTarget(target);
     }
     

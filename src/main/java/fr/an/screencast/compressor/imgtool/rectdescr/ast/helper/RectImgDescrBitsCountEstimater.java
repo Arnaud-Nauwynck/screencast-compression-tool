@@ -9,28 +9,28 @@ import java.util.function.Supplier;
 
 import fr.an.bitwise4j.encoder.structio.Pow2Utils;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor2;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ConnexSegmentLinesNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseAbovePartsRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.OverrideAttributesProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.PtNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.SegmentNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.InheritedAttributeEvaluatorVisitor.LightweightNoiseFragAdder;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.AnalysisProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ConnexSegmentLinesNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.GlyphRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LeftRightBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.NoiseAbovePartsRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.NoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.OverrideAttributesProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.PtNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RawDataRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgAboveRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RootRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.SegmentNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.SynthetisedAttributeEvaluatorVisitor.LightweightNoiseFragAdder;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.compressor.utils.Segment;
@@ -146,24 +146,24 @@ public class RectImgDescrBitsCountEstimater {
         else return "L";
     }
     
-    protected static String nodeToKey(RectImgDescription node) {
+    protected static String nodeToKey(RectImgDescr node) {
         int w = node.getWidth(), h = node.getHeight();
         String res = node.getClass().getSimpleName() + "-" + pixelSmallMediumLarge(w) + "x" + pixelSmallMediumLarge(h);
         return res; 
     }
     
-    public static void evalBaseStatsBitsCount(RectImgDescription node, BitsCount res) {
+    public static void evalBaseStatsBitsCount(RectImgDescr node, BitsCount res) {
         node.accept(StatsBitsCountBaseEstimater.INSTANCE, res);
     }
     
-    public static SynthetisedBitsCount recursiveEvalSynthetisedStatsBitsCount(RectImgDescription rootNode, Map<RectImgDescription,SynthetisedBitsCount> results) {
+    public static SynthetisedBitsCount recursiveEvalSynthetisedStatsBitsCount(RectImgDescr rootNode, Map<RectImgDescr,SynthetisedBitsCount> results) {
         if (results == null) {
-            results = new HashMap<RectImgDescription,SynthetisedBitsCount>();
+            results = new HashMap<RectImgDescr,SynthetisedBitsCount>();
         }
-        final Map<RectImgDescription,SynthetisedBitsCount> resAttributes = results;
+        final Map<RectImgDescr,SynthetisedBitsCount> resAttributes = results;
         
         Supplier<BitsCount> baseValFactory = () -> new BitsCount(null);
-        BiConsumer<RectImgDescription,BitsCount> baseValEvaluator = 
+        BiConsumer<RectImgDescr,BitsCount> baseValEvaluator = 
                 (n,r) -> { r.key = nodeToKey(n); n.accept(StatsBitsCountBaseEstimater.INSTANCE, r); };
         // BiConsumer<RectImgDescription,TVal> baseAttributeUpdater;
         
@@ -177,11 +177,11 @@ public class RectImgDescrBitsCountEstimater {
         BiFunction<SynthetisedBitsCount,SynthetisedBitsCount,SynthetisedBitsCount> reduceFunc =
                 (s1,s2) -> s1.incr(s2); 
         
-        BiConsumer<RectImgDescription,SynthetisedBitsCount> attributeUpdater =
+        BiConsumer<RectImgDescr,SynthetisedBitsCount> attributeUpdater =
                 (n,s) -> { resAttributes.put(n, s); };
         
-        InheritedAttributeEvaluatorVisitor<BitsCount,SynthetisedBitsCount> recursiveMergeEval = 
-                new InheritedAttributeEvaluatorVisitor<BitsCount,SynthetisedBitsCount>(
+        SynthetisedAttributeEvaluatorVisitor<BitsCount,SynthetisedBitsCount> recursiveMergeEval = 
+                new SynthetisedAttributeEvaluatorVisitor<BitsCount,SynthetisedBitsCount>(
                         baseValFactory, baseValEvaluator, noiseFragAdder, 
                         valFactory, 
                         mapFunc, reduceFunc,
@@ -215,7 +215,7 @@ public class RectImgDescrBitsCountEstimater {
 
         // ------------------------------------------------------------------------
 
-        protected static int estimSumBitsForPoints(RectImgDescription node, int xCount, int yCount) {
+        protected static int estimSumBitsForPoints(RectImgDescr node, int xCount, int yCount) {
             Rect rect = node.getRect();
             int rectWidth = rect.getWidth();
             int rectHeight = rect.getHeight();

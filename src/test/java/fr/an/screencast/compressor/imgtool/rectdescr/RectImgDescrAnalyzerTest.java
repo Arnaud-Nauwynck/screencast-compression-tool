@@ -10,8 +10,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DebugDrawDecoratorRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DrawRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
@@ -48,14 +48,14 @@ public class RectImgDescrAnalyzerTest {
         img_screen1920x1080 = new ImageData(dim, imgData);
     }
 
-    public static RectImgDescription analyseTstFile0() {
+    public static RectImgDescr analyseTstFile0() {
         return analyseTstFile(ImageTstUtils.FILENAME_screen_eclipse_1920x1080);
     }
     
-    public static RectImgDescription analyseTstFile(String imageFileName) {
+    public static RectImgDescr analyseTstFile(String imageFileName) {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect imgRect = Rect.newDim(sut.getDim());
-        RectImgDescription res = sut.analyze(imgRect);
+        RectImgDescr res = sut.analyze(imgRect);
         return res;
     }
     
@@ -66,7 +66,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect imgRect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(imgRect);
+        RectImgDescr res = sut.analyze(imgRect);
         // Post-check
         Assert.assertNotNull(res);
         repaintAndCheckImg(imageFileName, sut, res);
@@ -80,7 +80,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect imgRect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(imgRect);
+        RectImgDescr res = sut.analyze(imgRect);
         // Post-check
         Assert.assertNotNull(res);
         repaintAndCheckImg(imageFileName, sut, res);
@@ -93,7 +93,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect rect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(rect);
+        RectImgDescr res = sut.analyze(rect);
         // Post-check
         Assert.assertNotNull(res);
         Assert.assertTrue(res instanceof ColumnsSplitRectImgDescr);
@@ -101,7 +101,7 @@ public class RectImgDescrAnalyzerTest {
         List<Segment> expectedSegments = Segment.parseSegmentList("[0-912(, [918-919(, [941-945(, [953-958(, [965-967(, [980-982(, [989-990(, [1003-1895(, [1904-1920(");
         Assert.assertEquals(expectedSegments, Arrays.asList(res2.getSplitBorders()));
         
-        RectImgDescription[] columns = res2.getColumns();
+        RectImgDescr[] columns = res2.getColumns();
         Assert.assertEquals(8, columns.length);
         // TODO more asserts..
         
@@ -117,7 +117,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect rect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(rect);
+        RectImgDescr res = sut.analyze(rect);
         // Post-check
         repaintAndCheckImg(imageFileName, sut, res);
         // sut.getGlyphMRUTable().debugDumpGlyphs(new File("target/dumpE"));
@@ -131,7 +131,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect rect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(rect);
+        RectImgDescr res = sut.analyze(rect);
         // Post-check
         repaintAndCheckImg(imageFileName, sut, res);
         // ImageDataAssert.assertEquals(checkImgData, sut.getImgData(), sut.getDim());
@@ -144,7 +144,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect rect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(rect);
+        RectImgDescr res = sut.analyze(rect);
         // Post-check
         repaintAndCheckImg(imageFileName, sut, res);
     }
@@ -156,7 +156,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect rect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(rect);
+        RectImgDescr res = sut.analyze(rect);
         // Post-check
         Assert.assertNotNull(res);
         // re-paint from RectImgDescr and check difference
@@ -171,7 +171,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect rect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(rect);
+        RectImgDescr res = sut.analyze(rect);
         // Post-check
         repaintAndCheckImg(imageFileName, sut, res);
     }
@@ -183,7 +183,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect rect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(rect);
+        RectImgDescr res = sut.analyze(rect);
         // Post-check
         repaintAndCheckImg(imageFileName, sut, res);
     }
@@ -195,7 +195,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect rect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(rect);
+        RectImgDescr res = sut.analyze(rect);
         // Post-check
         repaintAndCheckImg(imageFileName, sut, res);
     }
@@ -207,7 +207,7 @@ public class RectImgDescrAnalyzerTest {
         RectImgDescrAnalyzer sut = prepareAnalyzeImage(imageFileName);
         Rect imgRect = Rect.newDim(sut.getDim());
         // Perform
-        RectImgDescription res = sut.analyze(imgRect);
+        RectImgDescr res = sut.analyze(imgRect);
         // Post-check
         Assert.assertNotNull(res);
         repaintAndCheckImg(imageFileName, sut, res);
@@ -216,7 +216,7 @@ public class RectImgDescrAnalyzerTest {
     
     // ------------------------------------------------------------------------
     
-    private void repaintAndCheckImg(String imageFileName, RectImgDescrAnalyzer sut, RectImgDescription res) {
+    private void repaintAndCheckImg(String imageFileName, RectImgDescrAnalyzer sut, RectImgDescr res) {
         Dim dim = sut.getDim();
         BufferedImage checkImg = new BufferedImage(dim.getWidth(), dim.getHeight(), BufferedImage.TYPE_INT_RGB);
         DrawRectImgDescrVisitor drawVisitor = new DrawRectImgDescrVisitor(checkImg);

@@ -4,27 +4,27 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.AnalysisProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ConnexSegmentLinesNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.GlyphRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.HorizontalSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LeftRightBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseAbovePartsRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.NoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.OverrideAttributesProxyRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.PtNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RawDataRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RootRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.SegmentNoiseFragment;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.TopBottomBorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.AnalysisProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ConnexSegmentLinesNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.GlyphRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.HorizontalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LeftRightBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.NoiseAbovePartsRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.NoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.OverrideAttributesProxyRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.PtNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RawDataRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgAboveRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RootRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.SegmentNoiseFragment;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
 import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Border;
 import fr.an.screencast.compressor.utils.Dim;
@@ -50,11 +50,11 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
 
     // ------------------------------------------------------------------------
 
-    public static String dumpToString(RectImgDescription node) {
+    public static String dumpToString(RectImgDescr node) {
         return dumpToString(node, null);
     }
     
-    public static String dumpToString(RectImgDescription node, Rect roi) {
+    public static String dumpToString(RectImgDescr node, Rect roi) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(buffer);
         dumpTo(out, node, roi);
@@ -62,11 +62,11 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         return buffer.toString();
     }
 
-    public static void dumpTo(PrintStream out, RectImgDescription node) {
+    public static void dumpTo(PrintStream out, RectImgDescr node) {
         dumpTo(out, node, null);
     }
     
-    public static void dumpTo(PrintStream out, RectImgDescription node, Rect roi) {
+    public static void dumpTo(PrintStream out, RectImgDescr node, Rect roi) {
         DumpRectImgDescrVisitor visitor = new DumpRectImgDescrVisitor(out, roi);
         node.accept(visitor);
     }
@@ -85,7 +85,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         out.println();
     }
     
-    protected void printlnIndent(String name, RectImgDescription node) {
+    protected void printlnIndent(String name, RectImgDescr node) {
         if (node != null) {
             if (roi == null || node.getRect().isIntersect(roi)) {
                 printlnIndent(name);
@@ -140,7 +140,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         final Dim bottomCornerDim = node.getBottomCornerDim();
         final int borderColor = node.getBorderColor();
         final int borderThick = node.getBorderThick();
-        final RectImgDescription inside = node.getInside();
+        final RectImgDescr inside = node.getInside();
 
         printlnIndent("RoundBorder " + rect 
                 + " borderThick:" + borderThick
@@ -156,7 +156,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         final Rect rect = node.getRect();
         final int borderColor = node.getBorderColor();
         final Border border = node.getBorder();
-        final RectImgDescription inside = node.getInside();
+        final RectImgDescr inside = node.getInside();
 
         printlnIndent("Border " + rect 
             + " border:" + border
@@ -171,7 +171,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         final int borderColor = node.getBorderColor();
         final int topBorder = node.getTopBorder();
         final int bottomBorder = node.getBottomBorder();
-        final RectImgDescription inside = node.getInside();
+        final RectImgDescr inside = node.getInside();
 
         printlnIndent("TopBottomBorder " + rect 
             + " border top:" + topBorder + " bottom:" + bottomBorder
@@ -186,7 +186,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         final int borderColor = node.getBorderColor();
         final int leftBorder = node.getLeftBorder();
         final int rightBorder = node.getRightBorder();
-        final RectImgDescription inside = node.getInside();
+        final RectImgDescr inside = node.getInside();
 
         printlnIndent("LeftRightBorder " + rect 
             + " border left:" + leftBorder + " right:" + rightBorder
@@ -198,10 +198,10 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
     @Override
     public void caseVerticalSplit(VerticalSplitRectImgDescr node) {
         final Rect rect = node.getRect();
-        final RectImgDescription left = node.getLeft();
+        final RectImgDescr left = node.getLeft();
         final Segment splitBorder = node.getSplitBorder();
         final int splitColor = node.getSplitColor();
-        final RectImgDescription right = node.getRight();
+        final RectImgDescr right = node.getRight();
 
         printlnIndent("VerticalSplit " + rect 
             + " splitBorder:" + splitBorder + " color:" + colorToString(splitColor));
@@ -212,10 +212,10 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
     @Override
     public void caseHorizontalSplit(HorizontalSplitRectImgDescr node) {
         final Rect rect = node.getRect();
-        final RectImgDescription down = node.getDown();
+        final RectImgDescr down = node.getDown();
         final Segment splitBorder = node.getSplitBorder();
         final int splitColor = node.getSplitColor();
-        final RectImgDescription up = node.getUp();
+        final RectImgDescr up = node.getUp();
 
         printlnIndent("HorizontalSplit " + rect 
             + " splitBorder:" + splitBorder + " color:" + colorToString(splitColor));
@@ -228,7 +228,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         final Rect rect = node.getRect();
         final int backgroundColor = node.getBackgroundColor();
         final Segment[] splitBorders = node.getSplitBorders();
-        final RectImgDescription[] lines = node.getLines();
+        final RectImgDescr[] lines = node.getLines();
 
         printIndent();
         print("LinesSplit " + rect 
@@ -245,7 +245,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         if (lines != null) {
             printlnIndent("lines:");
             int index = 0;
-            for(RectImgDescription line : lines) {
+            for(RectImgDescr line : lines) {
                 printlnIndent("line[" + index + "]", line);
                 index++;
             }
@@ -259,7 +259,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         final Rect rect = node.getRect();
         final int backgroundColor = node.getBackgroundColor();
         final Segment[] splitBorders = node.getSplitBorders();
-        final RectImgDescription[] columns = node.getColumns();
+        final RectImgDescr[] columns = node.getColumns();
         
         printIndent("ColumnsSplit " + rect 
             + " backgroundColor:" + colorToString(backgroundColor) + " splitBorders:");
@@ -275,7 +275,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
         if (columns != null) {
             printlnIndent("columns:");
             int index = 0;
-            for(RectImgDescription column : columns) {
+            for(RectImgDescr column : columns) {
                 printlnIndent("col[" + index + "]", column);
                 index++;
             }
@@ -301,13 +301,13 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
 
     @Override
     public void caseAbove(RectImgAboveRectImgDescr node) {
-        final RectImgDescription underlying = node.getUnderlying();
-        final RectImgDescription[] aboves = node.getAboves();
+        final RectImgDescr underlying = node.getUnderlying();
+        final RectImgDescr[] aboves = node.getAboves();
         printlnIndent("underlying", underlying);
         final int aboveCount = (aboves != null)? aboves.length : 0;
         printlnIndent("aboveCount:" + aboveCount);
         for (int i= 0; i < aboveCount; i++) {
-            RectImgDescription above = aboves[i];
+            RectImgDescr above = aboves[i];
             // final Rect aboveRect = above.getRect();
             // printlnIndent("Above " + rect + ((above != null)? " aboveRect:" + aboveRect : ""));
             printlnIndent("above", above);
@@ -359,7 +359,7 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
     
     @Override
     public void caseAnalysisProxy(AnalysisProxyRectImgDescr node) {
-        RectImgDescription target = node.getTarget();
+        RectImgDescr target = node.getTarget();
         printlnIndent("target", target);        
     }
     

@@ -13,13 +13,13 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.BorderRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.ColumnsSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.FillRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.LinesSplitRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgAboveRectImgDescr;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RectImgDescription;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescriptionAST.RoundBorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.FillRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.LinesSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgAboveRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.utils.Graphics2DHelper;
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
@@ -330,7 +330,7 @@ public class RectImgDescrDetectorHelperTest {
         Assert.assertEquals(2, splits.length);
         Assert.assertEquals(new Segment(1,1), splits[0]);
         Assert.assertEquals(new Segment(2,2), splits[1]); // useless?
-        RectImgDescription[] lines = res.getLines();
+        RectImgDescr[] lines = res.getLines();
         Assert.assertEquals(3, lines.length);
         RectImgAboveRectImgDescr line0 = (RectImgAboveRectImgDescr) lines[0];
         Assert.assertEquals(scannedRects.subList(0, 2), Arrays.asList(line0.getAboveRects()));
@@ -382,7 +382,7 @@ public class RectImgDescrDetectorHelperTest {
         Assert.assertEquals(2, splits.length);
         Assert.assertEquals(new Segment(3,3), splits[0]);
         Assert.assertEquals(new Segment(4,4), splits[1]);
-        RectImgDescription[] lines = res.getLines();
+        RectImgDescr[] lines = res.getLines();
         Assert.assertEquals(3, lines.length);
         RectImgAboveRectImgDescr line0 = (RectImgAboveRectImgDescr) lines[0];
         Assert.assertEquals(scannedRects.subList(0, 7), Arrays.asList(line0.getAboveRects()));
@@ -546,7 +546,7 @@ public class RectImgDescrDetectorHelperTest {
         Assert.assertEquals(2, splits.length);
         Assert.assertEquals(new Segment(1,1), splits[0]);
         Assert.assertEquals(new Segment(2,2), splits[1]);
-        RectImgDescription[] cols = res.getColumns();
+        RectImgDescr[] cols = res.getColumns();
         Assert.assertEquals(3, cols.length);
         RectImgAboveRectImgDescr line0 = (RectImgAboveRectImgDescr) cols[0];
         Assert.assertEquals(scannedRects.subList(0, 2), Arrays.asList(line0.getAboveRects()));
@@ -610,7 +610,7 @@ public class RectImgDescrDetectorHelperTest {
         Rect borderRect = Rect.newPtToPt(1, 1, 9, 6);
         Assert.assertNotNull(sut.detectBorder1AtUL(new Pt(1, 1), new MutableDim(8, 4)));
         // Perform
-        RectImgDescription res = sut.innerBorderImgDescrAtBorder(borderRect);
+        RectImgDescr res = sut.innerBorderImgDescrAtBorder(borderRect);
         // Post-check
         Assert.assertTrue(res instanceof BorderRectImgDescr);
         BorderRectImgDescr res2 = (BorderRectImgDescr) res;

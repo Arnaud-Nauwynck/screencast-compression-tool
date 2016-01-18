@@ -127,4 +127,29 @@ public class ImageRasterUtils {
             src[i] = src[i] | mask; // 0xFF000000;
         }
     }
+
+    public static String rectValuesToString(Dim dim, int[] src) {
+        return rectValuesToString(dim, src, Rect.newDim(dim));
+    }
+    
+    public static String rectValuesToString(Dim dim, int[] src, Rect rect) {
+        StringBuilder sb = new StringBuilder();
+        final int W = dim.width;
+        for (int y = rect.fromY; y < rect.toY; y++) {
+            for (int x = rect.fromX; x < rect.toX; x++) {
+                int idx = y * W + x;
+                // checkIdx(idx, x,                 
+                String valueTxt = Integer.toString(src[idx]);
+                sb.append(valueTxt);
+                if (x + 1 < rect.toX) {
+                    sb.append(' ');
+                }
+            }
+            if (y + 1 < rect.toY) {
+                sb.append('\n');
+            }
+        }
+        return sb.toString();
+    }
+    
 }
