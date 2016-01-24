@@ -1,5 +1,7 @@
 package fr.an.screencast.ui.swing.imgtool.rectdescr;
 
+import javax.swing.JFrame;
+
 import org.junit.Test;
 
 import fr.an.screencast.compressor.imgtool.rectdescr.RectImgDescrAnalyzerTest;
@@ -11,7 +13,8 @@ public class RectImgDescrJTreeTest {
     @Test
     public void testOpenView() {
         RectImgDescr model = RectImgDescrAnalyzerTest.analyseTstFile0();
-        JFrameUtils.openFrame("test", () -> RectImgDescrJTree.createView(model));
+        JFrame frame = JFrameUtils.openFrame("test", () -> RectImgDescrJTree.createView(model));
+        frame.dispose();
     }
 
 }

@@ -39,6 +39,14 @@ public class Rect implements Serializable {
         return new Rect(fromX, fromY, toX, toY);
     }
 
+    public static Rect newSortPtToPt(Pt pt1, Pt pt2) {
+        int fromX = Math.min(pt1.x, pt2.x); 
+        int toX = Math.max(pt1.x, pt2.x); 
+        int fromY = Math.min(pt1.y, pt2.y); 
+        int toY = Math.max(pt1.y, pt2.y); 
+        return new Rect(fromX, fromY, toX, toY);
+    }
+
     public static Rect newPtDim(Pt from, Dim dim) {
         return new Rect(from.x, from.y, from.x + dim.width, from.y + dim.height);
     }
@@ -217,7 +225,30 @@ public class Rect implements Serializable {
         return new Rect(newFromX, newFromY, newToX, newToY);
     }
     
+    public Rect newDilate(int size) {
+        int newFromX = fromX - size;
+        int newToX = toX + size;
+        int newFromY = fromY - size;
+        int newToY = toY + size;
+        return new Rect(newFromX, newFromY, newToX, newToY);
+    }
     
+    public Rect newWithin(Rect out) {
+        int newFromX = out.xIn(fromX);
+        int newToX = out.xIn(toX);
+        int newFromY = out.yIn(fromY);
+        int newToY = out.yIn(toY);
+        return new Rect(newFromX, newFromY, newToX, newToY);
+    }
+    
+    public int xIn(int x) {
+        return Math.max(fromX, Math.min(toX, x));
+    }
+
+    public int yIn(int y) {
+        return Math.max(fromY, Math.min(toY, y));
+    }
+
     public void graphicsFillRect(Graphics g2d) {
         g2d.fillRect(fromX, fromY, getWidth(), getHeight());        
     }

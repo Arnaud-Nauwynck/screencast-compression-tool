@@ -13,6 +13,7 @@ import fr.an.screencast.compressor.utils.Rect;
 public class Graphics2DHelper {
 
     private BufferedImage img;
+    private int W, H;
     private Graphics2D g2d;
     
     // ------------------------------------------------------------------------
@@ -20,12 +21,24 @@ public class Graphics2DHelper {
     public Graphics2DHelper(BufferedImage img) {
         this.img = img;
         this.g2d = img.createGraphics();
+        this.W = img.getWidth();
+        this.H = img.getHeight();
     }
     
     // ------------------------------------------------------------------------
-
+    
+    public BufferedImage getImg() {
+        return img;
+    }
+    
     public void drawRect(Rect rect) {
         g2d.drawRect(rect.fromX, rect.fromY, rect.getWidth(), rect.getHeight());
+    }
+
+    public void drawRectOut(Rect rect) {
+        int stroke = (int) ((BasicStroke) g2d.getStroke()).getLineWidth();
+        Rect r = rect.newDilate(stroke).newWithin(Rect.newPtDim(0, 0, W, H));
+        drawRect(r);
     }
 
     public void setColorStroke(Color color, int stroke) {

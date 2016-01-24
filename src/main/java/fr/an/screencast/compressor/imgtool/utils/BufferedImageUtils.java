@@ -44,6 +44,10 @@ public final class BufferedImageUtils {
         return cache;
     }
 
+    public static void copyImage(BufferedImage dest, BufferedImage source) {
+        dest.getRaster().setRect(source.getRaster());
+    }
+    
     public static BufferedImage copyConvertToRGB(BufferedImage source) {
         return convertToType(null, source, BufferedImage.TYPE_INT_RGB);
     }
