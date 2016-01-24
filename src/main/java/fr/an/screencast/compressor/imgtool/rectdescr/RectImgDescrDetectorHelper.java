@@ -699,7 +699,8 @@ public final class RectImgDescrDetectorHelper {
     
     public RoundBorderRectImgDescr detectRoundBorderStartAtUL(Pt pt) {
         // TODO
-        return null;
+        RoundBorderRectImgDescr res = _test_detectRoundBorderStartAtUL(pt);
+        return res;
     }
     
     public RoundBorderRectImgDescr _test_detectRoundBorderStartAtUL(Pt pt) {
@@ -712,9 +713,10 @@ public final class RectImgDescrDetectorHelper {
         if (topLeftCornerX == W) {
             return null;
         }
-
-        int topLeftCornerY = pt.y;
-        for (; topLeftCornerY < H && sameCountsImg.getDownSameCount(idx) < 10;topLeftCornerY++,idx+=W) {            
+        final int bgColor = imgData[idx+topLeftCornerX];
+        
+        int topLeftCornerY = 0;
+        for (; topLeftCornerY < H && (imgData[idx] != bgColor || sameCountsImg.getDownSameCount(idx) < 10);topLeftCornerY++,idx+=W) {            
         }
         if (topLeftCornerY == H) {
             return null;

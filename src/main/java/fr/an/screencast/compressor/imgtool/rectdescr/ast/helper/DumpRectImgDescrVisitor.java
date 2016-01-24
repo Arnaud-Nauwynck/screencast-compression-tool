@@ -88,10 +88,20 @@ public class DumpRectImgDescrVisitor extends AbstractRectImgDescrROIVisitor {
     protected void printlnIndent(String name, RectImgDescr node) {
         if (node != null) {
             if (roi == null || node.getRect().isIntersect(roi)) {
-                printlnIndent(name);
-                incrIndent();
-                node.accept(this);
-                decrIndent();
+                if (maxLevel == -1 || currLevel < maxLevel) {
+                    currLevel++;
+                    
+                    printlnIndent(name);
+                    incrIndent();
+                    
+                    // recurse(node) ==> re-test isIntersect() + test malLevel..
+                    // node.accept(this);
+                    recurse(node);
+                    
+                    decrIndent();
+                 
+                    currLevel--;
+                }
             }
         }
     }

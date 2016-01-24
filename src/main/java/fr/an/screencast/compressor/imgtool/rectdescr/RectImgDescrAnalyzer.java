@@ -103,7 +103,7 @@ public class RectImgDescrAnalyzer {
             return res;
         }
         
-        res = helper.detectRoundBorderStartAtUL(rectFromPt);
+        res = helper.detectRoundBorderStartAtUL(rectFromPt); // TODO within rect!!
         if (res != null) {
             return res;
         }

@@ -137,7 +137,7 @@ public class RectImgDescrJTree {
                 if (lastNode.isLeaf()) {
                     parentTreePath = treePath.getParentPath();
                 }
-                LOG.debug("treeView.expandPath " + parentTreePath);
+                // LOG.debug("treeView.expandPath " + parentTreePath);
                 treeView.expandPath(parentTreePath);
                 
                 treeView.getSelectionModel().setSelectionPath(treePath);

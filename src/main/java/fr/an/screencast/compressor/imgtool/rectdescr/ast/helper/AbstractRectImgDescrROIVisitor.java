@@ -30,7 +30,10 @@ import fr.an.screencast.compressor.utils.Rect;
  */
 public abstract class AbstractRectImgDescrROIVisitor extends RectImgDescrVisitor {
 
-   protected Rect roi;
+    protected Rect roi;
+    
+    protected int currLevel;
+    protected int maxLevel = -1;
     
     // ------------------------------------------------------------------------
 
@@ -40,10 +43,19 @@ public abstract class AbstractRectImgDescrROIVisitor extends RectImgDescrVisitor
 
     // ------------------------------------------------------------------------
 
+    public void setMaxLevel(int maxLevel) {
+        this.maxLevel = maxLevel;
+    }
+    
+    
     protected void recurse(RectImgDescr node) {
         if (node != null) {
             if (roi == null || node.getRect().isIntersect(roi)) {
-                node.accept(this);
+                if (maxLevel == -1 || currLevel < maxLevel) {
+                    currLevel++;
+                    node.accept(this);
+                    currLevel--;
+                }
             }
         }
     }

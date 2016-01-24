@@ -171,11 +171,13 @@ public final class RightDownSameCountsImg {
     
     
     public int getRightSameCount(int idx) {
-        return rightSameCounts[idx];
+        int res = rightSameCounts[idx];
+        return res;
     }
 
     public int getDownSameCount(int idx) {
-        return downSameCounts[idx];
+        int res = downSameCounts[idx];
+        return res;
     }
 
     public int[] getRightSameCounts() {
