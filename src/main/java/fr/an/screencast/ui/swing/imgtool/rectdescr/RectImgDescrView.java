@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -31,10 +32,12 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.ROIToDescrPathRe
 import fr.an.screencast.compressor.imgtool.utils.BufferedImageUtils;
 import fr.an.screencast.compressor.imgtool.utils.Graphics2DHelper;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
+import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 import fr.an.screencast.ui.swing.internal.ImageCanvas;
+import fr.an.screencast.ui.swing.internal.ImageViewer;
 
 public class RectImgDescrView {
 
@@ -45,27 +48,30 @@ public class RectImgDescrView {
     private JSplitPane splitImgDetailPanel;
     private JSplitPane splitTreeViewImgPanel;
     private RectImgDescrJTree leftTree;
-    private ImageCanvas imageCanvas;
+    private ImageViewer imageViewer;
     private JPanel bottomDetailsPanel;
     private JTextPane detailsTextPane;
     
     private BufferedImage origImg;
+    private Dim dim;
     private BufferedImage img;
     private RectImgDescrAnalyzer analyzer;
     
     private RectImgDescr currSelectedRectDescr;
+    private RectImgDescr[] currSelectedRectDescrPath;
+    private Rect currSelRect;
     
     // ------------------------------------------------------------------------
 
     public RectImgDescrView(BufferedImage srcImg, RectImgDescr model) {
         createUI();
         // leftTree.getComponent().setPreferredSize(new Dim);
-        imageCanvas.setPreferredSize(new Dimension(srcImg.getWidth()/2, srcImg.getHeight()/2));
+        imageViewer.getComponent().setPreferredSize(new Dimension(srcImg.getWidth()/2, srcImg.getHeight()/2));
         origImg = BufferedImageUtils.copyImage(srcImg);
+        dim = new Dim(origImg.getWidth(), origImg.getHeight());
         img = BufferedImageUtils.copyImage(srcImg);
         setImage(img);
         setRectImgDescrModel(model);
-        Dim dim = new Dim(srcImg.getWidth(), srcImg.getHeight());
         analyzer = new RectImgDescrAnalyzer(dim);
         analyzer.setImg(ImageRasterUtils.toInts(origImg));
     }
@@ -76,7 +82,7 @@ public class RectImgDescrView {
         splitImgDetailPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitTreeViewImgPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         leftTree = new RectImgDescrJTree();
-        imageCanvas = new ImageCanvas();
+        imageViewer = new ImageViewer();
         bottomDetailsPanel = new JPanel(new GridLayout(1, 2));
         detailsTextPane = new JTextPane();
         JScrollPane detailScrollPane = new JScrollPane(detailsTextPane);
@@ -91,7 +97,7 @@ public class RectImgDescrView {
         splitTreeViewImgPanel.setDividerLocation(0.8);
         
         splitTreeViewImgPanel.add(leftTree.getComponent());
-        splitTreeViewImgPanel.add(imageCanvas);
+        splitTreeViewImgPanel.add(imageViewer.getComponent());
         splitTreeViewImgPanel.setDividerLocation(0.2);
         
         JButton buttonDump = new JButton("Dump");
@@ -105,37 +111,62 @@ public class RectImgDescrView {
         JButton reevalDetectButton = new JButton("Detect");
         reevalDetectButton.addActionListener(e -> {
             if (currSelectedRectDescr != null) {
-                Rect rect = currSelectedRectDescr.getRect();
-                analyzeRect(rect);
+                analyzeRect(currSelectedRectDescr.getRect());
             }
         });
         menuPanel.add(reevalDetectButton);
         
+        JButton dumpRGBButton = new JButton("DumpRGB");
+        dumpRGBButton.addActionListener(e -> {
+            if (currSelRect != null) {
+                dumpRGBRect(currSelRect);
+            }
+        });
+        menuPanel.add(dumpRGBButton);
+        
         leftTree.addPropertyChangeListener(RectImgDescrJTree.PROP_selectedRectDescrPath, evt -> {
-            RectImgDescr[] selectedRectDescrPath = leftTree.getSelectedRectDescrPath();
-            onSelectedTreePath_drawRectsImg(selectedRectDescrPath);
-            
-            currSelectedRectDescr = selectedRectDescrPath.length > 0? selectedRectDescrPath[selectedRectDescrPath.length-1] : null;
+            currSelectedRectDescrPath = leftTree.getSelectedRectDescrPath();
+            currSelectedRectDescr = currSelectedRectDescrPath.length > 0? currSelectedRectDescrPath[currSelectedRectDescrPath.length-1] : null;
+
+            onRepaint();
         });
         
         
-        imageCanvas.addMouseListener(new MouseAdapter() {
+        MouseAdapter mouseListener = new MouseAdapter() {
             Pt selectionFromPt;
 
             @Override
             public void mousePressed(MouseEvent e) {
+                if (0 == (e.getModifiers() & InputEvent.SHIFT_MASK)) {
+                    return;
+                }
                 this.selectionFromPt = viewToModelPt(e);
             }
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (selectionFromPt == null) {
+                    return;
+                }
                 Pt selectionToPt = viewToModelPt(e);
                 Rect roi = Rect.newSortPtToPt(selectionFromPt, selectionToPt);
-                roiToTreePathSelection(roi);
+
+                if (0 != (e.getModifiers() & InputEvent.SHIFT_MASK)) {
+                    currSelRect = roi;
+                } else {
+                    roiToTreePathSelection(roi);
+                }
                 
                 selectionFromPt = null;
+                
+                imageViewer.setOtherLabelText(" sel rect: " + currSelRect + 
+                    ((currSelectedRectDescr != null)? " descr: " + currSelectedRectDescr.getRect() : ""));
+                onRepaint();
             }
             @Override
             public void mouseMoved(MouseEvent e) {
+                if (0 == (e.getModifiers() & InputEvent.SHIFT_MASK)) {
+                    return;
+                }
                 if (selectionFromPt != null) {
                     Pt selectionToPt = viewToModelPt(e);
                     Rect roi = Rect.newSortPtToPt(selectionFromPt, selectionToPt);
@@ -144,29 +175,25 @@ public class RectImgDescrView {
             }
             @Override
             public void mouseClicked(MouseEvent e) {
+                if (0 != (e.getModifiers() & InputEvent.SHIFT_MASK)) {
+                    return;
+                }
                 Pt pt = viewToModelPt(e);
                 Rect roi = Rect.newPtDim(pt, new Dim(1, 1));
                 roiToTreePathSelection(roi);
             }
             private Pt viewToModelPt(MouseEvent e) {
-                return viewToModelPt(e.getX(), e.getY()); 
+                return imageViewer.viewToModelPt(e.getX(), e.getY()); 
             }
-            private Pt viewToModelPt(int x, int y) {
-//                int offsetX = imageCanvas.getX();
-//                int offsetY = imageCanvas.getY();
-                int offsetX = 0, offsetY = 0;
-                int canvasW = imageCanvas.getWidth();
-                int canvasH = imageCanvas.getHeight();
-                int imgX = (x - offsetX) * img.getWidth() / canvasW;
-                int imgY = (y - offsetY) * img.getHeight() / canvasH;
-                return new Pt(imgX, imgY);
-            }
+            
             private void roiToTreePathSelection(Rect roi) {
                 RectImgDescr model = leftTree.getModel();
                 List<RectImgDescr> path = ROIToDescrPathRectImgDescrVisitor.roiToPath(model, roi);
                 leftTree.setSelectedPath(path);
             }
-        });
+        };
+        imageViewer.getImageComponent().addMouseListener(mouseListener);
+        imageViewer.getImageComponent().addMouseMotionListener(mouseListener);
     }
 
 
@@ -181,25 +208,33 @@ public class RectImgDescrView {
     }
     
     public void setImage(BufferedImage img) {
-        imageCanvas.setImage(img);
+        imageViewer.setImage(img);
     }
     
 
-    private void onSelectedTreePath_drawRectsImg(RectImgDescr[] selectedRectDescrPath) {
+    private void onRepaint() {
         BufferedImageUtils.copyImage(img, origImg);
-        if (selectedRectDescrPath != null) {
-            Graphics2DHelper g2d = new Graphics2DHelper(img);
+        Graphics2DHelper g2d = new Graphics2DHelper(img);
+        
+        if (currSelectedRectDescrPath != null) {
             g2d.setColorStroke(Color.ORANGE, 2);
-            for(int i = 0; i < selectedRectDescrPath.length; i++) {
-                RectImgDescr rectDescr = selectedRectDescrPath[i];
+            for(int i = 0; i < currSelectedRectDescrPath.length; i++) {
+                RectImgDescr rectDescr = currSelectedRectDescrPath[i];
                 Rect rect = rectDescr.getRect();
-                if (i+1==selectedRectDescrPath.length) {
+                if (i+1==currSelectedRectDescrPath.length) {
                     g2d.setColorStroke(Color.RED, 4);
                 }
                 g2d.drawRectOut(rect);
             }
         }
-        imageCanvas.setImage(img);
+        
+        if (currSelRect != null) {
+            g2d.setColorStroke(Color.BLACK, 1);
+            g2d.drawRectOut(currSelRect);
+        }
+        
+        // imageViewer.setImage(img); // useless??
+        imageViewer.getComponent().repaint();
     }
 
     private void dumpTextDetail(RectImgDescr rectDescr) {
@@ -214,6 +249,7 @@ public class RectImgDescrView {
         dumpVisitor.setMaxLevel(1);
         rectDescr.accept(dumpVisitor);
         
+        out.println("\n");
         out.flush();
         String text = buffer.toString();
         appendTextTo(detailsTextPane, text);
@@ -235,6 +271,18 @@ public class RectImgDescrView {
         RectImgDescr res = analyzer.detect(rect);
         
         dumpTextDetail(res);
+    }
+
+    private void dumpRGBRect(Rect rect) {
+        appendTextTo(detailsTextPane, "dump RGB rect => " + rect + "\n");
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(buffer);
+        
+        RGBUtils.dumpFixedRGBString(dim, ImageRasterUtils.toInts(origImg), rect, out);
+        out.flush();
+        
+        appendTextTo(detailsTextPane, buffer.toString());
     }
 
 }

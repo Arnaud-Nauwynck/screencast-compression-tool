@@ -12,6 +12,13 @@ public class ImageCanvas extends JComponent {
     
     private Image image;
 
+    // ------------------------------------------------------------------------
+
+    public ImageCanvas() {
+    }
+
+    // ------------------------------------------------------------------------
+
     public void setImage(Image image) {
         this.image = image;
         repaint();

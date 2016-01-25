@@ -698,8 +698,8 @@ public final class RectImgDescrDetectorHelper {
     
     
     public RoundBorderRectImgDescr detectRoundBorderStartAtUL(Pt pt) {
-        // TODO
-        RoundBorderRectImgDescr res = _test_detectRoundBorderStartAtUL(pt);
+        RoundBorderRectImgDescr res = null;
+        // TODO _test_detectRoundBorderStartAtUL(pt);
         return res;
     }
     

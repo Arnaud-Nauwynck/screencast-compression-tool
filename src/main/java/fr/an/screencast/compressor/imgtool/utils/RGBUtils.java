@@ -3,12 +3,15 @@ package fr.an.screencast.compressor.imgtool.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import fr.an.bitwise4j.util.ByteBufferOutputStream;
 import fr.an.bitwise4j.util.RuntimeIOException;
+import fr.an.screencast.compressor.utils.Dim;
+import fr.an.screencast.compressor.utils.Rect;
 
 public final class RGBUtils {
 
@@ -56,11 +59,18 @@ public final class RGBUtils {
         return (value >>> 24) & 0xFF;
     }
 
+    /** @return formatted RGBA text, as "34;51;68;0" */
     public static String toString(int rgb) {
         return redOf(rgb) + ";" + greenOf(rgb) + ";" + blueOf(rgb)
             + ((alphaOf(rgb) != 255)? ";" + alphaOf(rgb) : "");
     }
 
+    /** @return formatted RGB text, as "034,051,068" */
+    public static String toStringFixed(int rgb) {
+        int r = redOf(rgb), g = greenOf(rgb), b = blueOf(rgb);
+        return String.format("%1$03d,%2$03d,%3$03d", r, g, b);
+    }
+    
     
     public static int minRGB(int rgb1, int rgb2, int rgb3) {
         int r = minRed(rgb1, rgb2, rgb3);
@@ -186,4 +196,25 @@ public final class RGBUtils {
         }
     }
     
+    public static void dumpFixedRGBString(Dim dim, int[] imgData, Rect roi, PrintStream out) {
+        final int W = dim.width;
+        
+        out.print("         | ");
+        for(int x = roi.fromX; x < roi.toX; x++) {
+            out.print(String.format("%4d              | ", x));
+        }
+        out.println();
+        
+        final int incrIdxY = W + roi.fromX - roi.toX;
+        int idx = roi.fromY * W + roi.fromX;
+        for(int y = roi.fromY; y < roi.toY; y++,idx+=incrIdxY) {
+            out.print(String.format(" %4d | ", y));
+            for(int x = roi.fromX; x < roi.toX; x++,idx++) {
+                out.print(toStringFixed(imgData[idx]));
+                out.print(" | ");
+            }
+            out.println();
+        }
+    }
+        
 }
