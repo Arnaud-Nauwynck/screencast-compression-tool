@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.an.screencast.compressor.imgtool.ocr.OCRInteractivePrompter;
 import fr.an.screencast.compressor.imgtool.ocr.SimpleScreenshotOCRHelper;
 import fr.an.screencast.compressor.imgtool.utils.ImageIOUtils;
 
@@ -29,7 +30,7 @@ public class ScreenshotRecorder {
     private int currentIndex = 0;
     
     private boolean enableOCR = false;
-    private File ocrSettings = new File("~/.screencast/ocr-settings.xml");
+    private String ocrSettingsFilename = "~/.screencast/ocr-settings.xml";
     private String ocrResultFilename = "screenshot.txt";
     
     private SimpleScreenshotOCRHelper ocrHelper = new SimpleScreenshotOCRHelper();
@@ -42,8 +43,7 @@ public class ScreenshotRecorder {
 
     // ------------------------------------------------------------------------
     
-    public void startSession(File outputDir, String baseFilename, 
-            boolean enableOCR, File ocrSettings, String ocrResultFilename) {
+    public void startSession(File outputDir, String baseFilename) {
         String outputDirText = outputDir.getPath();
         String userHome = System.getProperty("user.home");
         outputDirText = outputDirText.replace("~/", userHome + "/");
@@ -53,10 +53,16 @@ public class ScreenshotRecorder {
         if (!baseFilename.contains("$i")) {
             baseFilename = "img-$i-" + baseFilename;
         }
-        this.enableOCR = enableOCR;
-        this.currentIndex = 0;
-        this.ocrSettings = ocrSettings;
-        this.ocrResultFilename = ocrResultFilename;
+        if (enableOCR) {
+            this.currentIndex = 0;
+            ocrSettingsFilename = ocrSettingsFilename.replace("~/", userHome + "/");
+            File ocrSettingsFile = new File(ocrSettingsFilename);
+            if (ocrSettingsFile.exists()) {
+                ocrHelper.loadSettings(ocrSettingsFile);
+            } else {
+                ocrHelper.initSettings(ocrSettingsFile);
+            }
+        }
     }
     
     public BufferedImage takeSnapshot() {
@@ -137,12 +143,12 @@ public class ScreenshotRecorder {
         this.enableOCR = enableOCR;
     }
 
-    public File getOcrSettings() {
-        return ocrSettings;
+    public String getOcrSettingsFilename() {
+        return ocrSettingsFilename;
     }
 
-    public void setOcrSettings(File ocrSettings) {
-        this.ocrSettings = ocrSettings;
+    public void setOcrSettingsFilename(String p) {
+        this.ocrSettingsFilename = p;
     }
 
     public String getOcrResultFilename() {
@@ -176,7 +182,13 @@ public class ScreenshotRecorder {
     public void setCurrentIndex(int currentIndex) {
         this.currentIndex = currentIndex;
     }
-    
-    
+
+    public OCRInteractivePrompter getOcrInteractivePrompter() {
+        return ocrHelper.getOcrInteractivePrompter();
+    }
+
+    public void setOcrInteractivePrompter(OCRInteractivePrompter ocrInteractivePrompter) {
+        ocrHelper.setOcrInteractivePrompter(ocrInteractivePrompter);
+    }    
     
 }

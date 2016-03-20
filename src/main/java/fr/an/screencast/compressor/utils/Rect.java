@@ -206,6 +206,14 @@ public class Rect implements Serializable {
             setDilateToContain(p);
         }
     }
+    
+    public void setDilateToContain(Rect r) {
+        if (r.isEmpty()) return;
+        setDilateToContain(new Pt(r.fromX, r.fromY));
+        setDilateToContain(new Pt(r.fromX, r.toY-1));
+        setDilateToContain(new Pt(r.toX-1, r.fromY));
+        setDilateToContain(new Pt(r.toX-1, r.toY-1));
+    }
 
     public boolean isInsideOf(Rect outer) {
         return outer.contains(this);

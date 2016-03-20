@@ -1,6 +1,7 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
 import fr.an.screencast.compressor.utils.Pt;
+import fr.an.screencast.compressor.utils.Rect;
 
 public class PtImageData {
 
@@ -32,6 +33,10 @@ public class PtImageData {
         this.imageData = imageData;
     }
 
+    public Rect getRect() {
+        return Rect.newPtDim(pt, imageData.getDim());
+    }
+    
     // ------------------------------------------------------------------------
     
     @Override

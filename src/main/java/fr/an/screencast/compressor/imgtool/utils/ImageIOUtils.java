@@ -63,6 +63,10 @@ public class ImageIOUtils {
         return BufferedImageUtils.convertToType(img, tmpImg, BufferedImage.TYPE_INT_RGB);
     }
 
+    public static BufferedImage read(File in) {
+        return read(null, in);
+    }
+    
     public static BufferedImage read(BufferedImage img, File in) {
         BufferedImage tmpImg;
         try {
@@ -73,4 +77,9 @@ public class ImageIOUtils {
         return BufferedImageUtils.convertToType(img, tmpImg, BufferedImage.TYPE_INT_RGB);
     }
 
+    public static ImageData readImageData(File in) {
+        BufferedImage tmpres = read(in);
+        return BufferedImageUtils.copyToImageData(tmpres);
+    }
+    
 }

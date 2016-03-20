@@ -1,5 +1,7 @@
 package fr.an.screencast.ui.swing;
 
+import java.awt.BorderLayout;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -27,6 +29,12 @@ public class ScreenshotRecorderView {
     private ScreenshotRecorder model;
     
     private JPanel panel;
+    
+    private JButton newSessionButton;
+    private JLabel text;
+    private boolean sessionActive;
+
+    private JPanel paramsPanel;
     private JTextField rectangleAreaField;
     private JButton revealRectButton;
     
@@ -36,17 +44,15 @@ public class ScreenshotRecorderView {
     private JLabel outputDirLabel;
     private JTextField outputDirField;
 
-    private JButton newSessionButton;
-    private JLabel text;
-
-    private JButton takeSnapshotButton;
 
     private JCheckBox enableOCRCheckbox;
     private JLabel ocrSettingsLabel;
     private JTextField ocrSettingsField;
+    private OCRInteractivePrompterView ocrInteractivePrompterView;
+
     
-    private boolean sessionActive;
-    
+    private JButton takeSnapshotButton;
+
     // ------------------------------------------------------------------------
 
     public static void main(String[] args) {
@@ -102,7 +108,30 @@ public class ScreenshotRecorderView {
 
     public ScreenshotRecorderView(ScreenshotRecorder model) {
         this.model = model;
-        panel = new JPanel(new GridBagLayout());
+        panel = new JPanel(new BorderLayout());
+
+        newSessionButton = new JButton("New Session");
+        newSessionButton.setActionCommand("new");
+        newSessionButton.addActionListener(e -> onNewSessionAction());
+
+        buildParamsPanel();
+
+        takeSnapshotButton = new JButton("Take Snapshot");
+        takeSnapshotButton.setEnabled(false);
+        takeSnapshotButton.setActionCommand("takeSnapshot");
+        takeSnapshotButton.addActionListener(e -> onTakeSnapshotAction());
+
+        
+        panel.add(newSessionButton, BorderLayout.NORTH);
+        panel.add(paramsPanel, BorderLayout.CENTER);
+        panel.add(takeSnapshotButton, BorderLayout.SOUTH);
+
+        modelToView();
+    }
+
+    private void buildParamsPanel() {
+        paramsPanel = new JPanel(new GridBagLayout());
+        
         GridBagConstraints gbcLabel = new GridBagConstraints();
         gbcLabel.gridx = 0; 
         gbcLabel.gridy = 0;
@@ -125,49 +154,37 @@ public class ScreenshotRecorderView {
 //        panel.add(rectangleAreaLabel, gbcLabel);
         revealRectButton = new JButton("reveal area");
         revealRectButton.addActionListener(e -> onReavealAreaAction());
-        panel.add(revealRectButton, gbcLabel);
+        paramsPanel.add(revealRectButton, gbcLabel);
 
         rectangleAreaField = new JTextField();
-        panel.add(rectangleAreaField, gbcField);
+        paramsPanel.add(rectangleAreaField, gbcField);
         
         
         gbcLabel.gridy++;
         gbcField.gridy++;
 
         baseFilenameLabel = new JLabel("fileName");
-        panel.add(baseFilenameLabel, gbcLabel);
+        paramsPanel.add(baseFilenameLabel, gbcLabel);
         baseFilenameField = new JTextField();
-        panel.add(baseFilenameField, gbcField);
+        paramsPanel.add(baseFilenameField, gbcField);
 
         gbcLabel.gridy++;
         gbcField.gridy++;
         
         outputDirLabel = new JLabel("output dir");
-        panel.add(outputDirLabel, gbcLabel);
+        paramsPanel.add(outputDirLabel, gbcLabel);
         outputDirField = new JTextField();
-        panel.add(outputDirField, gbcField);
+        paramsPanel.add(outputDirField, gbcField);
 
         gbcLabel.gridy++;
         gbcField.gridy++;
         
-        newSessionButton = new JButton("New Session");
-        newSessionButton.setActionCommand("new");
-        newSessionButton.addActionListener(e -> onNewSessionAction());
-        panel.add(newSessionButton, gbcLabel);
-
         text = new JLabel("Ready to record");
-        panel.add(text, gbcField);
+        paramsPanel.add(text, gbcField);
 
-        gbcLabel.gridy++;
-        gbcField.gridy++;
-
-        takeSnapshotButton = new JButton("Take Snapshot");
-        takeSnapshotButton.setEnabled(false);
-        takeSnapshotButton.setActionCommand("takeSnapshot");
-        takeSnapshotButton.addActionListener(e -> onTakeSnapshotAction());
         gbcField.gridx = 0;
         gbcField.gridwidth = 2;
-        panel.add(takeSnapshotButton, gbcField);
+        
         gbcField.gridx = 1;
         gbcField.gridwidth = 1;
         
@@ -182,19 +199,17 @@ public class ScreenshotRecorderView {
             ocrSettingsLabel.setVisible(vis);
             ocrSettingsField.setVisible(vis);
         });
-        panel.add(enableOCRCheckbox, gbcLabel);
+        paramsPanel.add(enableOCRCheckbox, gbcLabel);
         gbcLabel.gridy++;
         gbcField.gridy++;
 
         ocrSettingsLabel = new JLabel("OCR settings");
-        panel.add(ocrSettingsLabel, gbcLabel);
-        ocrSettingsField = new JTextField(model.getOcrSettings().getPath());
-        panel.add(ocrSettingsField, gbcField);
+        paramsPanel.add(ocrSettingsLabel, gbcLabel);
+        ocrSettingsField = new JTextField(model.getOcrSettingsFilename());
+        paramsPanel.add(ocrSettingsField, gbcField);
 
         gbcLabel.gridy++;
         gbcField.gridy++;
-
-        modelToView();
     }
 
 
@@ -247,19 +262,39 @@ public class ScreenshotRecorderView {
     private void onNewSessionAction() {
         sessionActive = !sessionActive;
         File outputDir = model.getOutputDir();
-        if (sessionActive && outputDir == null) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.showOpenDialog(panel);
-            outputDir = fileChooser.getSelectedFile();
-            model.setOutputDir(outputDir);
-        }
-        if (sessionActive && outputDir != null) {
+        if (sessionActive) {
+            if (outputDir == null) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fileChooser.showOpenDialog(panel);
+                outputDir = fileChooser.getSelectedFile();
+                model.setOutputDir(outputDir);
+            }
             viewToModel();
             String baseFileName = baseFilenameField.getText();
-            String ocrFileName = baseFileName.replace("-$i", "").replace(".png", ".txt");
-            model.startSession(outputDir, baseFileName, 
-                enableOCRCheckbox.isSelected(), new File(ocrSettingsField.getText()), ocrFileName);
+            
+            Frame frame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, panel);
+            frame.setState(Frame.ICONIFIED);
+            
+            boolean isEnableOCR = enableOCRCheckbox.isSelected();
+            model.setEnableOCR(isEnableOCR);
+            if (isEnableOCR) {
+                model.setOcrSettingsFilename(ocrSettingsField.getText());
+                String ocrFileName = baseFileName.replace("-$i", "").replace(".png", ".txt");
+                model.setOcrResultFilename(ocrFileName);
+                
+                if (ocrInteractivePrompterView == null) {
+                    ocrInteractivePrompterView = new OCRInteractivePrompterView(frame);
+                }
+                model.setOcrInteractivePrompter(ocrInteractivePrompterView);
+            }
+
+            
+            boolean valid = outputDir != null; 
+            
+            if (valid) {
+                model.startSession(outputDir, baseFileName);
+            }
         }
         
         takeSnapshotButton.setEnabled(sessionActive);
@@ -276,6 +311,10 @@ public class ScreenshotRecorderView {
         enableOCRCheckbox.setVisible(!sessionActive);
         ocrSettingsLabel.setVisible(!sessionActive);
         ocrSettingsField.setVisible(!sessionActive);
+        
+        panel.invalidate();
+        panel.validate();
+        panel.repaint();
     }
 
     private void onTakeSnapshotAction() {

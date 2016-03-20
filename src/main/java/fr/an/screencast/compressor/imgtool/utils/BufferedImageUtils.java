@@ -25,6 +25,12 @@ public final class BufferedImageUtils {
         return img;
     }
 
+    public static ImageData copyToImageData(BufferedImage src) {
+        Dim dim = new Dim(src.getWidth(), src.getHeight());
+        int[] data = ImageRasterUtils.toInts(src).clone();
+        return new ImageData(dim, data);
+    }
+    
     public static void copyImage(int[] dest, BufferedImage src) {
         int[] srcData = ImageRasterUtils.toInts(src);
         System.arraycopy(srcData, 0, dest, 0, dest.length);

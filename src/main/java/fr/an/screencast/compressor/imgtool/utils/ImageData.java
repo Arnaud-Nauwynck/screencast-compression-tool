@@ -94,6 +94,25 @@ public class ImageData implements Serializable {
     public void checkEquals(ImageData actual) {
         checkEquals(actual.getData());
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ImageData other = (ImageData) obj;
+        if (!Arrays.equals(data, other.data))
+            return false;
+        if (dim == null) {
+            if (other.dim != null)
+                return false;
+        } else if (!dim.equals(other.dim))
+            return false;
+        return true;
+    }
 
     @Override
     public String toString() {

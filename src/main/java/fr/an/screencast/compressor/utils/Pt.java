@@ -52,6 +52,28 @@ public final class Pt implements Serializable {
         this.y = pt.y;
     }
 
+    public void setAdd(Pt vect) {
+        this.x += vect.x;
+        this.y += vect.y;
+    }
+
+    public Pt newAdd(Pt vect) {
+        Pt res = new Pt(this);
+        res.setAdd(vect);
+        return res;
+    }
+
+    public void setMinus(Pt vect) {
+        this.x -= vect.x;
+        this.y -= vect.y;
+    }
+
+    public Pt newMinus(Pt vect) {
+        Pt res = new Pt(this);
+        res.setMinus(vect);
+        return res;
+    }
+
     public boolean setNextHorizontalScan(Dim dim) {
         x++;
         if (x >= dim.width) {
