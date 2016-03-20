@@ -1,8 +1,10 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,6 +35,14 @@ public class ImageIOUtils {
         }
     }
 
+    public static void writeTo(File dest, BufferedImage img, String formatName) {
+        try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(dest))) {
+            writeTo(out, img, formatName);
+        } catch (IOException e) {
+            throw new RuntimeIOException("Failed to write to file '" + dest + "'", e);
+        }
+    }
+    
     public static BufferedImage read(BufferedImage img, InputStream in) {
         BufferedImage tmpImg;
         try {
