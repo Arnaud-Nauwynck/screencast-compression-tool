@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgstream.VideoInputStream;
-import fr.an.screencast.compressor.imgstream.VideoOutputStream;
 import fr.an.screencast.compressor.imgstream.VideoStreamFactory;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.ProgessPrinter;
@@ -59,6 +58,7 @@ public class VideoStreamReadDoNothingMain {
             int frameIndex = 0;
             while(in.readNextImage()) {
                BufferedImage img = in.getImage();
+               assert img != null;
                
                frameIndex++;
                progressPrinter.next();

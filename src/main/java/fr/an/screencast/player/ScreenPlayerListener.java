@@ -1,6 +1,5 @@
 package fr.an.screencast.player;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;

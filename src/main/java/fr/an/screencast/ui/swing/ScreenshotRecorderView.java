@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -18,33 +19,34 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.an.screencast.recorder.ScreenshotRecorder;
 import fr.an.screencast.ui.swing.internal.TransparentFrameScreenArea;
 
 public class ScreenshotRecorderView {
     
-    private static final Logger LOG = LoggerFactory.getLogger(ScreenshotRecorderView.class);
-    
     private ScreenshotRecorder model;
-
+    
     private JPanel panel;
-    private JLabel rectangleAreaLabel;
     private JTextField rectangleAreaField;
     private JButton revealRectButton;
     
     private JLabel baseFilenameLabel;
     private JTextField baseFilenameField;
-    
+
+    private JLabel outputDirLabel;
+    private JTextField outputDirField;
+
     private JButton newSessionButton;
     private JLabel text;
 
     private JButton takeSnapshotButton;
 
-    private File outputFile;
-
+    private JCheckBox enableOCRCheckbox;
+    private JLabel ocrSettingsLabel;
+    private JTextField ocrSettingsField;
+    
+    private boolean sessionActive;
+    
     // ------------------------------------------------------------------------
 
     public static void main(String[] args) {
@@ -98,7 +100,6 @@ public class ScreenshotRecorderView {
         this.model = model;
         panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcLabel = new GridBagConstraints();
-        // 0, 0, 1, 1, 1.0, 1.0, 0, GridBagConstraints.WEST);
         gbcLabel.gridx = 0; 
         gbcLabel.gridy = 0;
         gbcLabel.gridwidth = 1;
@@ -107,27 +108,23 @@ public class ScreenshotRecorderView {
         gbcLabel.insets = new Insets(5, 5, 5, 5);
 
         GridBagConstraints gbcField = new GridBagConstraints();
-        // 0, 0, 1, 1, 1.0, 1.0, 0, GridBagConstraints.WEST);
         gbcField.gridx = 1; 
         gbcField.gridy = 0;
         gbcField.gridwidth = 1;
         gbcField.gridheight = 1;
-        gbcField.anchor = GridBagConstraints.WEST;
+        gbcField.anchor = GridBagConstraints.CENTER;
+        gbcField.fill = GridBagConstraints.BOTH;
         gbcField.insets = new Insets(5, 5, 5, 5);
 
         
-        rectangleAreaLabel = new JLabel("area (x,y,w,h)");
-        panel.add(rectangleAreaLabel, gbcLabel);
-
-        rectangleAreaField = new JTextField();
-        recordAreaModelToView();
-        panel.add(rectangleAreaField, gbcField);
-
+//        rectangleAreaLabel = new JLabel("area (x,y,w,h)");
+//        panel.add(rectangleAreaLabel, gbcLabel);
         revealRectButton = new JButton("reveal area");
         revealRectButton.addActionListener(e -> onReavealAreaAction());
-        gbcField.gridx++;
-        panel.add(revealRectButton, gbcField);
-        gbcField.gridx--;
+        panel.add(revealRectButton, gbcLabel);
+
+        rectangleAreaField = new JTextField();
+        panel.add(rectangleAreaField, gbcField);
         
         
         gbcLabel.gridy++;
@@ -135,12 +132,19 @@ public class ScreenshotRecorderView {
 
         baseFilenameLabel = new JLabel("fileName");
         panel.add(baseFilenameLabel, gbcLabel);
-        baseFilenameField = new JTextField("screenshot-$i.png");
+        baseFilenameField = new JTextField();
         panel.add(baseFilenameField, gbcField);
 
         gbcLabel.gridy++;
         gbcField.gridy++;
         
+        outputDirLabel = new JLabel("output dir");
+        panel.add(outputDirLabel, gbcLabel);
+        outputDirField = new JTextField();
+        panel.add(outputDirField, gbcField);
+
+        gbcLabel.gridy++;
+        gbcField.gridy++;
         
         newSessionButton = new JButton("New Session");
         newSessionButton.setActionCommand("new");
@@ -154,17 +158,41 @@ public class ScreenshotRecorderView {
         gbcField.gridy++;
 
         takeSnapshotButton = new JButton("Take Snapshot");
+        takeSnapshotButton.setEnabled(false);
         takeSnapshotButton.setActionCommand("takeSnapshot");
         takeSnapshotButton.addActionListener(e -> onTakeSnapshotAction());
-        panel.add(takeSnapshotButton, gbcLabel);
+        gbcField.gridx = 0;
+        gbcField.gridwidth = 2;
+        panel.add(takeSnapshotButton, gbcField);
+        gbcField.gridx = 1;
+        gbcField.gridwidth = 1;
+        
+        gbcLabel.gridy++;
+        gbcField.gridy++;
 
+        enableOCRCheckbox = new JCheckBox("enable OCR");
+        enableOCRCheckbox.setSelected(true);
+        enableOCRCheckbox.addActionListener((e) -> { 
+            boolean vis = enableOCRCheckbox.isSelected();
+            model.setEnableOCR(vis);
+            ocrSettingsLabel.setVisible(vis);
+            ocrSettingsField.setVisible(vis);
+        });
+        panel.add(enableOCRCheckbox, gbcLabel);
+        gbcLabel.gridy++;
+        gbcField.gridy++;
+
+        ocrSettingsLabel = new JLabel("OCR settings");
+        panel.add(ocrSettingsLabel, gbcLabel);
+        ocrSettingsField = new JTextField(model.getOcrSettings().getPath());
+        panel.add(ocrSettingsField, gbcField);
+
+        gbcLabel.gridy++;
+        gbcField.gridy++;
+
+        modelToView();
     }
 
-    private void recordAreaModelToView() {
-        Rectangle r = model.getRecordArea();
-        String rectText = "" + r.x + "," + r.y + "," + r.width + "," + r.height;
-        rectangleAreaField.setText(rectText);
-    }
 
     public void dispose() {
         if (model != null) {
@@ -183,20 +211,24 @@ public class ScreenshotRecorderView {
     private void onReavealAreaAction() {
         if (recordAreaFrame == null) {
             recordAreaFrame = new TransparentFrameScreenArea();
-            viewToModelRecordArea();
+            viewToModel();
             recordAreaFrame.setBounds(model.getRecordArea());
             recordAreaFrame.setVisible(true);
             recordAreaFrame.addComponentListener(new ComponentAdapter() {
                 @Override
-                public void componentResized(ComponentEvent e) { updateModelRecordArea(); }
+                public void componentResized(ComponentEvent e) {
+                    updateModelRecordArea();
+                }
+
                 @Override
-                public void componentMoved(ComponentEvent e) { updateModelRecordArea(); }
-                
+                public void componentMoved(ComponentEvent e) {
+                    updateModelRecordArea();
+                }
+
                 protected void updateModelRecordArea() {
                     Rectangle r = recordAreaFrame.getBounds();
-                    // LOG.debug("record area change: " + r);
                     model.setRecordArea(r);
-                    recordAreaModelToView();
+                    modelToView();
                 }
             });
         } else {
@@ -209,26 +241,58 @@ public class ScreenshotRecorderView {
 
 
     private void onNewSessionAction() {
-//        Frame frame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, panel);
-//        frame.setState(Frame.ICONIFIED);
-
-        if (outputFile == null) {
+        sessionActive = !sessionActive;
+        File outputDir = model.getOutputDir();
+        if (sessionActive && outputDir == null) {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.showOpenDialog(panel);
-            File target = fileChooser.getSelectedFile();
-
-            this.outputFile = target;
+            outputDir = fileChooser.getSelectedFile();
+            model.setOutputDir(outputDir);
         }
-        if (outputFile != null) {
-            viewToModelRecordArea();
-            
+        if (sessionActive && outputDir != null) {
+            viewToModel();
             String baseFileName = baseFilenameField.getText();
-            model.startSession(outputFile, baseFileName);
+            String ocrFileName = baseFileName.replace("-$i", "").replace(".png", ".txt");
+            model.startSession(outputDir, baseFileName, 
+                enableOCRCheckbox.isSelected(), new File(ocrSettingsField.getText()), ocrFileName);
         }
+        
+        takeSnapshotButton.setEnabled(sessionActive);
+
+        rectangleAreaField.setVisible(!sessionActive);
+        revealRectButton.setVisible(!sessionActive);
+        
+        baseFilenameLabel.setVisible(!sessionActive);
+        baseFilenameField.setVisible(!sessionActive);
+
+        outputDirLabel.setVisible(!sessionActive);
+        outputDirField.setVisible(!sessionActive);
+        
+        enableOCRCheckbox.setVisible(!sessionActive);
+        ocrSettingsLabel.setVisible(!sessionActive);
+        ocrSettingsField.setVisible(!sessionActive);
     }
 
-    private void viewToModelRecordArea() {
+    private void onTakeSnapshotAction() {
+        if (model.getOutputDir() == null) {
+            onNewSessionAction();
+        }
+        model.takeSnapshot();
+    }
+
+    private void modelToView() {
+        Rectangle r = model.getRecordArea();
+        String rectText = "" + r.x + "," + r.y + "," + r.width + "," + r.height;
+        rectangleAreaField.setText(rectText);
+
+        File outputDir = model.getOutputDir();
+        outputDirField.setText((outputDir != null)? outputDir.getPath() : "");
+        
+        baseFilenameField.setText(model.getBaseFilename());
+    }
+    
+    private void viewToModel() {
         String[] rectCoords = rectangleAreaField.getText().split(",");
         Rectangle r = new Rectangle();
         r.x = Integer.parseInt(rectCoords[0]);
@@ -236,13 +300,11 @@ public class ScreenshotRecorderView {
         r.width = Integer.parseInt(rectCoords[2]);
         r.height = Integer.parseInt(rectCoords[3]);
         model.setRecordArea(r);
+
+        String outputDirText = outputDirField.getText();
+        File outputDir = (outputDirText != null && !outputDirText.isEmpty())? new File(outputDirText) : null;
+        model.setOutputDir(outputDir);
     }
 
-    private void onTakeSnapshotAction() {
-        if (outputFile == null) {
-            onNewSessionAction();
-        }
-        model.takeSnapshot();
-    }
 
 }

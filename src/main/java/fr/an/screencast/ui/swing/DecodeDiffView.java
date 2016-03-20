@@ -49,7 +49,6 @@ public class DecodeDiffView {
 
     private static final Logger LOG = LoggerFactory.getLogger(DecodeDiffView.class);
     
-    private static boolean DEBUG = false;
     private static boolean DEBUG_PAINT_DETAILED = true;
     private boolean debugDraw = 
             true; 
