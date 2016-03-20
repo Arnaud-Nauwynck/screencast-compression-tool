@@ -10,7 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.an.screencast.compressor.imgtool.ocr.SimpleOCRHelper;
+import fr.an.screencast.compressor.imgtool.ocr.SimpleScreenshotOCRHelper;
 import fr.an.screencast.compressor.imgtool.utils.ImageIOUtils;
 
 public class ScreenshotRecorder {
@@ -32,7 +32,7 @@ public class ScreenshotRecorder {
     private File ocrSettings = new File("~/.screencast/ocr-settings.xml");
     private String ocrResultFilename = "screenshot.txt";
     
-    private SimpleOCRHelper ocrHelper = new SimpleOCRHelper();
+    private SimpleScreenshotOCRHelper ocrHelper = new SimpleScreenshotOCRHelper();
     
     // ------------------------------------------------------------------------
 
@@ -41,20 +41,7 @@ public class ScreenshotRecorder {
     }
 
     // ------------------------------------------------------------------------
-
     
-    public Rectangle getScreenArea() {
-        return screenSnaphostProvider.initialiseScreenCapture();
-    }
-    
-    public Rectangle getRecordArea() {
-        return recordArea;
-    }
-    
-    public void setRecordArea(Rectangle recordArea) {
-        this.recordArea = recordArea;
-    }
-
     public void startSession(File outputDir, String baseFilename, 
             boolean enableOCR, File ocrSettings, String ocrResultFilename) {
         String outputDirText = outputDir.getPath();
@@ -67,7 +54,7 @@ public class ScreenshotRecorder {
             baseFilename = "img-$i-" + baseFilename;
         }
         this.enableOCR = enableOCR;
-        this.currentIndex = 1;
+        this.currentIndex = 0;
         this.ocrSettings = ocrSettings;
         this.ocrResultFilename = ocrResultFilename;
     }
@@ -103,7 +90,21 @@ public class ScreenshotRecorder {
         return img;
     }
 
+
+    // ------------------------------------------------------------------------
     
+    public Rectangle getScreenArea() {
+        return screenSnaphostProvider.initialiseScreenCapture();
+    }
+    
+    public Rectangle getRecordArea() {
+        return recordArea;
+    }
+    
+    public void setRecordArea(Rectangle recordArea) {
+        this.recordArea = recordArea;
+    }
+
     public boolean isPaintCursor() {
         return paintCursor;
     }

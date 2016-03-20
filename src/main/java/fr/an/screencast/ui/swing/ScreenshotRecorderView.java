@@ -54,6 +54,10 @@ public class ScreenshotRecorderView {
             ScreenshotRecorder model = new ScreenshotRecorder();
             Rectangle recordArea = model.getRecordArea();
             recordArea.width = recordArea.width / 2; 
+            
+            // temporary for debug
+            recordArea.x = 1410; recordArea.y = 987; recordArea.width = 125; recordArea.height = 59;
+            
             model.setRecordArea(recordArea);
             
             ScreenshotRecorderView app = new ScreenshotRecorderView(model);

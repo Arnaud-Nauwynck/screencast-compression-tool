@@ -35,6 +35,16 @@ public class ImageIOUtils {
         }
     }
 
+    public static void writeTo(File dest, Dim dim, int[] imgData, String formatName) {
+        BufferedImage img = BufferedImageUtils.copyImage(dim, imgData);
+        writeTo(dest, img, formatName);
+    }
+
+    public static void writeTo(File dest, ImageData imgData, String formatName) {
+        BufferedImage img = BufferedImageUtils.copyImage(imgData);
+        writeTo(dest, img, formatName);
+    }
+
     public static void writeTo(File dest, BufferedImage img, String formatName) {
         try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(dest))) {
             writeTo(out, img, formatName);

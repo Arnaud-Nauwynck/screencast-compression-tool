@@ -17,6 +17,8 @@ public final class RGBUtils {
 
     public static final int CMAX_255 = 255; 
     
+    public static final int TRANSPARENT_COLOR = rgb2Int(CMAX_255, CMAX_255, CMAX_255, CMAX_255);
+    
     // cf new Color()
     public static int rgb2Int(int r, int g, int b, int a) {
         return ((a & 0xFF) << 24) |

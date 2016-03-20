@@ -2,6 +2,7 @@ package fr.an.screencast.compressor.imgtool.utils;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.Arrays;
 
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
@@ -49,7 +50,7 @@ public class ImageRasterUtils {
     }
 
     /**
-     * copy sub rect "Region Of Interest" from src image to corresponding dest image with same the dimension 
+     * copy sub rect "Region Of Interest" from src image to corresponding dest image with same dimension 
      * @param dest
      * @param src
      * @param width
@@ -119,6 +120,11 @@ public class ImageRasterUtils {
         return dest;
     }
     
+    public static ImageData getCopyImgData(Dim srcDim, final int[] src, Rect srcROI) {
+        Dim destDim = srcROI.getDim();
+        int[] resData = getCopyData(srcDim, src, srcROI);
+        return new ImageData(destDim, resData);
+    }
     
     public static void fillAlpha(int[] src) {
         final int len = src.length;
@@ -128,6 +134,17 @@ public class ImageRasterUtils {
         }
     }
 
+    public static void fillRect(Dim dim, final int[] src, Rect srcROI, int fillColor) {
+        final int W = dim.getWidth();
+        final int toY = srcROI.getToY();
+        int fromIdx = srcROI.getFromY()*W + srcROI.getFromX();
+        int toIdx = srcROI.getFromY()*W + srcROI.getToX();
+        for(int y = srcROI.getFromY(); y < toY; y++,fromIdx+=W,toIdx+=W) {
+            Arrays.fill(src, fromIdx, toIdx, fillColor);
+        }
+    }
+    
+    
     public static String rectValuesToString(Dim dim, int[] src) {
         return rectValuesToString(dim, src, Rect.newDim(dim));
     }

@@ -1,6 +1,7 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Rect;
@@ -77,8 +78,6 @@ public class ImageData implements Serializable {
             }
         }
     }
-
-    
     
     public void checkEquals(final int[] actualData) {
         for(int y = 0, idx_xy = 0; y < dim.height; y++) {
@@ -95,4 +94,11 @@ public class ImageData implements Serializable {
     public void checkEquals(ImageData actual) {
         checkEquals(actual.getData());
     }
+
+    @Override
+    public String toString() {
+        return "ImageData[" + dim + "]";
+    }
+    
+    
 }

@@ -174,6 +174,39 @@ public class Rect implements Serializable {
 
     // ------------------------------------------------------------------------
     
+    public void setDilateToContain(Pt pt) {
+        if (fromX < toX) {
+            if (pt.x < fromX) {
+                fromX = pt.x;
+            }
+            if (pt.x+1 > toX) {
+                toX = pt.x+1;
+            }
+        } else {
+            // empty => 1 pt
+            fromX = pt.x;
+            toX = pt.x + 1;
+        }
+        if (fromY < toY) {
+            if (pt.y < fromY) {
+                fromY = pt.y;
+            }
+            if (pt.y+1 > toY) {
+                toY = pt.y+1;
+            }
+        } else {
+            // empty => 1 pt
+            fromY = pt.y;
+            toY = pt.y + 1;
+        }
+    }
+
+    public void setDilateToContain(Collection<Pt> pts) {
+        for(Pt p : pts) {
+            setDilateToContain(p);
+        }
+    }
+
     public boolean isInsideOf(Rect outer) {
         return outer.contains(this);
     }

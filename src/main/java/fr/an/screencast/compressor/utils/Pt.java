@@ -15,6 +15,10 @@ public final class Pt implements Serializable {
     public Pt() {
     }
 
+    public Pt(Pt src) {
+        this(src.x, src.y);
+    }
+
     public Pt(int x, int y) {
         this.x = x;
         this.y = y;
