@@ -10,12 +10,12 @@ import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
 
-public class ScannedDescrConnexeComponent implements Serializable {
+public class OCRGlyphConnexeComponent implements Serializable {
 
     /** */
     private static final long serialVersionUID = 1L;
     
-    private final transient ScannedDescrGlyph ownerGlyph;
+    private transient OCRGlyphDescr ownerGlyph;
     private final Pt offset;
     
     private final String imageDataFilename;
@@ -27,7 +27,7 @@ public class ScannedDescrConnexeComponent implements Serializable {
     
     // ------------------------------------------------------------------------
     
-    public ScannedDescrConnexeComponent(ScannedDescrGlyph ownerGlyph, Pt offset, String imageDataFilename) {
+    public OCRGlyphConnexeComponent(OCRGlyphDescr ownerGlyph, Pt offset, String imageDataFilename) {
         this.ownerGlyph = ownerGlyph;
         this.offset = offset;
         this.imageDataFilename = imageDataFilename;
@@ -35,10 +35,15 @@ public class ScannedDescrConnexeComponent implements Serializable {
     
     // ------------------------------------------------------------------------
     
-    public ScannedDescrGlyph getOwnerGlyph() {
+    public OCRGlyphDescr getOwnerGlyph() {
         return ownerGlyph;
     }
+
+    /*pp*/ void _setOwnerGlyph(OCRGlyphDescr ownerGlyph) {
+        this.ownerGlyph = ownerGlyph;
+    }
     
+
     public Pt getOffset() {
         return offset;
     }
@@ -53,7 +58,8 @@ public class ScannedDescrConnexeComponent implements Serializable {
 
     public ImageData getImageData() {
         if (imageData == null) {
-            imageData = ImageIOUtils.readImageData(new File(imageDataFilename));
+            File baseDir = new File(ownerGlyph.getOwnerSettings().getBaseDir());
+            imageData = ImageIOUtils.readImageData(new File(baseDir, imageDataFilename));
         }
         return imageData;
     }
@@ -75,5 +81,5 @@ public class ScannedDescrConnexeComponent implements Serializable {
     public String toString() {
         return "ScannedDescrConnexeComponent [offset=" + offset + ", imageDataFilename=" + imageDataFilename + "]";
     }
-    
+
 }

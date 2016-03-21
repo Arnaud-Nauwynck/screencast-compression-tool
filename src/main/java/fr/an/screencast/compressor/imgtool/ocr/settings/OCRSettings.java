@@ -18,9 +18,11 @@ public class OCRSettings implements Serializable {
     /** */
     private static final long serialVersionUID = 1L;
     
-    private List<ScannedDescrGlyph> glyphDescrs = new ArrayList<>();
+    private String baseDir = ".";
     
-    private transient Map<Integer/*Crc32*/,ArrayList<ScannedDescrConnexeComponent>> cacheCrc32ToGlyphConnexeComps;
+    private List<OCRGlyphDescr> glyphDescrs = new ArrayList<>();
+    
+    private transient Map<Integer/*Crc32*/,ArrayList<OCRGlyphConnexeComponent>> cacheCrc32ToGlyphConnexeComps;
     
     // ------------------------------------------------------------------------
 
@@ -28,20 +30,34 @@ public class OCRSettings implements Serializable {
     }
 
     // ------------------------------------------------------------------------
+
+    public String getBaseDir() {
+        return baseDir;
+    }
     
-    public List<ScannedDescrGlyph> getGlyphDescrs() {
+    public void setBaseDir(String baseDir) {
+        this.baseDir = baseDir;
+    }
+    
+    
+    public List<OCRGlyphDescr> getGlyphDescrs() {
         return glyphDescrs;
     }
 
+    public void addGlyphDescr(OCRGlyphDescr glyph) {
+        glyphDescrs.add(glyph);
+        purgeCache();
+    }
+    
     public void purgeCache() {
         cacheCrc32ToGlyphConnexeComps = null;
     }
     
-    public Map<Integer/*Crc32*/,ArrayList<ScannedDescrConnexeComponent>> getCrc32ToGlyphConnexeComps() {
+    public Map<Integer/*Crc32*/,ArrayList<OCRGlyphConnexeComponent>> getCrc32ToGlyphConnexeComps() {
         if (cacheCrc32ToGlyphConnexeComps == null) {
-            Map<Integer/*Crc32*/,ArrayList<ScannedDescrConnexeComponent>> res = new HashMap<>();
-            for(ScannedDescrGlyph glyph : glyphDescrs) {
-                for(ScannedDescrConnexeComponent comp : glyph.getScannedConnexeComponents()) {
+            Map<Integer/*Crc32*/,ArrayList<OCRGlyphConnexeComponent>> res = new HashMap<>();
+            for(OCRGlyphDescr glyph : glyphDescrs) {
+                for(OCRGlyphConnexeComponent comp : glyph.getConnexComponents()) {
                     int crc32 = comp.getCrc32();
                     MapUtils.getOrCreateKeyArrayList(res, crc32).add(comp);
                 }
@@ -51,12 +67,12 @@ public class OCRSettings implements Serializable {
         return cacheCrc32ToGlyphConnexeComps;
     }
     
-    public List<ScannedDescrConnexeComponent> getMatchingGlyphConnexeComps(ImageData imgData) {
-        List<ScannedDescrConnexeComponent> res = new ArrayList<>();
+    public List<OCRGlyphConnexeComponent> getMatchingGlyphConnexeComps(ImageData imgData) {
+        List<OCRGlyphConnexeComponent> res = new ArrayList<>();
         int crc32 = IntsCRC32.crc32(imgData.getData());
-        List<ScannedDescrConnexeComponent> candidates = getCrc32ToGlyphConnexeComps().get(crc32);
+        List<OCRGlyphConnexeComponent> candidates = getCrc32ToGlyphConnexeComps().get(crc32);
         if (candidates != null) {
-            for(ScannedDescrConnexeComponent candidate : candidates) {
+            for(OCRGlyphConnexeComponent candidate : candidates) {
                 ImageData candidateImageData = candidate.getImageData();
                 if (candidateImageData.equals(imgData)) {
                     res.add(candidate);

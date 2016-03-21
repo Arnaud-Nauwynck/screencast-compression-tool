@@ -27,8 +27,8 @@ public final class OCRSettingsIOUtils {
     
     public static void addXStreamAliases(XStream xstream) {
         xstream.alias("ocrSettings", OCRSettings.class);
-        xstream.alias("glyph", ScannedDescrGlyph.class);
-        xstream.alias("connexeComponent", ScannedDescrConnexeComponent.class);
+        xstream.alias("glyph", OCRGlyphDescr.class);
+        xstream.alias("connexeComponent", OCRGlyphConnexeComponent.class);
     }
     
     public static void writeOCRSettings(File outputFile, OCRSettings src) {
@@ -40,12 +40,21 @@ public final class OCRSettingsIOUtils {
     }
 
     public static OCRSettings readOCRSettings(File inputFile) {
+        OCRSettings res;
         try (InputStream input = new BufferedInputStream(new FileInputStream(inputFile))) {
-            Object tmpres = DEFAULT_XSTREAM.fromXML(input);
-            return (OCRSettings) tmpres;
+            res  = (OCRSettings) DEFAULT_XSTREAM.fromXML(input);
         } catch(IOException ex) {
             throw new RuntimeIOException("Failed to read file '" + inputFile +"'", ex);
         }
+        res.setBaseDir(inputFile.getParentFile().getAbsolutePath());
+        // restore transient child->owner parent fields
+        for(OCRGlyphDescr glyph : res.getGlyphDescrs()) {
+            glyph._setOwnerSettings(res);
+            for(OCRGlyphConnexeComponent connexComp : glyph.getConnexComponents()) {
+                connexComp._setOwnerGlyph(glyph);
+            }
+        }
+        return res;
     }
 
 }

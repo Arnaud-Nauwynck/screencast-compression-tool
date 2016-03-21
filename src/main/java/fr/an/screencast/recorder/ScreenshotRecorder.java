@@ -3,6 +3,8 @@ package fr.an.screencast.recorder;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 
@@ -17,23 +19,30 @@ import fr.an.screencast.compressor.imgtool.utils.ImageIOUtils;
 public class ScreenshotRecorder {
     
     private static final Logger LOG = LoggerFactory.getLogger(ScreenshotRecorder.class);
-    
+
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
     private DesktopScreenSnaphotProvider screenSnaphostProvider = new DesktopScreenSnaphotProvider(false, true);
-    private Rectangle recordArea;
-    
     private boolean paintCursor;
     private boolean useWhiteCursor;
+    private Rectangle recordArea;
 
+    private boolean activeSession = false;
+    
     private File outputDir = new File("~/test1");
     private String baseFilename = "screenshot-$i.png";
     private String formatName = "png";
-    private int currentIndex = 0;
     
-    private boolean enableOCR = false;
+    private boolean enableOCR = true;
     private String ocrSettingsFilename = "~/.screencast/ocr-settings.xml";
     private String ocrResultFilename = "screenshot.txt";
-    
     private SimpleScreenshotOCRHelper ocrHelper = new SimpleScreenshotOCRHelper();
+    
+    private int currentIndex = 0;
+    private BufferedImage currentScreenshotImage;
+    private String currentOCRText;
+    
+
     
     // ------------------------------------------------------------------------
 
@@ -42,58 +51,81 @@ public class ScreenshotRecorder {
     }
 
     // ------------------------------------------------------------------------
-    
-    public void startSession(File outputDir, String baseFilename) {
-        String outputDirText = outputDir.getPath();
-        String userHome = System.getProperty("user.home");
-        outputDirText = outputDirText.replace("~/", userHome + "/");
-        this.outputDir = new File(outputDirText);
 
-        this.baseFilename = baseFilename;
-        if (!baseFilename.contains("$i")) {
-            baseFilename = "img-$i-" + baseFilename;
-        }
-        if (enableOCR) {
-            this.currentIndex = 0;
-            ocrSettingsFilename = ocrSettingsFilename.replace("~/", userHome + "/");
-            File ocrSettingsFile = new File(ocrSettingsFilename);
-            if (ocrSettingsFile.exists()) {
-                ocrHelper.loadSettings(ocrSettingsFile);
-            } else {
-                ocrHelper.initSettings(ocrSettingsFile);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+
+    
+    public void setActiveSession(boolean p) {
+        boolean oldValue = activeSession;
+        this.activeSession = p;
+        if (activeSession) {
+            String outputDirText = outputDir.getPath();
+            String userHome = System.getProperty("user.home");
+            outputDirText = outputDirText.replace("~/", userHome + "/");
+            this.outputDir = new File(outputDirText);
+
+            if (!baseFilename.contains("$i")) {
+                baseFilename = "img-$i-" + baseFilename;
+            }
+            if (enableOCR) {
+                this.currentIndex = 0;
+                ocrSettingsFilename = ocrSettingsFilename.replace("~/", userHome + "/");
+                File ocrSettingsFile = new File(ocrSettingsFilename);
+                if (ocrSettingsFile.exists()) {
+                    ocrHelper.loadSettings(ocrSettingsFile);
+                } else {
+                    ocrHelper.initSettings(ocrSettingsFile);
+                }
             }
         }
+        pcs.firePropertyChange("activeSession", oldValue, activeSession);
     }
     
+
     public BufferedImage takeSnapshot() {
         if (baseFilename == null) {
             return null;
         }
         LOG.info("take screenshot " + recordArea);
-        BufferedImage img = screenSnaphostProvider.captureScreen(recordArea);
+        BufferedImage prevImage = currentScreenshotImage; 
+        this.currentScreenshotImage = screenSnaphostProvider.captureScreen(recordArea);
         if (paintCursor) {
             Point mousePosition = screenSnaphostProvider.captureMouseLocation();
-            screenSnaphostProvider.paintMouseInScreenCapture(img, mousePosition);
+            screenSnaphostProvider.paintMouseInScreenCapture(currentScreenshotImage, mousePosition);
         }
+        pcs.firePropertyChange("currentScreenshotImage", prevImage, currentScreenshotImage);
+
+        int oldValue = currentIndex; 
         currentIndex++;
+        pcs.firePropertyChange("currentIndex", oldValue, currentIndex);
+        
         String fileName = baseFilename.replace("$i", Integer.toString(currentIndex));
         File outputFile = new File(outputDir, fileName);
-        ImageIOUtils.writeTo(outputFile, img, formatName);
+        ImageIOUtils.writeTo(outputFile, currentScreenshotImage, formatName);
         
         if (enableOCR) {
-            String text = ocrHelper.imgToText(img);
-            LOG.info("OCR text:" + text);
-            if (text != null && !text.isEmpty()) {
+            String prevOCRText = currentOCRText;
+            currentOCRText = ocrHelper.imgToText(currentScreenshotImage);
+            pcs.firePropertyChange("currentOCRText", prevOCRText, currentOCRText);
+            
+            LOG.info("OCR text:" + currentOCRText);
+            if (currentOCRText != null && !currentOCRText.isEmpty()) {
                 File ocrResultFile = new File(outputDir, ocrResultFilename);
                 try {
-                    FileUtils.write(ocrResultFile, text, true);
+                    FileUtils.write(ocrResultFile, currentOCRText, true);
                 } catch (IOException ex) {
                     LOG.error("Failed to write append to file " + ocrResultFile, ex);
                 }
             }
         }
         
-        return img;
+        return currentScreenshotImage;
     }
 
 
@@ -189,6 +221,11 @@ public class ScreenshotRecorder {
 
     public void setOcrInteractivePrompter(OCRInteractivePrompter ocrInteractivePrompter) {
         ocrHelper.setOcrInteractivePrompter(ocrInteractivePrompter);
+    }
+
+    public boolean isActiveSession() {
+        return activeSession;
     }    
+
     
 }

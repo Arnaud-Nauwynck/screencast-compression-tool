@@ -6,27 +6,38 @@ import java.util.List;
 
 import fr.an.screencast.compressor.utils.Rect;
 
-public class ScannedDescrGlyph implements Serializable {
+public class OCRGlyphDescr implements Serializable {
 
     /** */
     private static final long serialVersionUID = 1L;
 
+    private OCRSettings ownerSettings;
+    
     private final String glyphDisplayName;
     private final String glyphText;
     
-    private List<ScannedDescrConnexeComponent> scannedConnexeComponents = new ArrayList<ScannedDescrConnexeComponent>();
+    private List<OCRGlyphConnexeComponent> connexComponents = new ArrayList<OCRGlyphConnexeComponent>(1);
 
     private Rect cachedEnclosingRectOffset;
     
     // ------------------------------------------------------------------------
     
-    public ScannedDescrGlyph(String glyphDisplayName, String glyphText) {
+    public OCRGlyphDescr(OCRSettings ownerSettings, String glyphDisplayName, String glyphText) {
+        this.ownerSettings = ownerSettings;
         this.glyphDisplayName = glyphDisplayName;
         this.glyphText = glyphText;
     }
 
     // ------------------------------------------------------------------------
     
+    public OCRSettings getOwnerSettings() {
+        return ownerSettings;
+    }
+
+    public void _setOwnerSettings(OCRSettings p) {
+        this.ownerSettings = p;
+    }
+
     public String getGlyphDisplayName() {
         return glyphDisplayName;
     }
@@ -35,14 +46,22 @@ public class ScannedDescrGlyph implements Serializable {
         return glyphText;
     }
     
-    public List<ScannedDescrConnexeComponent> getScannedConnexeComponents() {
-        return scannedConnexeComponents;
+    public List<OCRGlyphConnexeComponent> getConnexComponents() {
+        return connexComponents;
+    }
+    
+    public void addConnexComponent(OCRGlyphConnexeComponent connexComp) {
+        if (connexComp.getOwnerGlyph() != this) {
+            throw new IllegalArgumentException();
+        }
+        connexComponents.add(connexComp);
+        cachedEnclosingRectOffset = null;
     }
     
     public Rect getEnclosingRectOffset() {
         if (cachedEnclosingRectOffset == null) {
             Rect res = new Rect(); // empty
-            for(ScannedDescrConnexeComponent comp : scannedConnexeComponents) {
+            for(OCRGlyphConnexeComponent comp : connexComponents) {
                 Rect r = comp.getRectOffset();
                 res.setDilateToContain(r);
             }
@@ -55,7 +74,7 @@ public class ScannedDescrGlyph implements Serializable {
 
     @Override
     public String toString() {
-        return "ScannedDescrGlyph[" + glyphDisplayName + "]";
+        return "Glyph[" + glyphDisplayName + "]";
     }
     
 }

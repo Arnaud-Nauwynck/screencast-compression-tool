@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import fr.an.screencast.compressor.imgtool.ocr.settings.OCRSettings;
 import fr.an.screencast.compressor.imgtool.ocr.settings.OCRSettingsIOUtils;
-import fr.an.screencast.compressor.imgtool.ocr.settings.ScannedDescrConnexeComponent;
-import fr.an.screencast.compressor.imgtool.ocr.settings.ScannedDescrGlyph;
+import fr.an.screencast.compressor.imgtool.ocr.settings.OCRGlyphConnexeComponent;
+import fr.an.screencast.compressor.imgtool.ocr.settings.OCRGlyphDescr;
 import fr.an.screencast.compressor.imgtool.search.MarkerConnexComponentHelper;
 import fr.an.screencast.compressor.imgtool.utils.ImageData;
 import fr.an.screencast.compressor.imgtool.utils.ImageRasterUtils;
@@ -26,8 +26,10 @@ public class SimpleScreenshotOCRHelper {
     
     private int paramScanHeight = 10;
     private int thresholdBgColor = 250;
-    private OCRSettings ocrSettings;
     private int whiteSpaceDetectMinWidth = 2;
+    
+    private File ocrSettingsFile;
+    private OCRSettings ocrSettings;
     
     private OCRInteractivePrompter ocrInteractivePrompter;
     
@@ -38,13 +40,15 @@ public class SimpleScreenshotOCRHelper {
 
     // ------------------------------------------------------------------------
 
-    public void initSettings(File settingsFile) {
-        ocrSettings = new OCRSettings();
-        OCRSettingsIOUtils.writeOCRSettings(settingsFile, ocrSettings);
+    public void initSettings(File ocrSettingsFile) {
+        this.ocrSettingsFile = ocrSettingsFile;
+        this.ocrSettings = new OCRSettings();
+        OCRSettingsIOUtils.writeOCRSettings(ocrSettingsFile, ocrSettings);
     }
 
-    public void loadSettings(File settingsFile) {
-        ocrSettings = OCRSettingsIOUtils.readOCRSettings(settingsFile);
+    public void loadSettings(File ocrSettingsFile) {
+        this.ocrSettingsFile = ocrSettingsFile;
+        this.ocrSettings = OCRSettingsIOUtils.readOCRSettings(ocrSettingsFile);
     }
     
     public OCRInteractivePrompter getOcrInteractivePrompter() {
@@ -64,6 +68,10 @@ public class SimpleScreenshotOCRHelper {
         final int imgLen = dim.getArea();
         int[] imgData = ImageRasterUtils.toInts(img);
         int[] ptMarkers = new int[imgLen];
+        
+        if (ocrInteractivePrompter != null) {
+            ocrInteractivePrompter.startScreenshotOCR(ocrSettingsFile, ocrSettings, img);
+        }
         
         // detect background color .. TOCHG? use hard-coded thresholdBgColor
         // mark background pts (exclude from connexe components detection)
@@ -87,7 +95,7 @@ public class SimpleScreenshotOCRHelper {
         Pt nextDetectPt = new Pt();
         
         int connexCompCount = 0;
-        ScannedDescrGlyph prevGlyph = null;
+        OCRGlyphDescr prevGlyph = null;
         Pt prevGlyphOrigin = null;
         
         for(;;) {
@@ -112,15 +120,15 @@ public class SimpleScreenshotOCRHelper {
             ImageData connexeCompImageData = connexeComp.getImageData();
             Pt connexeCompUpperLeft = connexeComp.getPt();
             
-            List<ScannedDescrConnexeComponent> glyphConnexeCompCandidates = ocrSettings.getMatchingGlyphConnexeComps(connexeCompImageData);
-            ScannedDescrGlyph foundGlyph = null;
+            List<OCRGlyphConnexeComponent> glyphConnexeCompCandidates = ocrSettings.getMatchingGlyphConnexeComps(connexeCompImageData);
+            OCRGlyphDescr foundGlyph = null;
             Rect foundEnclosingRect = null;
             Pt foundGlyphOrigin = null;
             if (glyphConnexeCompCandidates.size() == 1) {
                 // no ambiguities.. check if all connexe components of glyph are present
-                ScannedDescrConnexeComponent glyphComp0 = glyphConnexeCompCandidates.get(0);
-                ScannedDescrGlyph glyph = glyphComp0.getOwnerGlyph();
-                if (glyph.getScannedConnexeComponents().size() == 1) {
+                OCRGlyphConnexeComponent glyphComp0 = glyphConnexeCompCandidates.get(0);
+                OCRGlyphDescr glyph = glyphComp0.getOwnerGlyph();
+                if (glyph.getConnexComponents().size() == 1) {
                     // ok easy case: found simple(=1 connexe component) non-ambiguous glyph
                     foundGlyph = glyph;
                     foundEnclosingRect = connexeComp.getRect();
@@ -129,7 +137,7 @@ public class SimpleScreenshotOCRHelper {
             }
             
             if (foundGlyph == null && ocrInteractivePrompter != null) {
-                ocrInteractivePrompter.promptForGlyphConnexeComp(ocrSettings, img, connexeComp);
+                ocrInteractivePrompter.promptForGlyphConnexeComp(connexeComp);
             }
             
             if (foundGlyph != null) {
@@ -150,7 +158,11 @@ public class SimpleScreenshotOCRHelper {
             }
 
         }
-        
+
+        if (ocrInteractivePrompter != null) {
+            ocrInteractivePrompter.finishScreenshotOCR();
+        }
+
         return sb.toString();
     }
 
