@@ -71,7 +71,7 @@ public class MarkerConnexComponentHelper {
         
         // find enclosing rect
         Pt upperLeftPt = enclosingRect.getFromPt();
-        ImageData connexCompImgData = ImageRasterUtils.getCopyImgData(dim, imgData, enclosingRect);
+        ImageData connexCompImgData = ImageRasterUtils.getCopyImgData(dim, tmpComponentImgData, enclosingRect);
         PtImageData res = new PtImageData(upperLeftPt, connexCompImgData);
         
         // reset tmpComponentImgData .. equivalent optim for Arrays.fill(tmpComponentImgData, RGBUtils.TRANSPARENT_COLOR);

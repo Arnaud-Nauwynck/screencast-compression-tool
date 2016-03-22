@@ -123,6 +123,7 @@ public class OCRInteractivePrompterView implements OCRInteractivePrompter {
         
         currentOCRSettings.addGlyphDescr(currGlyphDescr);
         currGlyphDescr = null;
+        currConnexeComp = null;
         
         glyphDisplayNameField.setText("");
         glyphResultTextField.setText("");
@@ -155,7 +156,7 @@ public class OCRInteractivePrompterView implements OCRInteractivePrompter {
         File connexCompFile = (currentOCRSettings.getBaseDir() != null)? 
                 new File(currentOCRSettings.getBaseDir(), connexCompFilename)
                 : new File(connexCompFilename);
-        ImageIOUtils.writeTo(connexCompFile, currConnexeComp.getImageData(), "png");
+        ImageIOUtils.writeRGBATo(connexCompFile, currConnexeComp.getImageData(), "png");
                 
         OCRGlyphConnexeComponent glyphConnexComp = new OCRGlyphConnexeComponent(currGlyphDescr, connexCompOffset, connexCompFilename);
         currGlyphDescr.addConnexComponent(glyphConnexComp);
@@ -210,6 +211,7 @@ public class OCRInteractivePrompterView implements OCRInteractivePrompter {
         imageCanvas.setImage(renderImg);
         
         modalDialog.setVisible(true);
+        glyphDisplayNameField.requestFocus();        
     }
     
     

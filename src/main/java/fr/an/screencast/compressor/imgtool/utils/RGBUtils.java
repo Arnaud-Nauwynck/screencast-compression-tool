@@ -17,7 +17,7 @@ public final class RGBUtils {
 
     public static final int CMAX_255 = 255; 
     
-    public static final int TRANSPARENT_COLOR = rgb2Int(CMAX_255, CMAX_255, CMAX_255, CMAX_255);
+    public static final int TRANSPARENT_COLOR = rgb2Int(0, 0, 0, 0);
     
     // cf new Color()
     public static int rgb2Int(int r, int g, int b, int a) {
@@ -70,6 +70,11 @@ public final class RGBUtils {
     /** @return formatted RGB text, as "034,051,068" */
     public static String toStringFixed(int rgb) {
         int r = redOf(rgb), g = greenOf(rgb), b = blueOf(rgb);
+        int a = alphaOf(rgb);
+        if (a == 0) {
+            //     "123,123,123"
+            return "           ";
+        }
         return String.format("%1$03d,%2$03d,%3$03d", r, g, b);
     }
     
@@ -197,13 +202,17 @@ public final class RGBUtils {
             dest[destIdx++] = rgb2Int(src[i], src[i+1], src[i+2], alpha);
         }
     }
+
+    public static void dumpFixedRGBString(ImageData imgData, PrintStream out) {
+        dumpFixedRGBString(imgData.getDim(), imgData.getData(), Rect.newDim(imgData.getDim()), out);
+    }
     
     public static void dumpFixedRGBString(Dim dim, int[] imgData, Rect roi, PrintStream out) {
         final int W = dim.width;
         
-        out.print("         | ");
+        out.print("      | ");
         for(int x = roi.fromX; x < roi.toX; x++) {
-            out.print(String.format("%4d              | ", x));
+            out.print(String.format("%4d        | ", x));
         }
         out.println();
         

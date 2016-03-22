@@ -59,7 +59,7 @@ public class OCRGlyphConnexeComponent implements Serializable {
     public ImageData getImageData() {
         if (imageData == null) {
             File baseDir = new File(ownerGlyph.getOwnerSettings().getBaseDir());
-            imageData = ImageIOUtils.readImageData(new File(baseDir, imageDataFilename));
+            imageData = ImageIOUtils.readRGBAImageData(new File(baseDir, imageDataFilename));
         }
         return imageData;
     }

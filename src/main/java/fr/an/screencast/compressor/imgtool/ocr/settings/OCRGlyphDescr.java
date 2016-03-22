@@ -11,7 +11,7 @@ public class OCRGlyphDescr implements Serializable {
     /** */
     private static final long serialVersionUID = 1L;
 
-    private OCRSettings ownerSettings;
+    private transient OCRSettings ownerSettings;
     
     private final String glyphDisplayName;
     private final String glyphText;

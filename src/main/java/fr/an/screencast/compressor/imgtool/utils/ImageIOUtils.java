@@ -41,7 +41,14 @@ public class ImageIOUtils {
     }
 
     public static void writeTo(File dest, ImageData imgData, String formatName) {
-        BufferedImage img = BufferedImageUtils.copyImage(imgData);
+        BufferedImage img = BufferedImageUtils.copyImage(imgData); // INT_RGB !
+        writeTo(dest, img, formatName);
+    }
+
+    public static void writeRGBATo(File dest, ImageData imgData, String formatName) {
+        Dim dim = imgData.getDim();
+        BufferedImage img = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_ARGB); 
+        ImageRasterUtils.copyData(img, imgData.getData());
         writeTo(dest, img, formatName);
     }
 
@@ -80,6 +87,25 @@ public class ImageIOUtils {
     public static ImageData readImageData(File in) {
         BufferedImage tmpres = read(in);
         return BufferedImageUtils.copyToImageData(tmpres);
+    }
+
+    public static ImageData readRGBAImageData(File in) {
+        BufferedImage tmpres = readRGBA(in);
+        return BufferedImageUtils.copyToImageData(tmpres);
+    }
+
+    public static BufferedImage readRGBA(File in) {
+        return readRGBA(null, in);
+    }
+
+    public static BufferedImage readRGBA(BufferedImage img, File in) {
+        BufferedImage tmpImg;
+        try {
+            tmpImg = ImageIO.read(in);
+        } catch (IOException e) {
+            throw new RuntimeIOException("Failed", e);
+        }
+        return BufferedImageUtils.convertToType(img, tmpImg, BufferedImage.TYPE_INT_ARGB);
     }
     
 }

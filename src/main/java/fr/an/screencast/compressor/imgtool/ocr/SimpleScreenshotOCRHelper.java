@@ -24,9 +24,11 @@ public class SimpleScreenshotOCRHelper {
     
     private static final Logger LOG = LoggerFactory.getLogger(SimpleScreenshotOCRHelper.class);
     
+    private static final boolean DEBUG = false;
+    
     private int paramScanHeight = 10;
     private int thresholdBgColor = 250;
-    private int whiteSpaceDetectMinWidth = 2;
+    private int whiteSpaceDetectMinWidth = 3;
     
     private File ocrSettingsFile;
     private OCRSettings ocrSettings;
@@ -86,7 +88,7 @@ public class SimpleScreenshotOCRHelper {
                 ptMarkers[idx] = 1;
             }
         }
-        
+                
         MarkerConnexComponentHelper colorConnexCompHelper = new MarkerConnexComponentHelper(dim, imgData, ptMarkers);
         
         // scan horyzontal: left to right, then top to bottom  (several lines at a time, taking lefmost non background)
@@ -121,6 +123,44 @@ public class SimpleScreenshotOCRHelper {
             Pt connexeCompUpperLeft = connexeComp.getPt();
             
             List<OCRGlyphConnexeComponent> glyphConnexeCompCandidates = ocrSettings.getMatchingGlyphConnexeComps(connexeCompImageData);
+            
+            if (DEBUG) {
+                if (glyphConnexeCompCandidates.isEmpty()
+                    // && !ocrSettings.getGlyphDescrs().isEmpty()
+                    ) {
+                    System.out.println();
+                    System.out.println("img ROI:");
+                    RGBUtils.dumpFixedRGBString(dim, imgData, connexeComp.getRect(), System.out);
+                    System.out.println();
+    
+                    System.out.println("pt marker:");
+                    for (int y = 0; y < H; y++) {
+                        for(int x = 0; x < W; x++) {
+                            int idx = y*W + x;
+                            boolean mark = 1 == ptMarkers[idx];
+                            //         "123,123,123 |"
+                            System.out.print((mark)? "x" : " ");
+                        }
+                        System.out.println();
+                    }
+                    
+                    System.out.println();
+                    System.out.println("connex comp: " + connexeComp.getImageData().getDim());
+                    RGBUtils.dumpFixedRGBString(connexeComp.getImageData(), System.out);
+                    System.out.println();
+                    
+                    for(OCRGlyphDescr glyph : ocrSettings.getGlyphDescrs()) {
+                        System.out.println("Glyph: " + glyph.getGlyphDisplayName());
+                        for(OCRGlyphConnexeComponent connexComp : glyph.getConnexComponents()) {
+                            System.out.println("connex component: " + connexComp.getOffset() + " file:" + connexComp.getImageDataFilename() + " crc32:" + connexComp.getCrc32());
+                            ImageData imageData = connexComp.getImageData();
+                            RGBUtils.dumpFixedRGBString(imageData, System.out);
+                        }
+                        System.out.println();
+                    }
+                }
+            }
+            
             OCRGlyphDescr foundGlyph = null;
             Rect foundEnclosingRect = null;
             Pt foundGlyphOrigin = null;

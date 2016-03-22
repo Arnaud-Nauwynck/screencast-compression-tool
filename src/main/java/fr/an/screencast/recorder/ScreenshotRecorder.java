@@ -94,6 +94,8 @@ public class ScreenshotRecorder {
         }
         LOG.info("take screenshot " + recordArea);
         BufferedImage prevImage = currentScreenshotImage; 
+        
+        // *** do capture screen ***
         this.currentScreenshotImage = screenSnaphostProvider.captureScreen(recordArea);
         if (paintCursor) {
             Point mousePosition = screenSnaphostProvider.captureMouseLocation();
@@ -111,10 +113,13 @@ public class ScreenshotRecorder {
         
         if (enableOCR) {
             String prevOCRText = currentOCRText;
+            
+            // *** the biggy : OCR ***
             currentOCRText = ocrHelper.imgToText(currentScreenshotImage);
+            
             pcs.firePropertyChange("currentOCRText", prevOCRText, currentOCRText);
             
-            LOG.info("OCR text:" + currentOCRText);
+            LOG.info("OCR text:\n" + currentOCRText);
             if (currentOCRText != null && !currentOCRText.isEmpty()) {
                 File ocrResultFile = new File(outputDir, ocrResultFilename);
                 try {
