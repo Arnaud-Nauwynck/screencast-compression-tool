@@ -25,10 +25,12 @@ public class ImageCanvas extends JComponent {
     }
 
     public void paint(Graphics g) {
+        int w = this.getWidth();
+        int h = this.getHeight();
         if (image != null) {
-            int w = this.getWidth();
-            int h = this.getHeight();
             g.drawImage(image, 0, 0, w, h, this);
+        } else {
+            g.fillRect(0,  0, w,  h);
         }
     }
 }
