@@ -11,14 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.an.bitwise4j.encoder.huffman.HuffmanTable;
-import fr.an.bitwise4j.encoder.structio.StructDataInput;
 import fr.an.bitwise4j.encoder.structio.IStreamMultiplexerSupport.StreamPopper;
+import fr.an.bitwise4j.encoder.structio.StructDataInput;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphIndexOrCode;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable;
 import fr.an.screencast.compressor.imgtool.glyph.GlyphMRUTable.GlyphMRUNode;
 import fr.an.screencast.compressor.imgtool.rectdescr.ExternalFormatRawDataHelper;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
-import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.AnalysisProxyRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.BorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.ColumnsSplitRectImgDescr;
@@ -40,6 +38,7 @@ import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.RoundBo
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.SegmentNoiseFragment;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.TopBottomBorderRectImgDescr;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrAST.VerticalSplitRectImgDescr;
+import fr.an.screencast.compressor.imgtool.rectdescr.ast.RectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.rectdescr.ast.helper.DumpRectImgDescrVisitor;
 import fr.an.screencast.compressor.imgtool.utils.IntsCRC32;
 import fr.an.screencast.compressor.utils.Border;

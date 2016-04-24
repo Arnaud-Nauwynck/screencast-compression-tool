@@ -14,7 +14,6 @@ public class CapReadMain {
     
     private static final Logger LOG = LoggerFactory.getLogger(CapReadMain.class);
     
-    private boolean DEBUG = false;
     private File inputFile;
     
     // ------------------------------------------------------------------------
@@ -40,8 +39,6 @@ public class CapReadMain {
         for(int i = 0; i < args.length; i++) {
             if (args[i].equals("-i")) {
                 inputFile = new File(args[++i]);
-            } else if (args[i].equals("--debug")) {
-                DEBUG = true;
             } else {
                 throw new RuntimeException("Unrecognised arg " + args[i]);
             }

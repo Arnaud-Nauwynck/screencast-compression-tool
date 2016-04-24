@@ -36,7 +36,6 @@ import fr.an.screencast.compressor.imgtool.utils.RGBUtils;
 import fr.an.screencast.compressor.utils.Dim;
 import fr.an.screencast.compressor.utils.Pt;
 import fr.an.screencast.compressor.utils.Rect;
-import fr.an.screencast.ui.swing.internal.ImageCanvas;
 import fr.an.screencast.ui.swing.internal.ImageViewer;
 
 public class RectImgDescrView {

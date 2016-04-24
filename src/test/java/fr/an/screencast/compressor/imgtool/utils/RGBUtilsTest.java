@@ -1,7 +1,6 @@
 package fr.an.screencast.compressor.imgtool.utils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.junit.Assert;

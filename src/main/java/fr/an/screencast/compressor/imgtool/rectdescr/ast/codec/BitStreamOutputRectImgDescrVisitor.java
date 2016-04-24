@@ -440,7 +440,7 @@ public class BitStreamOutputRectImgDescrVisitor extends RectImgDescrVisitor {
         Rect rect = node.getRect();
         writeCheckRect(node.getUnderlying(), rect);
 
-        Map<Object, Object> attributeOverrides = node.getAttributeOverrides();
+        // Map<Object, Object> attributeOverrides = node.getAttributeOverrides();
         // TODO NOT IMPLEMENTED encode override attributes
     }
 
