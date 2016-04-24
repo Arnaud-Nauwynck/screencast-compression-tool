@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
@@ -30,12 +31,12 @@ public class QRCodeDecoderRecorderModel {
     
     private DesktopScreenSnaphotProvider screenSnaphostProvider = new DesktopScreenSnaphotProvider(false, true);
 
-    private Rectangle recordArea = new Rectangle(10, 127, 390, 390); 
+    private Rectangle recordArea = new Rectangle(50, 197, 720, 720); 
     
     private Map<DecodeHintType, Object> qrHints = new HashMap<>();
     
-    private int qrCodeW = 400;
-    private int qrCodeH = 400;
+    private int qrCodeW = 300;
+    private int qrCodeH = 300;
     
     private String fullText = "";
     
@@ -80,7 +81,9 @@ public class QRCodeDecoderRecorderModel {
 
         int[] decodeHintAllowedLength = new int[] { qrCodeW, qrCodeH }; // ???
         qrHints.put(DecodeHintType.ALLOWED_LENGTHS, decodeHintAllowedLength);
-
+        qrHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+        // qrHints.put(DecodeHintType.CHARACTER_SET, ); 
+            
         Result result;
         try {
             result = qrCodeReader.decode(bitmap, qrHints);
@@ -89,7 +92,6 @@ public class QRCodeDecoderRecorderModel {
         }
         return result;
     }
-    
     
     public int getQrCodeW() {
         return qrCodeW;

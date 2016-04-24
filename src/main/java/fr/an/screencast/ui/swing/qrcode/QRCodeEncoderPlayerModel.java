@@ -29,7 +29,7 @@ public class QRCodeEncoderPlayerModel {
     private static final Logger LOG = LoggerFactory.getLogger(QRCodeEncoderPlayerModel.class);
     
     private BarcodeFormat qrCodeFormat = BarcodeFormat.QR_CODE;
-    private ErrorCorrectionLevel errorCorrectionLevel = ErrorCorrectionLevel.M;
+    private ErrorCorrectionLevel errorCorrectionLevel = ErrorCorrectionLevel.H;
 
     private Map<EncodeHintType, Object> qrHints;
     
@@ -84,6 +84,9 @@ public class QRCodeEncoderPlayerModel {
         String remainText = text;
         while(! remainText.isEmpty()) {
             int splitLen = findGreatestTextLenForQRDim(remainText);
+            if (splitLen > 100) {
+                splitLen -= 10; // HACK heuristic??
+            }
             String subText = remainText.substring(0, splitLen);
             
             try {

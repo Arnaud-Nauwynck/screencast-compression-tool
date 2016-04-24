@@ -116,7 +116,7 @@ public class QRCodeEncoderPlayerView {
             nextQRCodeButton.addActionListener(e -> onNextQRCodeAction());
             
             qrCodeImageCanvas = new ImageCanvas();
-            int zoom = 1;
+            int zoom = 2;
             qrCodeImageCanvas.setPreferredSize(new Dimension(zoom*model.getQrCodeW(), zoom*model.getQrCodeH()));
             playerTabPanel.add(qrCodeImageCanvas, BorderLayout.CENTER);
         }
